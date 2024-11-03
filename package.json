@@ -32,6 +32,9 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "typescript": "^5.x", // replace with your preferred version
+    "@types/react": "^18.x",
+    "@types/node": "^20.x"
     "@shadcn/ui": "^0.0.4",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
