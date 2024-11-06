@@ -214,17 +214,14 @@ const StockChart = () => {
       timeScale: {
         timezone: 'Asia/Kolkata',
         timeVisible: true,
-        borderColor: borderColor,
         rightOffset: 5,
         minBarSpacing: 10,
         scaleMargins: {
           top: 0.1,
           bottom: 0.1,
         },
-      },
-      rightPriceScale: {
-        borderColor: borderColor,
-      },
+      }
+      
     });
 
     const candlestickSeries = chart.addCandlestickSeries({
