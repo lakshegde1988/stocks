@@ -384,30 +384,30 @@ const StockChart = () => {
     )
   ).slice(0, 10); // Limit to first 10 results for better performance
 
-  return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header - Single row, scaled down */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-5xl mx-auto px-2 sm:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14">
+  eturn (
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Enhanced Header with Gradient */}
+      <header className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-28 sm:w-40 text-xs sm:text-sm bg-background">
+              <SelectTrigger className="w-36 text-sm bg-transparent border-gray-200 dark:border-gray-800">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
                 {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
                     {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Search - Scaled down */}
-            <div className="relative w-48 sm:w-64" ref={searchRef}>
+            {/* Enhanced Search with Animation */}
+            <div className="relative flex-1 max-w-[200px] ml-4" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -416,23 +416,23 @@ const StockChart = () => {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-xs sm:text-sm h-8 sm:h-10"
+                className="w-full text-sm h-10 pl-9 pr-8 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-full transition-all focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer transition-colors" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
                   }}
                 />
               ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               )}
 
-              {/* Dropdown - Scaled down */}
+              {/* Enhanced Dropdown */}
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                <div className="absolute w-full mt-2 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-60 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -442,10 +442,10 @@ const StockChart = () => {
                         setSearchTerm('');
                         setShowDropdown(false);
                       }}
-                      className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-left hover:bg-muted/50 transition-colors"
+                      className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
-                      <div className="font-medium text-xs sm:text-sm">{stock.symbol}</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground truncate">{stock.name}</div>
+                      <div className="font-medium text-sm">{stock.symbol}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{stock.name}</div>
                     </button>
                   ))}
                 </div>
@@ -455,78 +455,93 @@ const StockChart = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
-          {/* Stock Info Card - Single row, scaled down */}
+      <main className="flex-1 max-w-lg mx-auto w-full px-4 py-4">
+        {/* Enhanced Stock Info Card */}
         {currentStock && (
-          <Card className="mb-4 sm:mb-6 shadow-sm">
-          <CardContent className="p-3 sm:p-6">
+          <Card className="mb-4 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border-0">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base sm:text-2xl font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-xs sm:text-base text-muted-foreground">{currentStock.name}</p>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5 text-blue-500" />
+                    <h2 className="text-xl font-bold">{currentStock.symbol}</h2>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">{currentStock.name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{currentStock.industry}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-base sm:text-2xl font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                  <p
-                    variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
-                    className="text-xs sm:text-sm"
-                  >
+                  <div className="text-xl font-bold">₹{currentStock.price?.toFixed(2)}</div>
+                  <div className={`text-sm font-medium ${
+                    currentStock.todayChange >= 0 
+                      ? 'text-emerald-500 dark:text-emerald-400' 
+                      : 'text-red-500 dark:text-red-400'
+                  }`}>
                     {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
-                  </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        
-
-        {/* Chart */}
-        <Card className="mb-16 sm:mb-20 border-b-2 shadow-md">
+        {/* Enhanced Chart Card */}
+        <Card className="mb-20 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border-0">
           <CardContent className="p-0">
             {loading ? (
-              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
-                <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
+              <div className="h-[400px] flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex flex-col items-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">Loading chart data...</p>
+                </div>
               </div>
             ) : error ? (
-              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
-                <div className="text-destructive text-xs sm:text-sm">{error}</div>
+              <div className="h-[400px] flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+                <div className="text-red-500 dark:text-red-400 text-sm text-center px-4">
+                  <p>{error}</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={fetchStockData}
+                  >
+                    Retry
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[400px] sm:h-[500px] md:h-[600px] border-b border-border" />
+              <div ref={chartContainerRef} className="h-[400px]" />
             )}
           </CardContent>
         </Card>
       </main>
 
-      {/* Footer Navigation - Single row, scaled down */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14">
+      {/* Enhanced Footer Navigation */}
+      <footer className="fixed bottom-0 left-0 right-0 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-800">
+        <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
             <Button
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
+              className="h-10 px-4 text-sm disabled:opacity-50"
             >
-              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              <ChevronLeft className="h-4 w-4 mr-1" />
               Previous
             </Button>
             
-            <span className="text-xs sm:text-sm">
-              <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-muted-foreground mx-1">/</span>
-              <span className="text-muted-foreground">{stocks.length}</span>
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">{currentStockIndex + 1}</span>
+              <span className="text-sm text-gray-400 dark:text-gray-500">/</span>
+              <span className="text-sm text-gray-400 dark:text-gray-500">{stocks.length}</span>
+            </div>
             
             <Button
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
+              className="h-10 px-4 text-sm disabled:opacity-50"
             >
               Next
-              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
