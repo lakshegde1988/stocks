@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp, BadgeDollarSign, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp, ChevronDown, Check } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
           className="w-52 justify-between font-normal"
         >
           {indexData[selectedIndex]?.label ?? "Select Index"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-52 p-0">
@@ -73,6 +73,7 @@ const INTERVALS = [
   { label: 'W', value: 'weekly', interval: '1wk', autoTimeframe: '5Y' },
   { label: 'M', value: 'monthly', interval: '1mo', autoTimeframe: 'Max' },
 ];
+
 const AnimatedNumber = ({ value, decimals = 2 }) => {
   const [displayValue, setDisplayValue] = useState(value);
 
@@ -86,50 +87,14 @@ const AnimatedNumber = ({ value, decimals = 2 }) => {
     </span>
   );
 };
-// Helper function to get computed color from CSS variable
-const getCssVariableColor = (variableName) => {
-  const root = document.documentElement;
-  const computedStyle = getComputedStyle(root);
-  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
-  
-  // If the value is already a complete color (rgb, rgba, hex), return it
-  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
-    return cssVariable;
-  }
-  
-  // For HSL variables that return just the values, construct the full HSL color
-  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
-    return `hsl(${cssVariable})`;
-  }
-  
-  // Fallback colors
-  const fallbacks = {
-    '--background': '#ffffff',
-    '--foreground': '#000000',
-    '--border': '#e5e7eb',
-    '--success': '#22c55e',
-    '--destructive': '#ef4444',
-  };
-  
-  return fallbacks[variableName] || '#000000';
-};
 
-// Define chart colors
-const chartColors = {
-  upColor: '#22c55e',       // Green for up movements
-  downColor: '#ef4444',     // Red for down movements
-  backgroundColor: '#ffffff', // White background
-  textColor: '#000000',     // Black text
-  borderColor: '#e5e7eb',   // Gray border
-};
-
-// For dark mode, we'll update these colors
-const darkModeColors = {
-  upColor: '#22c55e',       // Keep green
-  downColor: '#ef4444',     // Keep red
-  backgroundColor: '#1a1a1a', // Dark background
-  textColor: '#ffffff',     // White text
-  borderColor: '#2d2d2d',   // Dark border
+// Utility function to get color value
+const getColorValue = (variableName, fallback) => {
+  if (typeof window !== 'undefined') {
+    const bodyStyles = window.getComputedStyle(document.body);
+    return bodyStyles.getPropertyValue(variableName).trim() || fallback;
+  }
+  return fallback;
 };
 
 const StockChart = () => {
@@ -159,6 +124,18 @@ const StockChart = () => {
 
   const getChartHeight = useCallback(() => {
     return window.innerWidth < 768 ? 500 : 600;
+  }, []);
+
+  // Get chart colors based on theme
+  const getChartColors = useCallback(() => {
+    return {
+      upColor: 'var(--success)',
+      downColor: 'var(--destructive)',
+      backgroundColor: 'var(--background)',
+      textColor: 'var(--foreground)',
+      borderColor: 'var(--border)',
+      gridColor: 'var(--muted)',
+    };
   }, []);
 
   useEffect(() => {
@@ -198,6 +175,7 @@ const StockChart = () => {
           symbol: currentStock.symbol,
           industry: currentStock.industry,
           price: response.data[response.data.length - 1]?.close,
+          volume: response.data[response.data.length - 1]?.volume,
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
         });
@@ -212,26 +190,6 @@ const StockChart = () => {
   useEffect(() => {
     fetchStockData();
   }, [fetchStockData]);
-
-  // Utility function to get color value
-const getColorValue = (variableName: string, fallback: string): string => {
-  if (typeof window !== 'undefined') {
-    const bodyStyles = window.getComputedStyle(document.body)
-    return bodyStyles.getPropertyValue(variableName).trim() || fallback
-  }
-  return fallback
-}
-  // Get current color theme
-const getChartColors = useCallback(() => {
-    return {
-      upColor: 'var(--success)',
-      downColor: 'var(--destructive)',
-      backgroundColor: 'var(--background)',
-      textColor: 'var(--foreground)',
-      borderColor: 'var(--border)',
-      gridColor: 'var(--muted)',
-    }
-  }, [])
 
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
@@ -294,7 +252,6 @@ const getChartColors = useCallback(() => {
       },
     });
 
-    // Set volume data with correct colors
     volumeSeries.setData(
       chartData.map(d => ({
         time: d.time,
@@ -303,24 +260,10 @@ const getChartColors = useCallback(() => {
       }))
     );
 
-    candlestickSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.1,
-        bottom: 0.2,
-      }
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.7,
-        bottom: 0,
-      },
-    });
-
     chart.timeScale().fitContent();
 
     chartInstanceRef.current = chart;
 
-    // Create resize handler
     const handleResize = () => {
       chart.applyOptions({
         width: chartContainerRef.current.clientWidth,
@@ -328,31 +271,13 @@ const getChartColors = useCallback(() => {
       });
     };
 
-    // Add resize listener
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight, isDarkMode, getChartColors]);
-
-  // Update chart colors when theme changes
-  useEffect(() => {
-    if (chartInstanceRef.current) {
-      const colors = getChartColors();
-      chartInstanceRef.current.applyOptions({
-        layout: {
-          background: { 
-            type: 'solid', 
-            color: colors.backgroundColor 
-          },
-          textColor: colors.textColor,
-        },
-      });
-    }
-  }, [isDarkMode, getChartColors]);
+  }, [chartData, getChartHeight, getChartColors]);
 
   const handlePeriodChange = (newPeriod) => {
     setSelectedPeriod(newPeriod);
@@ -382,8 +307,6 @@ const getChartColors = useCallback(() => {
     }
   };
 
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -400,7 +323,7 @@ const getChartColors = useCallback(() => {
       stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  ).slice(0, 10); // Limit to first 10 results for better performance
+  ).slice(0, 10);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
