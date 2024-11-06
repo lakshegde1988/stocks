@@ -26,19 +26,21 @@ const TIME_PERIODS = [
   { label: 'MAX', range: 'max', autoInterval: '1wk' },
 ] as const
 
-type Stock = {
+type TimePeriod = typeof TIME_PERIODS[number]
+
+interface Stock {
   symbol: string
   name: string
   industry: string
 }
 
-type CurrentStock = Stock & {
+interface CurrentStock extends Stock {
   price: number
   change: number
   todayChange: number
 }
 
-type ChartData = {
+interface ChartData {
   time: string
   open: number
   high: number
@@ -61,7 +63,7 @@ export default function StockChart() {
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState<typeof TIME_PERIODS[number]['label']>('1Y')
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod['label']>('1Y')
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -173,7 +175,7 @@ export default function StockChart() {
     }
   }, [chartData])
 
-  const handlePeriodChange = (newPeriod: typeof TIME_PERIODS[number]['label']) => {
+  const handlePeriodChange = (newPeriod: TimePeriod['label']) => {
     setSelectedPeriod(newPeriod)
   }
 
@@ -311,4 +313,4 @@ export default function StockChart() {
       </div>
     </div>
   )
-                      }
+              }
