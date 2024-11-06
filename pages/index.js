@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp, ChevronDown, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,21 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import nifty50Data from '/public/nifty50.json';
 import niftyNext50Data from '/public/niftynext50.json';
 import midcap150Data from '/public/midcap150.json';
 import smallcap250Data from '/public/smallcap250.json';
 import microCap250Data from '/public/microcap250.json';
-
-const getComputedColor = (cssVariable) => {
-  if (typeof window === 'undefined') return '#000000';
-  const style = getComputedStyle(document.documentElement);
-  return style.getPropertyValue(cssVariable).trim() || '#000000';
-};
 
 const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
   const [open, setOpen] = React.useState(false);
@@ -40,7 +31,7 @@ const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
           className="w-52 justify-between font-normal"
         >
           {indexData[selectedIndex]?.label ?? "Select Index"}
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-52 p-0">
@@ -80,27 +71,50 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', autoTimeframe: 'Max' },
 ];
 
-const AnimatedNumber = ({ value, decimals = 2 }) => {
-  const [displayValue, setDisplayValue] = useState(value);
-
-  useEffect(() => {
-    setDisplayValue(value);
-  }, [value]);
-
-  return (
-    <span className="tabular-nums transition-all duration-500">
-      {typeof displayValue === 'number' ? displayValue.toFixed(decimals) : '-.--'}
-    </span>
-  );
+// Helper function to get computed color from CSS variable
+const getCssVariableColor = (variableName) => {
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
+  
+  // If the value is already a complete color (rgb, rgba, hex), return it
+  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
+    return cssVariable;
+  }
+  
+  // For HSL variables that return just the values, construct the full HSL color
+  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
+    return `hsl(${cssVariable})`;
+  }
+  
+  // Fallback colors
+  const fallbacks = {
+    '--background': '#ffffff',
+    '--foreground': '#000000',
+    '--border': '#e5e7eb',
+    '--success': '#22c55e',
+    '--destructive': '#ef4444',
+  };
+  
+  return fallbacks[variableName] || '#000000';
 };
 
-// Utility function to get color value
-const getColorValue = (variableName, fallback) => {
-  if (typeof window !== 'undefined') {
-    const bodyStyles = window.getComputedStyle(document.body);
-    return bodyStyles.getPropertyValue(variableName).trim() || fallback;
-  }
-  return fallback;
+// Define chart colors
+const chartColors = {
+  upColor: '#22c55e',       // Green for up movements
+  downColor: '#ef4444',     // Red for down movements
+  backgroundColor: '#ffffff', // White background
+  textColor: '#000000',     // Black text
+  borderColor: '#e5e7eb',   // Gray border
+};
+
+// For dark mode, we'll update these colors
+const darkModeColors = {
+  upColor: '#22c55e',       // Keep green
+  downColor: '#ef4444',     // Keep red
+  backgroundColor: '#1a1a1a', // Dark background
+  textColor: '#ffffff',     // White text
+  borderColor: '#2d2d2d',   // Dark border
 };
 
 const StockChart = () => {
@@ -129,9 +143,8 @@ const StockChart = () => {
   const searchRef = useRef(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 768 ? 500 : 600;
+    return window.innerWidth < 768 ? 550 : 650;
   }, []);
-
 
   useEffect(() => {
     const selectedIndex = indexData[selectedIndexId];
@@ -170,7 +183,6 @@ const StockChart = () => {
           symbol: currentStock.symbol,
           industry: currentStock.industry,
           price: response.data[response.data.length - 1]?.close,
-          volume: response.data[response.data.length - 1]?.volume,
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
         });
@@ -186,23 +198,37 @@ const StockChart = () => {
     fetchStockData();
   }, [fetchStockData]);
 
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check for dark mode
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
+
+    const handler = (e) => setIsDarkMode(e.matches);
+    darkModeQuery.addEventListener('change', handler);
+    return () => darkModeQuery.removeEventListener('change', handler);
+  }, []);
+
+  // Get current color theme
+  const getChartColors = useCallback(() => {
+    return isDarkMode ? darkModeColors : chartColors;
+  }, [isDarkMode]);
+
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
 
-    const backgroundColor = getComputedColor('--background');
-    const textColor = getComputedColor('--foreground');
-    const successColor = getComputedColor('--success');
-    const destructiveColor = getComputedColor('--destructive');
-    
+    const colors = getChartColors();
+
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: getChartHeight(),
       layout: {
         background: { 
           type: 'solid', 
-          color: backgroundColor 
+          color: colors.backgroundColor 
         },
-        textColor: textColor,
+        textColor: colors.textColor,
       },
       crosshair: { 
         mode: CrosshairMode.Normal,
@@ -214,29 +240,32 @@ const StockChart = () => {
       timeScale: {
         timezone: 'Asia/Kolkata',
         timeVisible: true,
+        borderColor: colors.borderColor,
         rightOffset: 5,
         minBarSpacing: 10,
         scaleMargins: {
           top: 0.1,
           bottom: 0.1,
         },
-      }
-      
+      },
+      rightPriceScale: {
+        borderColor: colors.borderColor,
+      },
     });
 
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: successColor,
-      downColor: destructiveColor,
-      borderUpColor: successColor,
-      borderDownColor: destructiveColor,
-      wickUpColor: successColor,
-      wickDownColor: destructiveColor,
+      upColor: colors.upColor,
+      downColor: colors.downColor,
+      borderUpColor: colors.upColor,
+      borderDownColor: colors.downColor,
+      wickUpColor: colors.upColor,
+      wickDownColor: colors.downColor,
     });
 
     candlestickSeries.setData(chartData);
 
     const volumeSeries = chart.addHistogramSeries({
-      color: successColor,
+      color: colors.upColor,
       priceFormat: {
         type: 'volume',
       },
@@ -247,18 +276,33 @@ const StockChart = () => {
       },
     });
 
+    // Set volume data with correct colors
     volumeSeries.setData(
       chartData.map(d => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? successColor : destructiveColor,
+        color: d.close >= d.open ? colors.upColor : colors.downColor,
       }))
     );
+
+    candlestickSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.1,
+        bottom: 0.2,
+      }
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.7,
+        bottom: 0,
+      },
+    });
 
     chart.timeScale().fitContent();
 
     chartInstanceRef.current = chart;
 
+    // Create resize handler
     const handleResize = () => {
       chart.applyOptions({
         width: chartContainerRef.current.clientWidth,
@@ -266,13 +310,31 @@ const StockChart = () => {
       });
     };
 
+    // Add resize listener
     window.addEventListener('resize', handleResize);
 
+    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight]);
+  }, [chartData, getChartHeight, isDarkMode, getChartColors]);
+
+  // Update chart colors when theme changes
+  useEffect(() => {
+    if (chartInstanceRef.current) {
+      const colors = getChartColors();
+      chartInstanceRef.current.applyOptions({
+        layout: {
+          background: { 
+            type: 'solid', 
+            color: colors.backgroundColor 
+          },
+          textColor: colors.textColor,
+        },
+      });
+    }
+  }, [isDarkMode, getChartColors]);
 
   const handlePeriodChange = (newPeriod) => {
     setSelectedPeriod(newPeriod);
@@ -302,6 +364,8 @@ const StockChart = () => {
     }
   };
 
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -318,33 +382,32 @@ const StockChart = () => {
       stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
-  ).slice(0, 10);
+  ).slice(0, 10); // Limit to first 10 results for better performance
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <Select 
-                value={selectedIndexId.toString()} 
-                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-              >
-                <SelectTrigger className="w-40 bg-background">
-                  <SelectValue placeholder="Select Index" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Header - Single row, scaled down */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-5xl mx-auto px-2 sm:px-4">
+          <div className="flex items-center justify-between h-12 sm:h-14">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-28 sm:w-40 text-xs sm:text-sm bg-background">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent>
+                {indexData.map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <div className="relative w-72" ref={searchRef}>
+            {/* Search - Scaled down */}
+            <div className="relative w-48 sm:w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -353,160 +416,117 @@ const StockChart = () => {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8"
+                className="pr-8 text-xs sm:text-sm h-8 sm:h-10"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
                   }}
                 />
               ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               )}
 
+              {/* Dropdown - Scaled down */}
               {showDropdown && searchTerm && (
-                <Card className="absolute w-full mt-1 z-50">
-                  <ScrollArea className="h-64">
-                    <div className="p-2">
-                      {filteredStocks.map((stock) => (
-                        <button
-                          key={stock.symbol}
-                          onClick={() => {
-                            const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                            setCurrentStockIndex(stockIndex);
-                            setSearchTerm('');
-                            setShowDropdown(false);
-                          }}
-                          className="w-full p-3 text-left hover:bg-muted rounded-lg transition-colors group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium group-hover:text-primary transition-colors">{stock.symbol}</div>
-                              <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
-                            </div>
-                            <Badge variant="secondary" className="ml-2">{stock.industry}</Badge>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </Card>
+                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                  {filteredStocks.map((stock) => (
+                    <button
+                      key={stock.symbol}
+                      onClick={() => {
+                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                        setCurrentStockIndex(stockIndex);
+                        setSearchTerm('');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-left hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="font-medium text-xs sm:text-sm">{stock.symbol}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground truncate">{stock.name}</div>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 container max-w-6xl mx-auto px-4 py-6">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
+        {/* Stock Info Card - Single row, scaled down */}
         {currentStock && (
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
+          <Card className="mb-4 sm:mb-6">
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h2 className="text-2xl font-bold">{currentStock.symbol}</h2>
-                    <Badge variant="outline">{currentStock.industry}</Badge>
-                  </div>
-                  <p className="text-muted-foreground">{currentStock.name}</p>
+                  <h2 className="text-base sm:text-2xl font-semibold">{currentStock.symbol}</h2>
+                  <p className="text-xs sm:text-base text-muted-foreground">{currentStock.name}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold mb-1">
-                    ₹<AnimatedNumber value={currentStock.price} />
-                  </div>
-                  <div className="flex items-center justify-end space-x-2">
-                    <Badge 
-                      variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
-                      className="text-sm"
-                    >
-                      {currentStock.todayChange >= 0 ? '↑' : '↓'} 
-                      <AnimatedNumber value={Math.abs(currentStock.todayChange)} />%
-                    </Badge>
-                    <Badge variant="secondary" className="text-sm">
-                      Vol: {(currentStock.volume / 1000000).toFixed(1)}M
-                    </Badge>
-                  </div>
+                  <div className="text-base sm:text-2xl font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                  <p
+                    variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
+                    className="text-xs sm:text-sm"
+                  >
+                    {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <Tabs 
-                defaultValue="1Y"
-                value={selectedPeriod}
-                onValueChange={handlePeriodChange}
-                className="w-full"
-              >
-                <TabsList className="grid grid-cols-6">
-                  {TIME_PERIODS.map((period) => (
-                    <TabsTrigger
-                      key={period.label}
-                      value={period.label}
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                    >
-                      {period.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </div>
+        
 
+        {/* Chart */}
+        <Card className="mb-16 sm:mb-20">
+          <CardContent className="p-0">
             {loading ? (
-              <div className="h-[600px] flex items-center justify-center">
-                <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                  <p className="text-muted-foreground">Loading chart data...</p>
-                </div>
+              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
+                <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
-              <div className="h-[600px] flex items-center justify-center">
-                <div className="text-center text-destructive">
-                  <p className="font-medium mb-2">Error loading chart</p>
-                  <p className="text-sm">{error}</p>
-                </div>
+              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
+                <div className="text-destructive text-xs sm:text-sm">{error}</div>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[600px]" />
+              <div ref={chartContainerRef} className="h-[400px] sm:h-[500px] md:h-[600px]" />
             )}
           </CardContent>
         </Card>
       </main>
 
+      {/* Footer Navigation - Single row, scaled down */}
       <footer className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="container max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-5xl mx-auto px-2 sm:px-4">
+          <div className="flex items-center justify-between h-12 sm:h-14">
             <Button
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="space-x-2"
+              className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
             >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Previous</span>
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+              Previous
             </Button>
             
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="text-sm">
-                <span className="font-medium">{currentStockIndex + 1}</span>
-                <span className="mx-1">/</span>
-                <span>{stocks.length}</span>
-              </Badge>
-            </div>
+            <span className="text-xs sm:text-sm">
+              <span className="font-medium">{currentStockIndex + 1}</span>
+              <span className="text-muted-foreground mx-1">/</span>
+              <span className="text-muted-foreground">{stocks.length}</span>
+            </span>
             
             <Button
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="space-x-2"
+              className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
             >
-              <span>Next</span>
-              <ChevronRight className="h-4 w-4" />
+              Next
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>
