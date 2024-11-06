@@ -200,9 +200,9 @@ const StockChart = () => {
       layout: {
         background: { 
           type: 'solid', 
-          color: colors.backgroundColor 
+          color: backgroundColor 
         },
-        textColor: colors.textColor,
+        textColor: textColor,
       },
       crosshair: { 
         mode: CrosshairMode.Normal,
@@ -214,7 +214,7 @@ const StockChart = () => {
       timeScale: {
         timezone: 'Asia/Kolkata',
         timeVisible: true,
-        borderColor: colors.borderColor,
+        borderColor: borderColor,
         rightOffset: 5,
         minBarSpacing: 10,
         scaleMargins: {
@@ -223,7 +223,7 @@ const StockChart = () => {
         },
       },
       rightPriceScale: {
-        borderColor: colors.borderColor,
+        borderColor: borderColor,
       },
     });
 
@@ -239,7 +239,7 @@ const StockChart = () => {
     candlestickSeries.setData(chartData);
 
     const volumeSeries = chart.addHistogramSeries({
-      color: colors.upColor,
+      color: successColor,
       priceFormat: {
         type: 'volume',
       },
@@ -254,7 +254,7 @@ const StockChart = () => {
       chartData.map(d => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? colors.upColor : colors.downColor,
+        color: d.close >= d.open ? successColor : destructiveColor,
       }))
     );
 
