@@ -458,8 +458,8 @@ const StockChart = () => {
       <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
           {/* Stock Info Card - Single row, scaled down */}
         {currentStock && (
-          <Card className="mb-4 sm:mb-6">
-            <CardContent className="p-3 sm:p-6">
+          <Card className="mb-4 sm:mb-6 shadow-sm">
+          <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-base sm:text-2xl font-semibold">{currentStock.symbol}</h2>
