@@ -103,7 +103,7 @@ const StockChart = () => {
   const searchRef = useRef(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 768 ? 550 : 650;
+    return window.innerWidth < 768 ? 500 : 650;
   }, []);
 
   useEffect(() => {
