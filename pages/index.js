@@ -290,6 +290,4 @@ export default function StockChart() {
     </div>
   )
 
-
-}  
-export default StockChart;
+} 
