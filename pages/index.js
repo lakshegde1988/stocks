@@ -225,17 +225,25 @@ const StockChart = () => {
     return () => darkModeQuery.removeEventListener('change', handler);
   }, []);
 
+  // Utility function to get color value
+const getColorValue = (variableName: string, fallback: string): string => {
+  if (typeof window !== 'undefined') {
+    const bodyStyles = window.getComputedStyle(document.body)
+    return bodyStyles.getPropertyValue(variableName).trim() || fallback
+  }
+  return fallback
+}
   // Get current color theme
- const getChartColors = useCallback(() => {
+const getChartColors = useCallback(() => {
     return {
-      upColor: 'hsl(var(--success))',
-      downColor: 'hsl(var(--destructive))',
-      backgroundColor: 'hsl(var(--background))',
-      textColor: 'hsl(var(--foreground))',
-      borderColor: 'hsl(var(--border))',
-      gridColor: 'hsl(var(--muted))',
-    };
-  }, []);
+      upColor: 'var(--success)',
+      downColor: 'var(--destructive)',
+      backgroundColor: 'var(--background)',
+      textColor: 'var(--foreground)',
+      borderColor: 'var(--border)',
+      gridColor: 'var(--muted)',
+    }
+  }, [])
 
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
