@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -433,7 +432,7 @@ const StockChart = () => {
 
               {/* Dropdown - Scaled down */}
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-72 overflow-y-auto z-50">
+                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -465,51 +464,22 @@ const StockChart = () => {
                 <div>
                   <h2 className="text-base sm:text-2xl font-semibold">{currentStock.symbol}</h2>
                   <p className="text-xs sm:text-base text-muted-foreground">{currentStock.name}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">{currentStock.industry}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-base sm:text-2xl font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                  <Badge 
+                  <p
                     variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
                     className="text-xs sm:text-sm"
                   >
                     {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
-                  </Badge>
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Time Controls - Single row, scaled down */}
-        <div className="flex justify-between mb-4 sm:mb-6">
-          <div className="flex gap-1">
-            {TIME_PERIODS.map((period) => (
-              <Button
-                key={period.label}
-                variant={selectedPeriod === period.label ? "default" : "secondary"}
-                size="sm"
-                onClick={() => handlePeriodChange(period.label)}
-                className="text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-4"
-              >
-                {period.label}
-              </Button>
-            ))}
-          </div>
-          <div className="flex gap-1">
-            {INTERVALS.map((interval) => (
-              <Button
-                key={interval.value}
-                variant={selectedInterval === interval.value ? "default" : "secondary"}
-                size="sm"
-                onClick={() => handleIntervalChange(interval.value)}
-                className="text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-4"
-              >
-                {interval.label}
-              </Button>
-            ))}
-          </div>
-        </div>
+        
 
         {/* Chart */}
         <Card className="mb-16 sm:mb-20">
