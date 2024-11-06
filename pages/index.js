@@ -5,8 +5,8 @@ import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
