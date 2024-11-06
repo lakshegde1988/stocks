@@ -21,6 +21,12 @@ import midcap150Data from '/public/midcap150.json';
 import smallcap250Data from '/public/smallcap250.json';
 import microCap250Data from '/public/microcap250.json';
 
+const getComputedColor = (cssVariable) => {
+  if (typeof window === 'undefined') return '#000000';
+  const style = getComputedStyle(document.documentElement);
+  return style.getPropertyValue(cssVariable).trim() || '#000000';
+};
+
 const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -126,17 +132,6 @@ const StockChart = () => {
     return window.innerWidth < 768 ? 500 : 600;
   }, []);
 
-  // Get chart colors based on theme
-  const getChartColors = useCallback(() => {
-    return {
-      upColor: 'var(--success)',
-      downColor: 'var(--destructive)',
-      backgroundColor: 'var(--background)',
-      textColor: 'var(--foreground)',
-      borderColor: 'var(--border)',
-      gridColor: 'var(--muted)',
-    };
-  }, []);
 
   useEffect(() => {
     const selectedIndex = indexData[selectedIndexId];
@@ -194,8 +189,11 @@ const StockChart = () => {
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
 
-    const colors = getChartColors();
-
+    const backgroundColor = getComputedColor('--background');
+    const textColor = getComputedColor('--foreground');
+    const successColor = getComputedColor('--success');
+    const destructiveColor = getComputedColor('--destructive');
+    
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: getChartHeight(),
@@ -230,12 +228,12 @@ const StockChart = () => {
     });
 
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: colors.upColor,
-      downColor: colors.downColor,
-      borderUpColor: colors.upColor,
-      borderDownColor: colors.downColor,
-      wickUpColor: colors.upColor,
-      wickDownColor: colors.downColor,
+      upColor: successColor,
+      downColor: destructiveColor,
+      borderUpColor: successColor,
+      borderDownColor: destructiveColor,
+      wickUpColor: successColor,
+      wickDownColor: destructiveColor,
     });
 
     candlestickSeries.setData(chartData);
