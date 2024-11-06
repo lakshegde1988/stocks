@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createChart, CrosshairMode } from 'lightweight-charts'
+import { createChart, CrosshairMode, IChartApi } from 'lightweight-charts'
 import axios from 'axios'
 import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown } from 'lucide-react'
 
@@ -24,7 +24,27 @@ const TIME_PERIODS = [
   { label: '3M', range: '3mo', autoInterval: '1d' },
   { label: '1Y', range: '1y', autoInterval: '1d' },
   { label: 'MAX', range: 'max', autoInterval: '1wk' },
-]
+] as const
+
+type Stock = {
+  symbol: string
+  name: string
+  industry: string
+}
+
+type CurrentStock = Stock & {
+  price: number
+  change: number
+  todayChange: number
+}
+
+type ChartData = {
+  time: string
+  open: number
+  high: number
+  low: number
+  close: number
+}
 
 export default function StockChart() {
   const [indexData] = useState([
@@ -37,16 +57,16 @@ export default function StockChart() {
   
   const [selectedIndexId, setSelectedIndexId] = useState(0)
   const [currentStockIndex, setCurrentStockIndex] = useState(0)
-  const [stocks, setStocks] = useState([])
-  const [chartData, setChartData] = useState([])
+  const [stocks, setStocks] = useState<Stock[]>([])
+  const [chartData, setChartData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedPeriod, setSelectedPeriod] = useState('1Y')
-  const [currentStock, setCurrentStock] = useState(null)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedPeriod, setSelectedPeriod] = useState<typeof TIME_PERIODS[number]['label']>('1Y')
+  const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
-  const chartContainerRef = useRef(null)
-  const chartRef = useRef(null)
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
 
   useEffect(() => {
     const selectedIndex = indexData[selectedIndexId]
@@ -69,7 +89,9 @@ export default function StockChart() {
       const currentStock = stocks[currentStockIndex]
       const period = TIME_PERIODS.find(p => p.label === selectedPeriod)
 
-      const response = await axios.get('/api/stockData', {
+      if (!period) throw new Error('Invalid period selected')
+
+      const response = await axios.get<ChartData[]>('/api/stockData', {
         params: {
           symbol: currentStock.symbol,
           range: period.range,
@@ -80,16 +102,14 @@ export default function StockChart() {
       if (response.data && Array.isArray(response.data)) {
         setChartData(response.data)
         setCurrentStock({
-          name: currentStock.name,
-          symbol: currentStock.symbol,
-          industry: currentStock.industry,
+          ...currentStock,
           price: response.data[response.data.length - 1]?.close,
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
         })
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch stock data')
+      setError(err instanceof Error ? err.message : 'Failed to fetch stock data')
     } finally {
       setLoading(false)
     }
@@ -103,7 +123,9 @@ export default function StockChart() {
     if (!chartContainerRef.current || !chartData.length) return
 
     const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth })
+      if (chartRef.current && chartContainerRef.current) {
+        chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
+      }
     }
 
     const chart = createChart(chartContainerRef.current, {
@@ -151,7 +173,7 @@ export default function StockChart() {
     }
   }, [chartData])
 
-  const handlePeriodChange = (newPeriod) => {
+  const handlePeriodChange = (newPeriod: typeof TIME_PERIODS[number]['label']) => {
     setSelectedPeriod(newPeriod)
   }
 
@@ -196,7 +218,7 @@ export default function StockChart() {
             </PopoverTrigger>
             <PopoverContent className="w-64 p-0">
               <Command>
-                <CommandInput placeholder="Search stocks..." />
+                <CommandInput placeholder="Search stocks..." value={searchTerm} onValueChange={setSearchTerm} />
                 <CommandEmpty>No stocks found.</CommandEmpty>
                 <CommandGroup>
                   {stocks
@@ -289,5 +311,4 @@ export default function StockChart() {
       </div>
     </div>
   )
-
-} 
+                      }
