@@ -388,7 +388,7 @@ const StockChart = () => {
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header - Single row, scaled down */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4">
+      <div className="max-w-5xl mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14">
             <Select 
               value={selectedIndexId.toString()} 
@@ -456,7 +456,7 @@ const StockChart = () => {
       </header>
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
-        {/* Stock Info Card - Single row, scaled down */}
+          {/* Stock Info Card - Single row, scaled down */}
         {currentStock && (
           <Card className="mb-4 sm:mb-6">
             <CardContent className="p-3 sm:p-6">
@@ -482,7 +482,7 @@ const StockChart = () => {
         
 
         {/* Chart */}
-        <Card className="mb-16 sm:mb-20">
+        <Card className="mb-16 sm:mb-20 border-b-2 shadow-md">
           <CardContent className="p-0">
             {loading ? (
               <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
@@ -493,7 +493,7 @@ const StockChart = () => {
                 <div className="text-destructive text-xs sm:text-sm">{error}</div>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[400px] sm:h-[500px] md:h-[600px]" />
+              <div ref={chartContainerRef} className="h-[400px] sm:h-[500px] md:h-[600px] border-b border-border" />
             )}
           </CardContent>
         </Card>
