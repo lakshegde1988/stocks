@@ -384,7 +384,7 @@ const StockChart = () => {
     )
   ).slice(0, 10); // Limit to first 10 results for better performance
 
-  eturn (
+  return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Enhanced Header with Gradient */}
       <header className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
