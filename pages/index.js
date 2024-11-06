@@ -454,8 +454,7 @@ const StockChart = () => {
           </div>
         </div>
       </header>
-
-      <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
+      <main className="flex-1 max-w-5xl mx-auto w-full grid gap-4 md:grid-cols-2 lg:grid-cols-7 px-2 sm:px-4 py-4 sm:py-4">
         {/* Stock Info Card - Single row, scaled down */}
         {currentStock && (
           <Card className="mb-4 sm:mb-6">
