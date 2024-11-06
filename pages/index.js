@@ -18,46 +18,6 @@ import midcap150Data from '/public/midcap150.json';
 import smallcap250Data from '/public/smallcap250.json';
 import microCap250Data from '/public/microcap250.json';
 
-const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-52 justify-between font-normal"
-        >
-          {indexData[selectedIndex]?.label ?? "Select Index"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-52 p-0">
-        <Command>
-          <CommandGroup>
-            {indexData.map((item, index) => (
-              <CommandItem
-                key={index}
-                onSelect={() => {
-                  onIndexChange(index);
-                  setOpen(false);
-                }}
-                className="flex items-center justify-between px-4 py-2 cursor-pointer"
-              >
-                <span className={selectedIndex === index ? "font-medium" : ""}>{item.label}</span>
-                {selectedIndex === index && (
-                  <Check className="h-4 w-4 text-primary" />
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
 
 const TIME_PERIODS = [
   { label: '1Y', range: '1y', autoInterval: 'daily' },
@@ -385,153 +345,157 @@ const StockChart = () => {
   ).slice(0, 10); // Limit to first 10 results for better performance
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header - Single row, scaled down */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14">
-            <Select 
-              value={selectedIndexId.toString()} 
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-28 sm:w-40 text-xs sm:text-sm bg-background">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent>
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Search - Scaled down */}
-            <div className="relative w-48 sm:w-64" ref={searchRef}>
-              <Input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
-                }}
-                className="pr-8 text-xs sm:text-sm h-8 sm:h-10"
-              />
-              {searchTerm ? (
-                <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
-                  }}
-                />
-              ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-              )}
-
-              {/* Dropdown - Scaled down */}
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="font-medium text-xs sm:text-sm">{stock.symbol}</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground truncate">{stock.name}</div>
-                    </button>
+    <div className="flex justify-center bg-gray-100 min-h-screen">
+      <div className="border-2 border-gray-300 rounded-lg max-w-5xl w-full m-1 p-1 bg-white shadow-lg flex flex-col">
+        {/* Header */}
+        <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-5xl mx-auto px-2 sm:px-4">
+            <div className="flex items-center justify-between  h-12 sm:h-14">
+              <Select
+                value={selectedIndexId.toString()}
+                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+              >
+                <SelectTrigger className="w-28 sm:w-40 text-xs sm:text-sm bg-background">
+                  <SelectValue placeholder="Select Index" />
+                </SelectTrigger>
+                <SelectContent>
+                  {indexData.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {item.label}
+                    </SelectItem>
                   ))}
-                </div>
-              )}
+                </SelectContent>
+              </Select>
+  
+              {/* Search - Scaled down */}
+              <div className="relative w-48 sm:w-64" ref={searchRef}>
+                <Input
+                  type="text"
+                  placeholder="Search stocks..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  className="pr-8 text-xs sm:text-sm h-8 sm:h-10"
+                />
+                {searchTerm ? (
+                  <X
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setShowDropdown(false);
+                    }}
+                  />
+                ) : (
+                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                )}
+  
+                {/* Dropdown - Scaled down */}
+                {showDropdown && searchTerm && (
+                  <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                    {filteredStocks.map((stock) => (
+                      <button
+                        key={stock.symbol}
+                        onClick={() => {
+                          const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                          setCurrentStockIndex(stockIndex);
+                          setSearchTerm('');
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-3 py-1.5 sm:px-4 sm:py-2 text-left hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="font-medium text-xs sm:text-sm">{stock.symbol}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground truncate">{stock.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
-      <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4">
-        {/* Stock Info Card - Single row, scaled down */}
-        {currentStock && (
-          <Card className="mb-4 sm:mb-6">
-            <CardContent className="p-3 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base sm:text-2xl font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-xs sm:text-base text-muted-foreground">{currentStock.name}</p>
+        </header>
+  
+        {/* Main Content */}
+        
+        <main className="flex-1 max-w-5xl mx-auto w-full px-2 sm:px-4 py-4 sm:py-4 ">
+          {/* Stock Info Card */}
+          {currentStock && (
+            <Card className="mb-2 sm:mb-2">
+              <CardContent className="p-1 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p  className="text-xs sm:text-2xl font-semibold">{currentStock.symbol}</p>
+                    <p className="text-xs sm:text-base text-muted-foreground">{currentStock.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs sm:text-2xl font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                    <p
+                      className={`text-xs sm:text-sm ${
+                        currentStock.todayChange >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-base sm:text-2xl font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                  <p
-                    variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
-                    className="text-xs sm:text-sm"
-                  >
-                    {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
-                  </p>
-                </div>
-              </div>
+              </CardContent>
+            </Card>
+          )}
+  
+          {/* Chart */}
+          <Card className="mb-1 sm:mb-6 border-gray-300 ">
+            <CardContent className="p-0">
+                <div
+                  ref={chartContainerRef}
+                  className="h-[500px] sm:h-[500px] md:h-[600px]" />
             </CardContent>
           </Card>
-        )}
 
-        
-
-        {/* Chart */}
-        <Card className="mb-16 sm:mb-20">
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
-                <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : error ? (
-              <div className="h-[400px] sm:h-[500px] md:h-[600px] flex items-center justify-center">
-                <div className="text-destructive text-xs sm:text-sm">{error}</div>
-              </div>
-            ) : (
-              <div ref={chartContainerRef} className="h-[400px] sm:h-[500px] md:h-[600px]" />
-            )}
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Footer Navigation - Single row, scaled down */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4">
-          <div className="flex items-center justify-between h-12 sm:h-14">
+        </main>
+  
+        {/* Footer */}
+        <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 mt-auto">
+          <div className="max-w-5xl mx-auto px-2 sm:px-4 flex items-center justify-between h-12 sm:h-14">
+            {/* Previous Button with Icon and Text on Same Row */}
             <Button
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
               className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
             >
-              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-              Previous
+              <span className="flex items-center space-x-1">
+                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Previous</span>
+              </span>
             </Button>
-            
+
+            {/* Page Indicator */}
             <span className="text-xs sm:text-sm">
               <span className="font-medium">{currentStockIndex + 1}</span>
               <span className="text-muted-foreground mx-1">/</span>
               <span className="text-muted-foreground">{stocks.length}</span>
             </span>
-            
+
+            {/* Next Button with Icon and Text on Same Row */}
             <Button
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
               className="h-8 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm"
             >
-              Next
-              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="flex items-center space-x-1">
+                <span>Next</span>
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+              </span>
             </Button>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
-};
+  
+  
+}  
 
 export default StockChart;
