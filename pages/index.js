@@ -5,13 +5,13 @@ import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Card, CardContent } from "@/src/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select";
-import { Badge } from "@/src/components/ui/badge";
-import { Command, CommandGroup, CommandItem } from "@/src/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/src/components/ui/popover";
+import { Button } from "/src/components/ui/button";
+import { Input } from "/src/components/ui/input";
+import { Card, CardContent } from "/src/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
+import { Badge } from "/src/components/ui/badge";
+import { Command, CommandGroup, CommandItem } from "/src/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "/src/components/ui/popover";
 
 import nifty50Data from '/public/nifty50.json';
 import niftyNext50Data from '/public/niftynext50.json';
