@@ -275,7 +275,7 @@ const StockChart = () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight, getChartColors]);
+  }, [chartData, getChartHeight]);
 
   const handlePeriodChange = (newPeriod) => {
     setSelectedPeriod(newPeriod);
