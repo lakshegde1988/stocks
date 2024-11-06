@@ -103,7 +103,7 @@ const StockChart = () => {
   const searchRef = useRef(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 768 ? 500 : 650;
+    return window.innerWidth < 768 ? 550 : 650;
   }, []);
 
   useEffect(() => {
@@ -355,7 +355,7 @@ const StockChart = () => {
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="w-28 sm:w-40 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="w-28 sm:w-30 text-muted-foreground text-xs sm:text-sm bg-background">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent>
