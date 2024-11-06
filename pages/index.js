@@ -18,7 +18,7 @@ import smallcap250Data from '/public/smallcap250.json'
 import microCap250Data from '/public/microcap250.json'
 
 // Dynamically import the Chart component to avoid SSR issues
-const Chart = dynamic(() => import('./Chart'), { ssr: false })
+const Chart = dynamic(() => import('./chart'), { ssr: false })
 
 const TIME_PERIODS = [
   { label: '1Y', range: '1y', autoInterval: 'daily' },
