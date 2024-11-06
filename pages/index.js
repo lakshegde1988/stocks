@@ -213,18 +213,6 @@ const StockChart = () => {
     fetchStockData();
   }, [fetchStockData]);
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Check for dark mode
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
-
-    const handler = (e) => setIsDarkMode(e.matches);
-    darkModeQuery.addEventListener('change', handler);
-    return () => darkModeQuery.removeEventListener('change', handler);
-  }, []);
-
   // Utility function to get color value
 const getColorValue = (variableName: string, fallback: string): string => {
   if (typeof window !== 'undefined') {
