@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createChart, CrosshairMode } from 'lightweight-charts'
+import dynamic from 'next/dynamic'
 import axios from 'axios'
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -17,6 +16,9 @@ import niftyNext50Data from '/public/niftynext50.json'
 import midcap150Data from '/public/midcap150.json'
 import smallcap250Data from '/public/smallcap250.json'
 import microCap250Data from '/public/microcap250.json'
+
+// Dynamically import the Chart component to avoid SSR issues
+const Chart = dynamic(() => import('./Chart'), { ssr: false })
 
 const TIME_PERIODS = [
   { label: '1Y', range: '1y', autoInterval: 'daily' },
@@ -29,38 +31,6 @@ const INTERVALS = [
   { label: 'W', value: 'weekly', interval: '1wk', autoTimeframe: '5Y' },
   { label: 'M', value: 'monthly', interval: '1mo', autoTimeframe: 'Max' },
 ]
-
-const getCssVariableColor = (variableName) => {
-  const root = document.documentElement
-  const computedStyle = getComputedStyle(root)
-  const cssVariable = computedStyle.getPropertyValue(variableName).trim()
-  
-  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
-    return cssVariable
-  }
-  
-  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
-    return `hsl(${cssVariable})`
-  }
-  
-  const fallbacks = {
-    '--background': '#ffffff',
-    '--foreground': '#000000',
-    '--border': '#e5e7eb',
-    '--success': '#22c55e',
-    '--destructive': '#ef4444',
-  }
-  
-  return fallbacks[variableName] || '#000000'
-}
-
-const chartColors = {
-  upColor: getCssVariableColor('--success'),
-  downColor: getCssVariableColor('--destructive'),
-  backgroundColor: getCssVariableColor('--background'),
-  textColor: getCssVariableColor('--foreground'),
-  borderColor: getCssVariableColor('--border'),
-}
 
 export default function StockChart() {
   const [indexData] = useState([
@@ -81,13 +51,6 @@ export default function StockChart() {
   const [selectedInterval, setSelectedInterval] = useState('daily')
   const [currentStock, setCurrentStock] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  
-  const chartContainerRef = useRef(null)
-  const chartInstanceRef = useRef(null)
-
-  const getChartHeight = useCallback(() => {
-    return window.innerWidth < 768 ? 300 : 500
-  }, [])
 
   useEffect(() => {
     const selectedIndex = indexData[selectedIndexId]
@@ -140,79 +103,6 @@ export default function StockChart() {
   useEffect(() => {
     fetchStockData()
   }, [fetchStockData])
-
-  useEffect(() => {
-    if (!chartContainerRef.current || !chartData.length) return
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: getChartHeight(),
-      layout: {
-        background: { type: 'solid', color: chartColors.backgroundColor },
-        textColor: chartColors.textColor,
-      },
-      crosshair: { mode: CrosshairMode.Normal },
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
-      },
-      timeScale: {
-        timezone: 'Asia/Kolkata',
-        timeVisible: true,
-        borderColor: chartColors.borderColor,
-      },
-      rightPriceScale: {
-        borderColor: chartColors.borderColor,
-      },
-    })
-
-    const candlestickSeries = chart.addCandlestickSeries({
-      upColor: chartColors.upColor,
-      downColor: chartColors.downColor,
-      borderUpColor: chartColors.upColor,
-      borderDownColor: chartColors.downColor,
-      wickUpColor: chartColors.upColor,
-      wickDownColor: chartColors.downColor,
-    })
-
-    candlestickSeries.setData(chartData)
-
-    const volumeSeries = chart.addHistogramSeries({
-      color: chartColors.upColor,
-      priceFormat: { type: 'volume' },
-      priceScaleId: '',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
-    })
-
-    volumeSeries.setData(
-      chartData.map(d => ({
-        time: d.time,
-        value: d.volume,
-        color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
-      }))
-    )
-
-    chart.timeScale().fitContent()
-
-    chartInstanceRef.current = chart
-
-    const handleResize = () => {
-      chart.applyOptions({
-        width: chartContainerRef.current.clientWidth,
-        height: getChartHeight(),
-      })
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      chart.remove()
-    }
-  }, [chartData, getChartHeight])
 
   const handlePeriodChange = (newPeriod) => {
     setSelectedPeriod(newPeriod)
@@ -320,7 +210,7 @@ export default function StockChart() {
 
           <Card className="mb-4">
             <CardContent className="p-0">
-              <div ref={chartContainerRef} className="w-full" style={{ height: getChartHeight() }} />
+              <Chart data={chartData} />
             </CardContent>
           </Card>
 
@@ -359,4 +249,4 @@ export default function StockChart() {
       </div>
     </div>
   )
-      }
+                             }
