@@ -232,7 +232,7 @@ const StockChart = () => {
       priceScaleId: '',
       scaleMargins: {
         top: 0.8,
-        bottom: 0,
+        bottom: 0.2,
       },
     });
 
@@ -248,13 +248,13 @@ const StockChart = () => {
     candlestickSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.1,
-        bottom: 0.2,
+        bottom: 0.5,
       }
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.7,
-        bottom: 0,
+        bottom: 0.2,
       },
     });
 
