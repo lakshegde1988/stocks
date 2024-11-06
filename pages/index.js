@@ -21,15 +21,58 @@ import midcap150Data from '/public/midcap150.json';
 import smallcap250Data from '/public/smallcap250.json';
 import microCap250Data from '/public/microcap250.json';
 
+const IndexSelector = ({ selectedIndex, onIndexChange, indexData }) => {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-52 justify-between font-normal"
+        >
+          {indexData[selectedIndex]?.label ?? "Select Index"}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-52 p-0">
+        <Command>
+          <CommandGroup>
+            {indexData.map((item, index) => (
+              <CommandItem
+                key={index}
+                onSelect={() => {
+                  onIndexChange(index);
+                  setOpen(false);
+                }}
+                className="flex items-center justify-between px-4 py-2 cursor-pointer"
+              >
+                <span className={selectedIndex === index ? "font-medium" : ""}>{item.label}</span>
+                {selectedIndex === index && (
+                  <Check className="h-4 w-4 text-primary" />
+                )}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const TIME_PERIODS = [
-  { label: '1D', range: '1d', autoInterval: '5m' },
-  { label: '1W', range: '1wk', autoInterval: '15m' },
-  { label: '1M', range: '1mo', autoInterval: '1h' },
   { label: '1Y', range: '1y', autoInterval: 'daily' },
   { label: '5Y', range: '5y', autoInterval: 'weekly' },
   { label: 'MAX', range: 'max', autoInterval: 'monthly' },
 ];
 
+const INTERVALS = [
+  { label: 'D', value: 'daily', interval: '1d', autoTimeframe: '1Y' },
+  { label: 'W', value: 'weekly', interval: '1wk', autoTimeframe: '5Y' },
+  { label: 'M', value: 'monthly', interval: '1mo', autoTimeframe: 'Max' },
+];
 const AnimatedNumber = ({ value, decimals = 2 }) => {
   const [displayValue, setDisplayValue] = useState(value);
 
@@ -42,6 +85,51 @@ const AnimatedNumber = ({ value, decimals = 2 }) => {
       {typeof displayValue === 'number' ? displayValue.toFixed(decimals) : '-.--'}
     </span>
   );
+};
+// Helper function to get computed color from CSS variable
+const getCssVariableColor = (variableName) => {
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
+  
+  // If the value is already a complete color (rgb, rgba, hex), return it
+  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
+    return cssVariable;
+  }
+  
+  // For HSL variables that return just the values, construct the full HSL color
+  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
+    return `hsl(${cssVariable})`;
+  }
+  
+  // Fallback colors
+  const fallbacks = {
+    '--background': '#ffffff',
+    '--foreground': '#000000',
+    '--border': '#e5e7eb',
+    '--success': '#22c55e',
+    '--destructive': '#ef4444',
+  };
+  
+  return fallbacks[variableName] || '#000000';
+};
+
+// Define chart colors
+const chartColors = {
+  upColor: '#22c55e',       // Green for up movements
+  downColor: '#ef4444',     // Red for down movements
+  backgroundColor: '#ffffff', // White background
+  textColor: '#000000',     // Black text
+  borderColor: '#e5e7eb',   // Gray border
+};
+
+// For dark mode, we'll update these colors
+const darkModeColors = {
+  upColor: '#22c55e',       // Keep green
+  downColor: '#ef4444',     // Keep red
+  backgroundColor: '#1a1a1a', // Dark background
+  textColor: '#ffffff',     // White text
+  borderColor: '#2d2d2d',   // Dark border
 };
 
 const StockChart = () => {
@@ -137,7 +225,8 @@ const StockChart = () => {
     return () => darkModeQuery.removeEventListener('change', handler);
   }, []);
 
-  const getChartColors = useCallback(() => {
+  // Get current color theme
+ const getChartColors = useCallback(() => {
     return {
       upColor: 'hsl(var(--success))',
       downColor: 'hsl(var(--destructive))',
@@ -147,6 +236,175 @@ const StockChart = () => {
       gridColor: 'hsl(var(--muted))',
     };
   }, []);
+
+  useEffect(() => {
+    if (!chartContainerRef.current || !chartData.length) return;
+
+    const colors = getChartColors();
+
+    const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height: getChartHeight(),
+      layout: {
+        background: { 
+          type: 'solid', 
+          color: colors.backgroundColor 
+        },
+        textColor: colors.textColor,
+      },
+      crosshair: { 
+        mode: CrosshairMode.Normal,
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { visible: false },
+      },
+      timeScale: {
+        timezone: 'Asia/Kolkata',
+        timeVisible: true,
+        borderColor: colors.borderColor,
+        rightOffset: 5,
+        minBarSpacing: 10,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.1,
+        },
+      },
+      rightPriceScale: {
+        borderColor: colors.borderColor,
+      },
+    });
+
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: colors.upColor,
+      downColor: colors.downColor,
+      borderUpColor: colors.upColor,
+      borderDownColor: colors.downColor,
+      wickUpColor: colors.upColor,
+      wickDownColor: colors.downColor,
+    });
+
+    candlestickSeries.setData(chartData);
+
+    const volumeSeries = chart.addHistogramSeries({
+      color: colors.upColor,
+      priceFormat: {
+        type: 'volume',
+      },
+      priceScaleId: '',
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+      },
+    });
+
+    // Set volume data with correct colors
+    volumeSeries.setData(
+      chartData.map(d => ({
+        time: d.time,
+        value: d.volume,
+        color: d.close >= d.open ? colors.upColor : colors.downColor,
+      }))
+    );
+
+    candlestickSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.1,
+        bottom: 0.2,
+      }
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.7,
+        bottom: 0,
+      },
+    });
+
+    chart.timeScale().fitContent();
+
+    chartInstanceRef.current = chart;
+
+    // Create resize handler
+    const handleResize = () => {
+      chart.applyOptions({
+        width: chartContainerRef.current.clientWidth,
+        height: getChartHeight(),
+      });
+    };
+
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
+  }, [chartData, getChartHeight, isDarkMode, getChartColors]);
+
+  // Update chart colors when theme changes
+  useEffect(() => {
+    if (chartInstanceRef.current) {
+      const colors = getChartColors();
+      chartInstanceRef.current.applyOptions({
+        layout: {
+          background: { 
+            type: 'solid', 
+            color: colors.backgroundColor 
+          },
+          textColor: colors.textColor,
+        },
+      });
+    }
+  }, [isDarkMode, getChartColors]);
+
+  const handlePeriodChange = (newPeriod) => {
+    setSelectedPeriod(newPeriod);
+    const autoInterval = TIME_PERIODS.find((p) => p.label === newPeriod)?.autoInterval;
+    if (autoInterval) {
+      setSelectedInterval(autoInterval);
+    }
+  };
+
+  const handleIntervalChange = (newInterval) => {
+    const autoTimeframe = INTERVALS.find((i) => i.value === newInterval)?.autoTimeframe;
+    setSelectedInterval(newInterval);
+    if (autoTimeframe) {
+      setSelectedPeriod(autoTimeframe);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStockIndex > 0) {
+      setCurrentStockIndex(prev => prev - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStockIndex < stocks.length - 1) {
+      setCurrentStockIndex(prev => prev + 1);
+    }
+  };
+
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredStocks = stocks.filter(stock => 
+    searchTerm && (
+      stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  ).slice(0, 10); // Limit to first 10 results for better performance
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
