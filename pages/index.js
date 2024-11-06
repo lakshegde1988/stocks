@@ -45,7 +45,97 @@ const AnimatedNumber = ({ value, decimals = 2 }) => {
 };
 
 const StockChart = () => {
-  // ... (keep existing state variables and refs)
+  const [indexData] = useState([
+    { label: 'Nifty 50', data: nifty50Data },
+    { label: 'Nifty Next 50', data: niftyNext50Data },
+    { label: 'Midcap 150', data: midcap150Data },
+    { label: 'Smallcap 250', data: smallcap250Data },
+    { label: 'MicroCap 250', data: microCap250Data },
+  ]);
+  
+  const [selectedIndexId, setSelectedIndexId] = useState(0);
+  const [currentStockIndex, setCurrentStockIndex] = useState(0);
+  const [stocks, setStocks] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('1Y');
+  const [selectedInterval, setSelectedInterval] = useState('daily');
+  const [currentStock, setCurrentStock] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const chartContainerRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const searchRef = useRef(null);
+
+  const getChartHeight = useCallback(() => {
+    return window.innerWidth < 768 ? 500 : 600;
+  }, []);
+
+  useEffect(() => {
+    const selectedIndex = indexData[selectedIndexId];
+    const stocksList = selectedIndex.data.map(item => ({
+      symbol: item.Symbol,
+      name: item["Company Name"],
+      industry: item.Industry
+    }));
+    setStocks(stocksList);
+    setCurrentStockIndex(0);
+  }, [selectedIndexId, indexData]);
+
+  const fetchStockData = useCallback(async () => {
+    if (!stocks.length) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const currentStock = stocks[currentStockIndex];
+      const period = TIME_PERIODS.find(p => p.label === selectedPeriod);
+      const interval = INTERVALS.find(i => i.value === selectedInterval);
+
+      const response = await axios.get('/api/stockData', {
+        params: {
+          symbol: currentStock.symbol,
+          range: period.range,
+          interval: interval.interval
+        }
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        setChartData(response.data);
+        setCurrentStock({
+          name: currentStock.name,
+          symbol: currentStock.symbol,
+          industry: currentStock.industry,
+          price: response.data[response.data.length - 1]?.close,
+          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
+          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
+        });
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch stock data');
+    } finally {
+      setLoading(false);
+    }
+  }, [stocks, currentStockIndex, selectedPeriod, selectedInterval]);
+
+  useEffect(() => {
+    fetchStockData();
+  }, [fetchStockData]);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check for dark mode
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
+
+    const handler = (e) => setIsDarkMode(e.matches);
+    darkModeQuery.addEventListener('change', handler);
+    return () => darkModeQuery.removeEventListener('change', handler);
+  }, []);
 
   const getChartColors = useCallback(() => {
     return {
