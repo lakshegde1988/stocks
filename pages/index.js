@@ -18,34 +18,45 @@ import smallcap250Data from '/public/smallcap250.json'
 import microCap250Data from '/public/microcap250.json'
 
 const TIME_PERIODS = [
-  { label: '1D', range: '1d', autoInterval: '5m' },
-  { label: '1W', range: '5d', autoInterval: '15m' },
-  { label: '1M', range: '1mo', autoInterval: '30m' },
-  { label: '3M', range: '3mo', autoInterval: '1d' },
-  { label: '1Y', range: '1y', autoInterval: '1d' },
-  { label: 'MAX', range: 'max', autoInterval: '1wk' },
-] as const
+ 
+  { label: 'D', range: '3mo', autoInterval: '1d' },
+  { label: 'W', range: '5y', autoInterval: '1wk' },
+  { label: 'M', range: 'max', autoInterval: '1mo' },
+] as const;
 
-type TimePeriod = typeof TIME_PERIODS[number]
+type TimePeriod = typeof TIME_PERIODS[number];
 
 interface Stock {
-  symbol: string
-  name: string
-  industry: string
+  symbol: string;
+  name: string;
+  industry: string;
 }
 
 interface CurrentStock extends Stock {
-  price: number
-  change: number
-  todayChange: number
+  price: number;
+  change: number;
+  todayChange: number;
 }
 
 interface ChartData {
-  time: string
-  open: number
-  high: number
-  low: number
-  close: number
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+const chartColors = {
+  background: '#ffffff',
+  text: '#1f2937',
+  grid: '#e5e7eb',
+  border: '#d1d5db',
+  chart1: '#1e4620', // hsl(139, 65%, 20%)
+  chart2: '#24c260', // hsl(140, 74%, 44%)
+  chart3: '#26e837', // hsl(142, 88%, 28%)
+  chart4: '#163d1b', // hsl(137, 55%, 15%)
+  chart5: '#0d1e11', // hsl(141, 40%, 9%)
 }
 
 export default function StockChart() {
@@ -63,7 +74,7 @@ export default function StockChart() {
   const [chartData, setChartData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod['label']>('1Y')
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod['label']>('D')
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -134,35 +145,68 @@ export default function StockChart() {
       width: chartContainerRef.current.clientWidth,
       height: 400,
       layout: {
-        background: { type: 'solid', color: 'var(--background)' },
-        textColor: 'var(--foreground)',
+        background: { type: 'solid', color: chartColors.background },
+        textColor: chartColors.text,
       },
       grid: {
-        vertLines: { color: 'var(--border)' },
-        horzLines: { color: 'var(--border)' },
+        vertLines: { visible:false },
+        horzLines: { visible:false },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
       },
       rightPriceScale: {
-        borderColor: 'var(--border)',
+        borderColor: chartColors.border,
       },
       timeScale: {
-        borderColor: 'var(--border)',
+        borderColor: chartColors.border,
+        rightOffset: 5,
+        minBarSpacing: 5,
       },
     })
 
     const candleSeries = chart.addCandlestickSeries({
-      upColor: 'var(--success)',
-      downColor: 'var(--destructive)',
-      borderUpColor: 'var(--success)',
-      borderDownColor: 'var(--destructive)',
-      wickUpColor: 'var(--success)',
-      wickDownColor: 'var(--destructive)',
+      upColor: chartColors.chart2,
+      downColor: chartColors.chart1,
+      borderUpColor: chartColors.chart3,
+      borderDownColor: chartColors.chart4,
+      wickUpColor: chartColors.chart3,
+      wickDownColor: chartColors.chart4,
     })
 
     candleSeries.setData(chartData)
 
+    const volumeSeries = chart.addHistogramSeries({
+      color: chartColors.chart5,
+      priceFormat: {
+        type: 'volume',
+      },
+      priceScaleId: '',
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0.5,
+      },
+    })
+
+    volumeSeries.setData(
+      chartData.map(d => ({
+        time: d.time,
+        value: d.volume,
+        color: d.close >= d.open ? chartColors.chart2 : chartColors.chart1,
+      }))
+    )
+    candleSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.1,
+        bottom: 0.2,
+      }
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.7,
+        bottom: 0,
+      },
+    });
     chart.timeScale().fitContent()
 
     window.addEventListener('resize', handleResize)
@@ -192,61 +236,71 @@ export default function StockChart() {
   }
 
   return (
-    <div className="flex justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-4xl space-y-4">
-        <header className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
-          <Select
-            value={selectedIndexId.toString()}
-            onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-          >
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Select Index" />
-            </SelectTrigger>
-            <SelectContent>
-              {indexData.map((item, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className={`flex justify-center min-h-screen p-2 sm:p-4 `}>
+      <div className="w-full max-w-4xl space-y-2 sm:space-y-4">
+        <header className="flex justify-between items-center space-x-2">
+  <div className="flex-1 min-w-0">
+    <Select
+      value={selectedIndexId.toString()}
+      onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select Index" />
+      </SelectTrigger>
+      <SelectContent>
+        {indexData.map((item, index) => (
+          <SelectItem key={index} value={index.toString()}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-64 justify-start">
-                <Search className="mr-2 h-4 w-4" />
-                {searchTerm || "Search stocks..."}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0">
-              <Command>
-                <CommandInput placeholder="Search stocks..." value={searchTerm} onValueChange={setSearchTerm} />
-                <CommandEmpty>No stocks found.</CommandEmpty>
-                <CommandGroup>
-                  {stocks
-                    .filter(stock => 
-                      stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .slice(0, 10)
-                    .map((stock) => (
-                      <CommandItem
-                        key={stock.symbol}
-                        onSelect={() => {
-                          const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol)
-                          setCurrentStockIndex(stockIndex)
-                          setSearchTerm('')
-                        }}
-                      >
-                        <span>{stock.symbol}</span>
-                        <span className="ml-2 text-muted-foreground">{stock.name}</span>
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </header>
+  <div className="flex-1 min-w-0">
+  <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <Search className="mr-2 h-4 w-4" />
+                  <span className="truncate">{searchTerm || "Search stocks..."}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search stocks..." value={searchTerm} onValueChange={setSearchTerm} />
+                  <CommandEmpty>No stocks found.</CommandEmpty>
+                  <CommandGroup>
+                    {stocks && stocks.length > 0 ? (
+                      stocks
+                        .filter(stock => 
+                          stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .slice(0, 10)
+                        .map((stock) => (
+                          <CommandItem
+                            key={stock.symbol}
+                            onSelect={() => {
+                              const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol)
+                              setCurrentStockIndex(stockIndex)
+                              setSearchTerm('')
+                            }}
+                          >
+                            <span>{stock.symbol}</span>
+                            <span className="ml-2 text-muted-foreground">{stock.name}</span>
+                          </CommandItem>
+                        ))
+                    ) : (
+                      <CommandItem>Loading stocks...</CommandItem>
+                    )}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+  </div>
+
+  
+</header>
 
         <main>
           {currentStock && (
@@ -259,7 +313,7 @@ export default function StockChart() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold">₹{currentStock.price?.toFixed(2)}</p>
-                    <p className={`text-sm flex items-center justify-end ${currentStock.todayChange >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <p className={`text-sm flex items-center justify-end ${currentStock.todayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {currentStock.todayChange >= 0 ? <ArrowUp className="mr-1 h-4 w-4" /> : <ArrowDown className="mr-1 h-4 w-4" />}
                       {Math.abs(currentStock.todayChange?.toFixed(2))}%
                     </p>
@@ -313,4 +367,4 @@ export default function StockChart() {
       </div>
     </div>
   )
-              }
+}
