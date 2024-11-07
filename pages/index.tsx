@@ -194,12 +194,12 @@ export default function StockChart() {
     candleSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0,
-        bottom: 0.2,
+        bottom: 0.3,
       }
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.6,
+        top: 0.3,
         bottom: 0,
       },
     });
