@@ -179,12 +179,7 @@ export default function StockChart() {
     const volumeSeries = chart.addHistogramSeries({
       color: chartColors.chart5,
       priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0.5,
+        type: 'volume'
       },
     })
 
