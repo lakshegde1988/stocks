@@ -143,7 +143,7 @@ export default function StockChart() {
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 400,
+      height: 500,
       layout: {
         background: { color: chartColors.background },
         textColor: chartColors.text,
@@ -199,7 +199,7 @@ export default function StockChart() {
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.3,
+        top: 0.5,
         bottom: 0,
       },
     });
