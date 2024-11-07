@@ -19,7 +19,7 @@ import microCap250Data from '../public/microcap250.json'
 
 const TIME_PERIODS = [
  
-  { label: 'D', range: '3mo', autoInterval: '1d' },
+  { label: 'D', range: '1y', autoInterval: '1d' },
   { label: 'W', range: '5y', autoInterval: '1wk' },
   { label: 'M', range: 'max', autoInterval: '1mo' },
 ] as const;
@@ -162,7 +162,7 @@ export default function StockChart() {
         borderColor: chartColors.border,
         rightOffset: 5,
         minBarSpacing: 5,
-      },
+      }
     })
 
     const candleSeries = chart.addCandlestickSeries({
@@ -199,7 +199,7 @@ export default function StockChart() {
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.7,
-        bottom: 0,
+        bottom: 0.1,
       },
     });
     chart.timeScale().fitContent()
