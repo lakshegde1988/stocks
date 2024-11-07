@@ -143,7 +143,7 @@ export default function StockChart() {
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 500,
+      height: 400,
       layout: {
         background: { color: chartColors.background },
         textColor: chartColors.text,
