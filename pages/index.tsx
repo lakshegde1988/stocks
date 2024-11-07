@@ -199,7 +199,7 @@ export default function StockChart() {
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.7,
-        bottom: 0.1,
+        bottom: 0,
       },
     });
     chart.timeScale().fitContent()
