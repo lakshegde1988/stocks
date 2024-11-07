@@ -322,7 +322,7 @@ export default function StockChart() {
 
           <Card className="mb-4">
             <CardContent className="p-4">
-              <div ref={chartContainerRef} className="w-full h-[400px]" />
+              <div ref={chartContainerRef} className="w-full h-[500px]" />
             </CardContent>
           </Card>
 
