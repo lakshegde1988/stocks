@@ -11,11 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-import nifty50Data from '@/public/nifty50.json'
-import niftyNext50Data from '@/public/niftynext50.json'
-import midcap150Data from '@/public/midcap150.json'
-import smallcap250Data from '@/public/smallcap250.json'
-import microCap250Data from '@/public/microcap250.json'
+import nifty50Data from '/public/nifty50.json'
+import niftyNext50Data from '/public/niftynext50.json'
+import midcap150Data from '/public/midcap150.json'
+import smallcap250Data from '/public/smallcap250.json'
+import microCap250Data from '/public/microcap250.json'
 
 const TIME_PERIODS = [
  
