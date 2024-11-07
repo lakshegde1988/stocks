@@ -52,11 +52,11 @@ const chartColors = {
   text: '#1f2937',
   grid: '#e5e7eb',
   border: '#d1d5db',
-  chart1: '#26a69a', // hsl(139, 65%, 20%)
-  chart2: '#ef5350', // hsl(140, 74%, 44%)
-  chart3: '#26a69a', // hsl(142, 88%, 28%)
-  chart4: '#ef5350', // hsl(137, 55%, 15%)
-  chart5: '#26a69a', // hsl(141, 40%, 9%)
+  chart1: '#1e4620', // hsl(139, 65%, 20%)
+  chart2: '#24c260', // hsl(140, 74%, 44%)
+  chart3: '#26e837', // hsl(142, 88%, 28%)
+  chart4: '#163d1b', // hsl(137, 55%, 15%)
+  chart5: '#0d1e11', // hsl(141, 40%, 9%)
 }
 
 export default function StockChart() {
