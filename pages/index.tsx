@@ -180,7 +180,7 @@ export default function StockChart() {
       color: chartColors.chart5,
       priceFormat: {
         type: 'volume'
-      },
+      }
     })
 
     volumeSeries.setData(
