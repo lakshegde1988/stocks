@@ -145,7 +145,7 @@ export default function StockChart() {
       width: chartContainerRef.current.clientWidth,
       height: 400,
       layout: {
-        background: { type: 'solid', color: chartColors.background },
+        background: { color: chartColors.background },
         textColor: chartColors.text,
       },
       grid: {
