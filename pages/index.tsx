@@ -165,7 +165,7 @@ export default function StockChart() {
       }
     })
 
-    const candleSeries = chart.addCandlestickSeries({
+    const candleSeries = chart.addBarSeries({
       upColor: chartColors.chart2,
       downColor: chartColors.chart1,
       borderUpColor: chartColors.chart3,
