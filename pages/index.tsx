@@ -310,7 +310,8 @@ export default function StockChart() {
                     <p className="text-2xl font-bold">₹{currentStock.price?.toFixed(2)}</p>
                     <p className={`text-sm flex items-center justify-end ${currentStock.todayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {currentStock.todayChange >= 0 ? <ArrowUp className="mr-1 h-4 w-4" /> : <ArrowDown className="mr-1 h-4 w-4" />}
-                      {Math.abs(currentStock.todayChange?.toFixed(2))}%
+                      {Math.abs(currentStock.todayChange ?? 0).toFixed(2)}%
+
                     </p>
                   </div>
                 </div>
