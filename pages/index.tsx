@@ -193,20 +193,17 @@ export default function StockChart() {
     )
     candleSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0,
-        bottom: 0.3,
+        top: 0.1,
+        bottom: 0.2,
       }
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.5,
+        top: 0.7,
         bottom: 0,
       },
     });
     chart.timeScale().fitContent()
-
-    window.addEventListener('resize', handleResize)
-
     chartRef.current = chart
 
     return () => {
