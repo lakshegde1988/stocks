@@ -54,8 +54,8 @@ const chartColors = {
   border: '#d1d5db',
   chart1: '#359c97', // hsl(139, 65%, 20%)
   chart2: '#e36e4f', // hsl(140, 74%, 44%)
-  chart3: '#26e837', // hsl(142, 88%, 28%)
-  chart4: '#163d1b', // hsl(137, 55%, 15%)
+  chart3: '#359c97', // hsl(142, 88%, 28%)
+  chart4: '#e36e4f', // hsl(137, 55%, 15%)
   chart5: '#0d1e11', // hsl(141, 40%, 9%)
 }
 
