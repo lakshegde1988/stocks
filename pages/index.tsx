@@ -143,7 +143,7 @@ export default function StockChart() {
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 400,
+      height: 500,
       layout: {
         background: { color: chartColors.background },
         textColor: chartColors.text,
@@ -180,7 +180,8 @@ export default function StockChart() {
       color: chartColors.chart5,
       priceFormat: {
         type: 'volume'
-      }
+      },
+      priceScaleId: '',
     })
 
     volumeSeries.setData(
