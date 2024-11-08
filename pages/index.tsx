@@ -390,7 +390,7 @@ export default function StockChart() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="mb-2 sm:mb-0">
                   <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">{currentStock.name}</p>
                 </div>
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
                   <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
