@@ -11,11 +11,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-import nifty50Data from '../public/nifty50.json';
-import niftyNext50Data from '../public/niftynext50.json';
-import midcap150Data from '../public/midcap150.json';
-import smallcap250Data from '../public/smallcap250.json';
-import microCap250Data from '../public/microcap250.json';
+import nifty50Data from '/public/nifty50.json';
+import niftyNext50Data from '/public/niftynext50.json';
+import midcap150Data from '/public/midcap150.json';
+import smallcap250Data from '/public/smallcap250.json';
+import microCap250Data from '/public/microcap250.json';
 
 interface StockData {
   Symbol: string;
@@ -116,7 +116,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 400;
+    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 350 : 400;
   }, []);
 
   useEffect(() => {
@@ -198,9 +198,8 @@ export default function StockChart() {
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: false,
-        rightOffset: 5,
-        minBarSpacing: 5,    
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
@@ -233,18 +232,6 @@ export default function StockChart() {
       color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
     } as HistogramData)));
 
-    candlestickSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.1,
-        bottom: 0.2,
-      }
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.7,
-        bottom: 0,
-      },
-    });
     chart.timeScale().fitContent();
 
     window.addEventListener('resize', handleResize);
@@ -319,6 +306,7 @@ export default function StockChart() {
                     size="sm"
                     onClick={() => handleIntervalChange(interval.value)}
                     className="text-xs px-2 h-7"
+                    title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
                   >
                     {interval.label}
                   </Button>
@@ -336,6 +324,7 @@ export default function StockChart() {
                   setShowDropdown(true);
                 }}
                 className="pr-8 text-xs h-8"
+                aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
@@ -377,21 +366,19 @@ export default function StockChart() {
         {currentStock && (
           <Card className="mb-3">
             <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div>
-                    <h2 className="text-base font-semibold">{currentStock.symbol}</h2>
-                    <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">{currentStock.name}</p>
-                  </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <h2 className="text-base font-semibold">{currentStock.symbol}</h2>
+                  <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
+                </div>
+                <div className="flex items-center justify-between sm:flex-col sm:items-end">
+                  <div className="text-base font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                   <Badge 
                     variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className="text-xs"
+                    className="text-xs ml-2 sm:ml-0 sm:mt-1"
                   >
                     {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                   </Badge>
-                </div>
-                <div className="text-right">
-                  <div className="text-base font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                 </div>
               </div>
             </CardContent>
@@ -400,9 +387,19 @@ export default function StockChart() {
 
         <Card className="mb-3">
           <CardContent className="p-0">
-          
-              <div ref={chartContainerRef} className="h-[300px] sm:h-[450px] md:h-[400px]" />
-           
+            {loading ? (
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Loading stock data...</p>
+              </div>
+            ) : error ? (
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+                <div className="text-destructive text-sm mb-2">{error}</div>
+                <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
+              </div>
+            ) : (
+              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
+            )}
           </CardContent>
         </Card>
       </main>
@@ -415,6 +412,7 @@ export default function StockChart() {
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
               className="h-8 px-2 text-xs"
+              aria-label="Previous stock"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Prev</span>
@@ -431,6 +429,7 @@ export default function StockChart() {
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
               className="h-8 px-2 text-xs"
+              aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4 ml-1" />
