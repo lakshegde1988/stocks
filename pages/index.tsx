@@ -353,12 +353,12 @@ export default function StockChart() {
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] text-xs bg-background">
+              <SelectTrigger className="w-[140px] text-sm bg-background">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
                 {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-xs">
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
                     {item.label}
                   </SelectItem>
                 ))}
