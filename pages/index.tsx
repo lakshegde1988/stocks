@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, CrosshairMode } from 'lightweight-charts';
+import { createChart, CrosshairMode, IChartApi } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
@@ -11,11 +11,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-import nifty50Data from '../public/nifty50.json';
-import niftyNext50Data from '../public/niftynext50.json';
-import midcap150Data from '../public/midcap150.json';
-import smallcap250Data from '../public/smallcap250.json';
-import microCap250Data from '../public/microcap250.json';
+import nifty50Data from '/public/nifty50.json';
+import niftyNext50Data from '/public/niftynext50.json';
+import midcap150Data from '/public/midcap150.json';
+import smallcap250Data from '/public/smallcap250.json';
+import microCap250Data from '/public/microcap250.json';
+
+interface StockData {
+  Symbol: string;
+  "Company Name": string;
+  Industry: string;
+}
+
+interface Stock {
+  symbol: string;
+  name: string;
+  industry: string;
+}
+
+interface IndexData {
+  label: string;
+  data: StockData[];
+}
+
+interface CurrentStock extends Stock {
+  price?: number;
+  change?: number;
+  todayChange?: number;
+}
+
+interface ChartDataPoint {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
 const INTERVALS = [
   { label: 'D', value: 'daily', interval: '1d', range: '1y' },
@@ -65,7 +97,7 @@ const darkModeColors: Record<string, string> = {
 };
 
 export default function StockChart() {
-  const [indexData] = useState([
+  const [indexData] = useState<IndexData[]>([
     { label: 'Nifty 50', data: nifty50Data },
     { label: 'Nifty Next 50', data: niftyNext50Data },
     { label: 'Midcap 150', data: midcap150Data },
@@ -75,18 +107,18 @@ export default function StockChart() {
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
   const [currentStockIndex, setCurrentStockIndex] = useState(0);
-  const [stocks, setStocks] = useState([]);
-  const [chartData, setChartData] = useState([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedInterval, setSelectedInterval] = useState('daily');
-  const [currentStock, setCurrentStock] = useState(null);
+  const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   
-  const chartContainerRef = useRef(null);
-  const chartInstanceRef = useRef(null);
-  const searchRef = useRef(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartInstanceRef = useRef<IChartApi | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
     return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 350 : 400;
@@ -113,7 +145,9 @@ export default function StockChart() {
       const currentStock = stocks[currentStockIndex];
       const interval = INTERVALS.find(i => i.value === selectedInterval);
 
-      const response = await axios.get('/api/stockData', {
+      if (!interval) throw new Error('Invalid interval');
+
+      const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
         params: {
           symbol: currentStock.symbol,
           range: interval.range,
@@ -124,16 +158,14 @@ export default function StockChart() {
       if (response.data && Array.isArray(response.data)) {
         setChartData(response.data);
         setCurrentStock({
-          name: currentStock.name,
-          symbol: currentStock.symbol,
-          industry: currentStock.industry,
+          ...currentStock,
           price: response.data[response.data.length - 1]?.close,
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
         });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch stock data');
+      setError((err as Error).message || 'Failed to fetch stock data');
     } finally {
       setLoading(false);
     }
@@ -149,7 +181,7 @@ export default function StockChart() {
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     setIsDarkMode(darkModeQuery.matches);
 
-    const handler = (e) => setIsDarkMode(e.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
     darkModeQuery.addEventListener('change', handler);
     return () => darkModeQuery.removeEventListener('change', handler);
   }, []);
@@ -234,7 +266,7 @@ export default function StockChart() {
 
     const handleResize = () => {
       chart.applyOptions({
-        width: chartContainerRef.current.clientWidth,
+        width: chartContainerRef.current!.clientWidth,
         height: getChartHeight(),
       });
     };
@@ -262,7 +294,7 @@ export default function StockChart() {
     }
   }, [isDarkMode, getChartColors]);
 
-  const handleIntervalChange = (newInterval) => {
+  const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
   };
 
@@ -279,8 +311,8 @@ export default function StockChart() {
   };
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     }
@@ -391,10 +423,10 @@ export default function StockChart() {
                     <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">{currentStock.name}</p>
                   </div>
                   <Badge 
-                    variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "success" : "destructive"}
                     className="text-xs"
                   >
-                    {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
+                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                   </Badge>
                 </div>
                 <div className="text-right">
