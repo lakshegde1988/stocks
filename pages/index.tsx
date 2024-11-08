@@ -371,7 +371,7 @@ export default function StockChart() {
                     <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">{currentStock.name}</p>
                   </div>
                   <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "success" : "destructive"}
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                     className="text-xs"
                   >
                     {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
