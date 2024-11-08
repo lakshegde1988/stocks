@@ -74,7 +74,7 @@ const getCssVariableColor = (variableName: string): string => {
     '--background': '#ffffff',
     '--foreground': '#000000',
     '--border': '#e5e7eb',
-    '--success': '#22c55e',
+    '--success': '#089981',
     '--destructive': '#ef4444',
   };
   
