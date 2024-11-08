@@ -23,7 +23,7 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
-const getCssVariableColor = (variableName) => {
+const getCssVariableColor = (variableName: string): string => {
   const root = document.documentElement;
   const computedStyle = getComputedStyle(root);
   const cssVariable = computedStyle.getPropertyValue(variableName).trim();
@@ -32,11 +32,12 @@ const getCssVariableColor = (variableName) => {
     return cssVariable;
   }
   
-  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
-    return `hsl(${cssVariable})`;
+  const cssValues = cssVariable.split(',').map(v => v.trim());
+  if (cssValues.length === 3 && cssValues.every(v => !isNaN(Number(v)))) {
+    return `hsl(${cssValues.join(',')})`;
   }
   
-  const fallbacks = {
+  const fallbacks: Record<string, string> = {
     '--background': '#ffffff',
     '--foreground': '#000000',
     '--border': '#e5e7eb',
@@ -47,7 +48,7 @@ const getCssVariableColor = (variableName) => {
   return fallbacks[variableName] || '#000000';
 };
 
-const chartColors = {
+const chartColors: Record<string, string> = {
   upColor: '#22c55e',
   downColor: '#ef4444',
   backgroundColor: '#ffffff',
@@ -55,7 +56,7 @@ const chartColors = {
   borderColor: '#e5e7eb',
 };
 
-const darkModeColors = {
+const darkModeColors: Record<string, string> = {
   upColor: '#22c55e',
   downColor: '#ef4444',
   backgroundColor: '#1a1a1a',
@@ -88,7 +89,7 @@ export default function StockChart() {
   const searchRef = useRef(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 350 : 400;
+    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 350 : 400;
   }, []);
 
   useEffect(() => {
