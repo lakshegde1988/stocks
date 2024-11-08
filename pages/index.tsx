@@ -198,8 +198,9 @@ export default function StockChart() {
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: true,
-        secondsVisible: false,
+        timeVisible: false,
+        rightOffset: 5,
+        minBarSpacing: 5,    
       },
     });
 
