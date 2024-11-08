@@ -200,7 +200,6 @@ export default function StockChart() {
       height: getChartHeight(),
       layout: {
         background: { 
-          type: 'solid', 
           color: colors.backgroundColor 
         },
         textColor: colors.textColor,
