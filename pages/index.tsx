@@ -232,6 +232,18 @@ export default function StockChart() {
       color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
     } as HistogramData)));
 
+    candlestickSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.1,
+        bottom: 0.2,
+      }
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.7,
+        bottom: 0,
+      },
+    });
     chart.timeScale().fitContent();
 
     window.addEventListener('resize', handleResize);
