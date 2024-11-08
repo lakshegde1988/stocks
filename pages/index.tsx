@@ -369,7 +369,7 @@ export default function StockChart() {
               {INTERVALS.map((interval) => (
                 <Button
                   key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  variant={selectedInterval === interval.value ? "success" : "secondary"}
                   size="sm"
                   onClick={() => handleIntervalChange(interval.value)}
                   className="text-xs px-2 h-7"
@@ -395,7 +395,7 @@ export default function StockChart() {
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
                   <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                   <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "success" : "destructive"}
                     className="text-sm ml-2 sm:ml-0 sm:mt-1"
                   >
                     {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
