@@ -116,7 +116,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 350 : 400;
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 350 : 400;
   }, []);
 
   useEffect(() => {
