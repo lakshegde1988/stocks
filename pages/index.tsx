@@ -1,63 +1,67 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { createChart, CrosshairMode, IChartApi } from 'lightweight-charts'
-import axios from 'axios'
-import { ChevronLeft, ChevronRight, Search, ArrowUp, ArrowDown } from 'lucide-react'
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createChart, CrosshairMode } from 'lightweight-charts';
+import axios from 'axios';
+import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
-import nifty50Data from '../public/nifty50.json'
-import niftyNext50Data from '../public/niftynext50.json'
-import midcap150Data from '../public/midcap150.json'
-import smallcap250Data from '../public/smallcap250.json'
-import microCap250Data from '../public/microcap250.json'
+import nifty50Data from '/public/nifty50.json';
+import niftyNext50Data from '/public/niftynext50.json';
+import midcap150Data from '/public/midcap150.json';
+import smallcap250Data from '/public/smallcap250.json';
+import microCap250Data from '/public/microcap250.json';
 
-const TIME_PERIODS = [
- 
-  { label: 'D', range: '1y', autoInterval: '1d' },
-  { label: 'W', range: '5y', autoInterval: '1wk' },
-  { label: 'M', range: 'max', autoInterval: '1mo' },
-] as const;
+const INTERVALS = [
+  { label: 'D', value: 'daily', interval: '1d', range: '1y' },
+  { label: 'W', value: 'weekly', interval: '1wk', range: '5y' },
+  { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
+];
 
-type TimePeriod = typeof TIME_PERIODS[number];
-
-interface Stock {
-  symbol: string;
-  name: string;
-  industry: string;
-}
-
-interface CurrentStock extends Stock {
-  price: number;
-  change: number;
-  todayChange: number;
-}
-
-interface ChartData {
-  time: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
+const getCssVariableColor = (variableName) => {
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
+  
+  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
+    return cssVariable;
+  }
+  
+  if (cssVariable.includes(',') || !isNaN(cssVariable)) {
+    return `hsl(${cssVariable})`;
+  }
+  
+  const fallbacks = {
+    '--background': '#ffffff',
+    '--foreground': '#000000',
+    '--border': '#e5e7eb',
+    '--success': '#22c55e',
+    '--destructive': '#ef4444',
+  };
+  
+  return fallbacks[variableName] || '#000000';
+};
 
 const chartColors = {
-  background: '#ffffff',
-  text: '#1f2937',
-  grid: '#e5e7eb',
-  border: '#d1d5db',
-  chart1: '#1e4620', // hsl(139, 65%, 20%)
-  chart2: '#24c260', // hsl(140, 74%, 44%)
-  chart3: '#26e837', // hsl(142, 88%, 28%)
-  chart4: '#163d1b', // hsl(137, 55%, 15%)
-  chart5: '#0d1e11', // hsl(141, 40%, 9%)
-}
+  upColor: '#22c55e',
+  downColor: '#ef4444',
+  backgroundColor: '#ffffff',
+  textColor: '#000000',
+  borderColor: '#e5e7eb',
+};
+
+const darkModeColors = {
+  upColor: '#22c55e',
+  downColor: '#ef4444',
+  backgroundColor: '#1a1a1a',
+  textColor: '#ffffff',
+  borderColor: '#2d2d2d',
+};
 
 export default function StockChart() {
   const [indexData] = useState([
@@ -66,299 +70,388 @@ export default function StockChart() {
     { label: 'Midcap 150', data: midcap150Data },
     { label: 'Smallcap 250', data: smallcap250Data },
     { label: 'MicroCap 250', data: microCap250Data },
-  ])
+  ]);
   
-  const [selectedIndexId, setSelectedIndexId] = useState(0)
-  const [currentStockIndex, setCurrentStockIndex] = useState(0)
-  const [stocks, setStocks] = useState<Stock[]>([])
-  const [chartData, setChartData] = useState<ChartData[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod['label']>('D')
-  const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedIndexId, setSelectedIndexId] = useState(0);
+  const [currentStockIndex, setCurrentStockIndex] = useState(0);
+  const [stocks, setStocks] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedInterval, setSelectedInterval] = useState('daily');
+  const [currentStock, setCurrentStock] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  const chartContainerRef = useRef(null);
+  const chartInstanceRef = useRef(null);
+  const searchRef = useRef(null);
 
-  const chartContainerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
+  const getChartHeight = useCallback(() => {
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 350 : 400;
+  }, []);
 
   useEffect(() => {
-    const selectedIndex = indexData[selectedIndexId]
+    const selectedIndex = indexData[selectedIndexId];
     const stocksList = selectedIndex.data.map(item => ({
       symbol: item.Symbol,
       name: item["Company Name"],
       industry: item.Industry
-    }))
-    setStocks(stocksList)
-    setCurrentStockIndex(0)
-  }, [selectedIndexId, indexData])
+    }));
+    setStocks(stocksList);
+    setCurrentStockIndex(0);
+  }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
-    if (!stocks.length) return
+    if (!stocks.length) return;
     
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     
     try {
-      const currentStock = stocks[currentStockIndex]
-      const period = TIME_PERIODS.find(p => p.label === selectedPeriod)
+      const currentStock = stocks[currentStockIndex];
+      const interval = INTERVALS.find(i => i.value === selectedInterval);
 
-      if (!period) throw new Error('Invalid period selected')
-
-      const response = await axios.get<ChartData[]>('/api/stockData', {
+      const response = await axios.get('/api/stockData', {
         params: {
           symbol: currentStock.symbol,
-          range: period.range,
-          interval: period.autoInterval
+          range: interval.range,
+          interval: interval.interval
         }
-      })
+      });
 
       if (response.data && Array.isArray(response.data)) {
-        setChartData(response.data)
+        setChartData(response.data);
         setCurrentStock({
-          ...currentStock,
+          name: currentStock.name,
+          symbol: currentStock.symbol,
+          industry: currentStock.industry,
           price: response.data[response.data.length - 1]?.close,
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        })
+        });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch stock data')
+      setError(err.response?.data?.message || 'Failed to fetch stock data');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [stocks, currentStockIndex, selectedPeriod])
+  }, [stocks, currentStockIndex, selectedInterval]);
 
   useEffect(() => {
-    fetchStockData()
-  }, [fetchStockData])
+    fetchStockData();
+  }, [fetchStockData]);
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    if (!chartContainerRef.current || !chartData.length) return
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
 
-    const handleResize = () => {
-      if (chartRef.current && chartContainerRef.current) {
-        chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
-      }
-    }
+    const handler = (e) => setIsDarkMode(e.matches);
+    darkModeQuery.addEventListener('change', handler);
+    return () => darkModeQuery.removeEventListener('change', handler);
+  }, []);
+
+  const getChartColors = useCallback(() => {
+    return isDarkMode ? darkModeColors : chartColors;
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (!chartContainerRef.current || !chartData.length) return;
+
+    const colors = getChartColors();
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
-      height: 500,
+      height: getChartHeight(),
       layout: {
-        background: { color: chartColors.background },
-        textColor: chartColors.text,
+        background: { 
+          type: 'solid', 
+          color: colors.backgroundColor 
+        },
+        textColor: colors.textColor,
       },
-      grid: {
-        vertLines: { visible:false },
-        horzLines: { visible:false },
-      },
-      crosshair: {
+      crosshair: { 
         mode: CrosshairMode.Normal,
       },
-      rightPriceScale: {
-        borderColor: chartColors.border,
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { visible: false },
       },
       timeScale: {
-        borderColor: chartColors.border,
+        timezone: 'Asia/Kolkata',
+        timeVisible: true,
+        borderColor: colors.borderColor,
         rightOffset: 5,
         minBarSpacing: 5,
-      }
-    })
+        fixLeftEdge: true,
+      },
+      rightPriceScale: {
+        borderColor: colors.borderColor,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.2,
+        },
+      },
+    });
 
-    const candleSeries = chart.addCandlestickSeries({
-      upColor: chartColors.chart2,
-      downColor: chartColors.chart1,
-      borderUpColor: chartColors.chart3,
-      borderDownColor: chartColors.chart4,
-      wickUpColor: chartColors.chart3,
-      wickDownColor: chartColors.chart4,
-    })
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: colors.upColor,
+      downColor: colors.downColor,
+      borderUpColor: colors.upColor,
+      borderDownColor: colors.downColor,
+      wickUpColor: colors.upColor,
+      wickDownColor: colors.downColor,
+    });
 
-    candleSeries.setData(chartData)
+    candlestickSeries.setData(chartData);
 
     const volumeSeries = chart.addHistogramSeries({
-      color: chartColors.chart5,
+      color: colors.upColor,
       priceFormat: {
-        type: 'volume'
+        type: 'volume',
       },
       priceScaleId: '',
-    })
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+      },
+    });
 
     volumeSeries.setData(
       chartData.map(d => ({
         time: d.time,
         value: d.volume,
-        color: d.close >= d.open ? chartColors.chart2 : chartColors.chart1,
+        color: d.close >= d.open ? colors.upColor : colors.downColor,
       }))
-    )
-    candleSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.1,
-        bottom: 0.2,
-      }
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.7,
-        bottom: 0,
-      },
-    });
-    chart.timeScale().fitContent()
-    chartRef.current = chart
+    );
+
+    chart.timeScale().fitContent();
+
+    chartInstanceRef.current = chart;
+
+    const handleResize = () => {
+      chart.applyOptions({
+        width: chartContainerRef.current.clientWidth,
+        height: getChartHeight(),
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize)
-      chart.remove()
-    }
-  }, [chartData])
+      window.removeEventListener('resize', handleResize);
+      chart.remove();
+    };
+  }, [chartData, getChartHeight, isDarkMode, getChartColors]);
 
-  const handlePeriodChange = (newPeriod: TimePeriod['label']) => {
-    setSelectedPeriod(newPeriod)
-  }
+  useEffect(() => {
+    if (chartInstanceRef.current) {
+      const colors = getChartColors();
+      chartInstanceRef.current.applyOptions({
+        layout: {
+          background: { 
+            type: 'solid', 
+            color: colors.backgroundColor 
+          },
+          textColor: colors.textColor,
+        },
+      });
+    }
+  }, [isDarkMode, getChartColors]);
+
+  const handleIntervalChange = (newInterval) => {
+    setSelectedInterval(newInterval);
+  };
 
   const handlePrevious = () => {
     if (currentStockIndex > 0) {
-      setCurrentStockIndex(prev => prev - 1)
+      setCurrentStockIndex(prev => prev - 1);
     }
-  }
+  };
 
   const handleNext = () => {
     if (currentStockIndex < stocks.length - 1) {
-      setCurrentStockIndex(prev => prev + 1)
+      setCurrentStockIndex(prev => prev + 1);
     }
-  }
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredStocks = stocks.filter(stock => 
+    searchTerm && (
+      stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  ).slice(0, 10);
 
   return (
-    <div className={`flex justify-center min-h-screen p-2 sm:p-4 `}>
-      <div className="w-full max-w-4xl space-y-2 sm:space-y-4">
-        <header className="flex justify-between items-center space-x-2">
-  <div className="flex-1 min-w-0">
-    <Select
-      value={selectedIndexId.toString()}
-      onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select Index" />
-      </SelectTrigger>
-      <SelectContent>
-        {indexData.map((item, index) => (
-          <SelectItem key={index} value={index.toString()}>
-            {item.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-2 py-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Select 
+                value={selectedIndexId.toString()} 
+                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+              >
+                <SelectTrigger className="w-[140px] text-xs bg-background">
+                  <SelectValue placeholder="Select Index" />
+                </SelectTrigger>
+                <SelectContent>
+                  {indexData.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()} className="text-xs">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-  <div className="flex-1 min-w-0">
-  <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <Search className="mr-2 h-4 w-4" />
-                  <span className="truncate">{searchTerm || "Search stocks..."}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search stocks..." value={searchTerm} onValueChange={setSearchTerm} />
-                  <CommandEmpty>No stocks found.</CommandEmpty>
-                  <CommandGroup>
-                    {stocks && stocks.length > 0 ? (
-                      stocks
-                        .filter(stock => 
-                          stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                        .slice(0, 10)
-                        .map((stock) => (
-                          <CommandItem
-                            key={stock.symbol}
-                            onSelect={() => {
-                              const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol)
-                              setCurrentStockIndex(stockIndex)
-                              setSearchTerm('')
-                            }}
-                          >
-                            <span>{stock.symbol}</span>
-                            <span className="ml-2 text-muted-foreground">{stock.name}</span>
-                          </CommandItem>
-                        ))
-                    ) : (
-                      <CommandItem>Loading stocks...</CommandItem>
-                    )}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-  </div>
+              <div className="flex space-x-1">
+                {INTERVALS.map((interval) => (
+                  <Button
+                    key={interval.value}
+                    variant={selectedInterval === interval.value ? "default" : "secondary"}
+                    size="sm"
+                    onClick={() => handleIntervalChange(interval.value)}
+                    className="text-xs px-2 h-7"
+                  >
+                    {interval.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
 
-  
-</header>
+            <div className="relative w-full" ref={searchRef}>
+              <Input
+                type="text"
+                placeholder="Search stocks..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowDropdown(true);
+                }}
+                className="pr-8 text-xs h-8"
+              />
+              {searchTerm ? (
+                <X 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setShowDropdown(false);
+                  }}
+                />
+              ) : (
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              )}
 
-        <main>
-          {currentStock && (
-            <Card className="mb-4">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-2xl font-bold">{currentStock.symbol}</h2>
-                    <p className="text-sm text-muted-foreground">{currentStock.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold">₹{currentStock.price?.toFixed(2)}</p>
-                    <p className={`text-sm flex items-center justify-end ${currentStock.todayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {currentStock.todayChange >= 0 ? <ArrowUp className="mr-1 h-4 w-4" /> : <ArrowDown className="mr-1 h-4 w-4" />}
-                      {Math.abs(currentStock.todayChange ?? 0).toFixed(2)}%
-
-                    </p>
-                  </div>
+              {showDropdown && searchTerm && (
+                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                  {filteredStocks.map((stock) => (
+                    <button
+                      key={stock.symbol}
+                      onClick={() => {
+                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                        setCurrentStockIndex(stockIndex);
+                        setSearchTerm('');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="font-medium text-xs">{stock.symbol}</div>
+                      <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+                    </button>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div ref={chartContainerRef} className="w-full h-[500px]" />
+      <main className="flex-1 container mx-auto px-2 py-2">
+        {currentStock && (
+          <Card className="mb-3">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div>
+                    <h2 className="text-base font-semibold">{currentStock.symbol}</h2>
+                    <p className="text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-[200px]">{currentStock.name}</p>
+                  </div>
+                  <Badge 
+                    variant={currentStock.todayChange >= 0 ? "success" : "destructive"}
+                    className="text-xs"
+                  >
+                    {currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange?.toFixed(2))}%
+                  </Badge>
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
+        )}
 
-          <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
-            {TIME_PERIODS.map((period) => (
-              <Button
-                key={period.label}
-                variant={selectedPeriod === period.label ? "default" : "outline"}
-                onClick={() => handlePeriodChange(period.label)}
-                className="px-3 py-1 text-sm"
-              >
-                {period.label}
-              </Button>
-            ))}
+        <Card className="mb-3">
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : error ? (
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex items-center justify-center">
+                <div className="text-destructive text-sm">{error}</div>
+              </div>
+            ) : (
+              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
+            )}
+          </CardContent>
+        </Card>
+      </main>
+
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
+        <div className="container mx-auto px-2">
+          <div className="flex items-center justify-between h-12">
+            <Button
+              variant="ghost"
+              onClick={handlePrevious}
+              disabled={currentStockIndex === 0}
+              className="h-8 px-2 text-xs"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
+            
+            <span className="text-xs">
+              <span className="font-medium">{currentStockIndex + 1}</span>
+              <span className="text-muted-foreground mx-1">/</span>
+              <span className="text-muted-foreground">{stocks.length}</span>
+            </span>
+            
+            <Button
+              variant="ghost"
+              onClick={handleNext}
+              disabled={currentStockIndex === stocks.length - 1}
+              className="h-8 px-2 text-xs"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
-        </main>
-
-        <footer className="flex justify-between items-center">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStockIndex === 0}
-            className="text-sm"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {currentStockIndex + 1} / {stocks.length}
-          </span>
-          <Button
-            variant="outline"
-            onClick={handleNext}
-            disabled={currentStockIndex === stocks.length - 1}
-            className="text-sm"
-          >
-            Next <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </div>
-  )
+  );
 }
