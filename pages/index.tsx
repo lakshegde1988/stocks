@@ -292,43 +292,12 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-2 py-2">
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Select 
-                value={selectedIndexId.toString()} 
-                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-              >
-                <SelectTrigger className="w-[140px] text-xs bg-background">
-                  <SelectValue placeholder="Select Index" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs">
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <div className="flex space-x-1">
-                {INTERVALS.map((interval) => (
-                  <Button
-                    key={interval.value}
-                    variant={selectedInterval === interval.value ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => handleIntervalChange(interval.value)}
-                    className="text-xs px-2 h-7"
-                    title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
-                  >
-                    {interval.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative w-full" ref={searchRef}>
+      {/* New top navbar */}
+      <nav className="sticky top-0 z-20 bg-background border-b">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold">dotcharts</h1>
+            <div className="relative w-full max-w-sm" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -337,7 +306,7 @@ export default function StockChart() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-xs h-8"
+                className="pr-8 text-sm h-9"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
@@ -374,22 +343,60 @@ export default function StockChart() {
             </div>
           </div>
         </div>
+      </nav>
+
+      {/* Existing header with index selector and interval buttons */}
+      <header className="sticky top-[57px] z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-[140px] text-xs bg-background">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent>
+                {indexData.map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-xs">
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex space-x-1">
+              {INTERVALS.map((interval) => (
+                <Button
+                  key={interval.value}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => handleIntervalChange(interval.value)}
+                  className="text-xs px-2 h-7"
+                  title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
+                >
+                  {interval.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-2 py-2">
+      <main className="flex-1 container mx-auto px-4 py-4">
         {currentStock && (
-          <Card className="mb-3">
-            <CardContent className="p-3">
+          <Card className="mb-4">
+            <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="mb-2 sm:mb-0">
-                  <h2 className="text-base font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
+                  <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
                 </div>
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
-                  <div className="text-base font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                  <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                   <Badge 
                     variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className="text-xs ml-2 sm:ml-0 sm:mt-1"
+                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
                   >
                     {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                   </Badge>
@@ -399,7 +406,7 @@ export default function StockChart() {
           </Card>
         )}
 
-        <Card className="mb-3">
+        <Card className="mb-4">
           <CardContent className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
@@ -419,7 +426,7 @@ export default function StockChart() {
       </main>
 
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
-        <div className="container mx-auto px-2">
+        <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-12">
             <Button
               variant="ghost"
