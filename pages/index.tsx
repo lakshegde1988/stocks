@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, CrosshairMode, IChartApi } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
@@ -56,6 +56,7 @@ const INTERVALS = [
 ];
 
 const getCssVariableColor = (variableName: string): string => {
+  if (typeof window === 'undefined') return '#000000';
   const root = document.documentElement;
   const computedStyle = getComputedStyle(root);
   const cssVariable = computedStyle.getPropertyValue(variableName).trim();
@@ -80,20 +81,12 @@ const getCssVariableColor = (variableName: string): string => {
   return fallbacks[variableName] || '#000000';
 };
 
-const chartColors: Record<string, string> = {
-  upColor: '#22c55e',
-  downColor: '#ef4444',
-  backgroundColor: '#ffffff',
-  textColor: '#000000',
-  borderColor: '#e5e7eb',
-};
-
-const darkModeColors: Record<string, string> = {
-  upColor: '#22c55e',
-  downColor: '#ef4444',
-  backgroundColor: '#1a1a1a',
-  textColor: '#ffffff',
-  borderColor: '#2d2d2d',
+const chartColors = {
+  upColor: getCssVariableColor('--success'),
+  downColor: getCssVariableColor('--destructive'),
+  backgroundColor: getCssVariableColor('--background'),
+  textColor: getCssVariableColor('--foreground'),
+  borderColor: getCssVariableColor('--border'),
 };
 
 export default function StockChart() {
@@ -118,6 +111,8 @@ export default function StockChart() {
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
+  const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
@@ -175,100 +170,69 @@ export default function StockChart() {
     fetchStockData();
   }, [fetchStockData]);
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
-
-    const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
-    darkModeQuery.addEventListener('change', handler);
-    return () => darkModeQuery.removeEventListener('change', handler);
-  }, []);
-
-  const getChartColors = useCallback(() => {
-    return isDarkMode ? darkModeColors : chartColors;
-  }, [isDarkMode]);
-
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
 
-    const colors = getChartColors();
+    const handleResize = () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.applyOptions({
+          width: chartContainerRef.current!.clientWidth,
+          height: getChartHeight(),
+        });
+      }
+    };
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: getChartHeight(),
       layout: {
-        background: { 
-          color: colors.backgroundColor 
-        },
-        textColor: colors.textColor,
-      },
-      crosshair: { 
-        mode: CrosshairMode.Normal,
+        background: { type: ColorType.Solid, color: chartColors.backgroundColor },
+        textColor: chartColors.textColor,
       },
       grid: {
         vertLines: { visible: false },
         horzLines: { visible: false },
       },
-      timeScale: {
-        timezone: 'Asia/Kolkata',
-        timeVisible: true,
-        borderColor: colors.borderColor,
-        rightOffset: 5,
-        minBarSpacing: 5,
-        fixLeftEdge: true,
-      },
       rightPriceScale: {
-        borderColor: colors.borderColor,
-        scaleMargins: {
-          top: 0.1,
-          bottom: 0.2,
-        },
+        borderColor: chartColors.borderColor,
+      },
+      timeScale: {
+        borderColor: chartColors.borderColor,
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
+
+    chartInstanceRef.current = chart;
 
     const candlestickSeries = chart.addCandlestickSeries({
-      upColor: colors.upColor,
-      downColor: colors.downColor,
-      borderUpColor: colors.upColor,
-      borderDownColor: colors.downColor,
-      wickUpColor: colors.upColor,
-      wickDownColor: colors.downColor,
+      upColor: chartColors.upColor,
+      downColor: chartColors.downColor,
+      borderVisible: false,
+      wickUpColor: chartColors.upColor,
+      wickDownColor: chartColors.downColor,
     });
 
-    candlestickSeries.setData(chartData);
+    candlestickSeriesRef.current = candlestickSeries;
 
     const volumeSeries = chart.addHistogramSeries({
-      color: colors.upColor,
+      color: chartColors.upColor,
       priceFormat: {
         type: 'volume',
       },
       priceScaleId: '',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
     });
 
-    volumeSeries.setData(
-      chartData.map(d => ({
-        time: d.time,
-        value: d.volume,
-        color: d.close >= d.open ? colors.upColor : colors.downColor,
-      }))
-    );
+    volumeSeriesRef.current = volumeSeries;
+
+    candlestickSeries.setData(chartData as CandlestickData[]);
+    volumeSeries.setData(chartData.map(d => ({
+      time: d.time,
+      value: d.volume,
+      color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
+    } as HistogramData)));
 
     chart.timeScale().fitContent();
-
-    chartInstanceRef.current = chart;
-
-    const handleResize = () => {
-      chart.applyOptions({
-        width: chartContainerRef.current!.clientWidth,
-        height: getChartHeight(),
-      });
-    };
 
     window.addEventListener('resize', handleResize);
 
@@ -276,22 +240,7 @@ export default function StockChart() {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight, isDarkMode, getChartColors]);
-
-  useEffect(() => {
-    if (chartInstanceRef.current) {
-      const colors = getChartColors();
-      chartInstanceRef.current.applyOptions({
-        layout: {
-          background: { 
-            type: 'solid', 
-            color: colors.backgroundColor 
-          },
-          textColor: colors.textColor,
-        },
-      });
-    }
-  }, [isDarkMode, getChartColors]);
+  }, [chartData, getChartHeight]);
 
   const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
