@@ -114,7 +114,8 @@ export default function StockChart() {
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
-
+const lastCandle = response.data[response.data.length - 1];
+const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100;
   const getChartHeight = useCallback(() => {
     return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 600;
   }, []);
@@ -395,11 +396,11 @@ export default function StockChart() {
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
                   <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                   <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
-                  >
-                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                  </Badge>
+  variant={currentStock.lastCandleChange && currentStock.lastCandleChange >= 0 ? "default" : "destructive"}
+  className="text-sm ml-2 sm:ml-0 sm:mt-1"
+>
+  {currentStock.lastCandleChange && currentStock.lastCandleChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.lastCandleChange || 0).toFixed(2)}%
+</Badge>
                 </div>
               </div>
             </CardContent>
