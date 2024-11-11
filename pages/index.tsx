@@ -114,8 +114,7 @@ export default function StockChart() {
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
-const lastCandle = response.data[response.data.length - 1];
-const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100;
+
   const getChartHeight = useCallback(() => {
     return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 750;
   }, []);
@@ -132,6 +131,7 @@ const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open
   }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
+    
     if (!stocks.length) return;
     
     setLoading(true);
