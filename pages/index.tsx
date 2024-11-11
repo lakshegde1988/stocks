@@ -201,8 +201,8 @@ const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open
       timeScale: {
         borderColor: chartColors.borderColor,
         timeVisible: false,
-        rightOffset: 4,
-        minBarSpacing: 6,
+        rightOffset: 5,
+        minBarSpacing: 2,
       },
     });
 
