@@ -117,7 +117,7 @@ export default function StockChart() {
 const lastCandle = response.data[response.data.length - 1];
 const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100;
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 600;
+    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 750;
   }, []);
 
   useEffect(() => {
