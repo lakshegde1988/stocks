@@ -168,15 +168,19 @@ export default function StockChart() {
     };
 
     const fetchAndSetupChart = async () => {
-      const response = await fetchStockData();
-      if (response?.data && Array.isArray(response.data)) {
-        setChartData(response.data);
-        setCurrentStock({
-          ...currentStock,
-          price: response.data[response.data.length - 1]?.close,
-          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
-          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        });
+    const response = await fetchStockData();
+    if (response?.data && Array.isArray(response.data)) {
+      setChartData(response.data);
+  
+      const currentStockData = stocks[currentStockIndex];
+      setCurrentStock({
+        symbol: currentStockData.symbol,
+        name: currentStockData.name,
+        industry: currentStockData.industry,
+        price: response.data[response.data.length - 1]?.close,
+        change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
+        todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
+      });
 
         const lastCandle = response.data[response.data.length - 1];
         const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100;
