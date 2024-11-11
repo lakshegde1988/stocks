@@ -115,6 +115,10 @@ export default function StockChart() {
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  const getChartHeight = useCallback(() => {
+    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 600;
+  }, []);
+
   useEffect(() => {
     const selectedIndex = indexData[selectedIndexId];
     const stocksList = selectedIndex.data.map(item => ({
@@ -127,7 +131,7 @@ export default function StockChart() {
   }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
-    if (!stocks.length) return null;
+    if (!stocks.length) return;
     
     setLoading(true);
     setError(null);
@@ -146,17 +150,28 @@ export default function StockChart() {
         }
       });
 
-      return response;
+      if (response.data && Array.isArray(response.data)) {
+        setChartData(response.data);
+        setCurrentStock({
+          ...currentStock,
+          price: response.data[response.data.length - 1]?.close,
+          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
+          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
+        });
+      }
     } catch (err) {
       setError((err as Error).message || 'Failed to fetch stock data');
-      return null;
     } finally {
       setLoading(false);
     }
   }, [stocks, currentStockIndex, selectedInterval]);
 
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    fetchStockData();
+  }, [fetchStockData]);
+
+  useEffect(() => {
+    if (!chartContainerRef.current || !chartData.length) return;
 
     const handleResize = () => {
       if (chartInstanceRef.current) {
@@ -167,111 +182,79 @@ export default function StockChart() {
       }
     };
 
-    const fetchAndSetupChart = async () => {
-  const response = await fetchStockData();
-  if (response?.data && Array.isArray(response.data)) {
-    setChartData(response.data);
-
-    const currentStockData = stocks[currentStockIndex];
-    setCurrentStock({
-      symbol: currentStockData.symbol,
-      name: currentStockData.name,
-      industry: currentStockData.industry,
-      price: response.data[response.data.length - 1]?.close,
-      change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
-      todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
+    const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height: getChartHeight(),
+      layout: {
+        background: { type: ColorType.Solid, color: chartColors.backgroundColor },
+        textColor: chartColors.textColor,
+        
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { visible: false },
+      },
+      rightPriceScale: {
+        borderColor: chartColors.borderColor,
+      },
+      timeScale: {
+        borderColor: chartColors.borderColor,
+        timeVisible: false,
+        rightOffset: 4,
+        minBarSpacing: 6,
+      },
     });
 
-    if (chartContainerRef.current) {
-      const chart = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.clientWidth,
-        height: getChartHeight(),
-        layout: {
-          background: { type: ColorType.Solid, color: chartColors.backgroundColor },
-          textColor: chartColors.textColor,
-        },
+    chartInstanceRef.current = chart;
 
-        const lastCandle = response.data[response.data.length - 1];
-        const lastCandleChange = ((lastCandle.close - lastCandle.open) / lastCandle.open) * 100;
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: chartColors.upColor,
+      downColor: chartColors.downColor,
+      borderVisible: false,
+      wickUpColor: chartColors.upColor,
+      wickDownColor: chartColors.downColor,
+    });
 
-        const chart = createChart(chartContainerRef.current, {
-          width: chartContainerRef.current.clientWidth,
-          height: getChartHeight(),
-          layout: {
-            background: { type: ColorType.Solid, color: chartColors.backgroundColor },
-            textColor: chartColors.textColor,
-          },
-          grid: {
-            vertLines: { visible: false },
-            horzLines: { visible: false },
-          },
-          rightPriceScale: {
-            borderColor: chartColors.borderColor,
-          },
-          timeScale: {
-            borderColor: chartColors.borderColor,
-            timeVisible: false,
-            rightOffset: 5,
-            minBarSpacing: 2,
-          },
-        });
+    candlestickSeriesRef.current = candlestickSeries;
 
-        chartInstanceRef.current = chart;
+    const volumeSeries = chart.addHistogramSeries({
+      color: chartColors.upColor,
+      priceFormat: {
+        type: 'volume',
+      },
+      priceScaleId: '',
+    });
 
-        const candlestickSeries = chart.addCandlestickSeries({
-          upColor: chartColors.upColor,
-          downColor: chartColors.downColor,
-          borderVisible: false,
-          wickUpColor: chartColors.upColor,
-          wickDownColor: chartColors.downColor,
-        });
+    volumeSeriesRef.current = volumeSeries;
 
-        candlestickSeriesRef.current = candlestickSeries;
+    candlestickSeries.setData(chartData as CandlestickData[]);
+    volumeSeries.setData(chartData.map(d => ({
+      time: d.time,
+      value: d.volume,
+      color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
+    } as HistogramData)));
 
-        const volumeSeries = chart.addHistogramSeries({
-          color: chartColors.upColor,
-          priceFormat: {
-            type: 'volume',
-          },
-          priceScaleId: '',
-        });
-
-        volumeSeriesRef.current = volumeSeries;
-
-        candlestickSeries.setData(response.data as CandlestickData[]);
-        volumeSeries.setData(response.data.map(d => ({
-          time: d.time,
-          value: d.volume,
-          color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
-        } as HistogramData)));
-
-        candlestickSeries.priceScale().applyOptions({
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.2,
-          }
-        });
-        volumeSeries.priceScale().applyOptions({
-          scaleMargins: {
-            top: 0.7,
-            bottom: 0,
-          },
-        });
-        chart.timeScale().fitContent();
+    candlestickSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.1,
+        bottom: 0.2,
       }
-    };
-
-    fetchAndSetupChart();
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: {
+        top: 0.7,
+        bottom: 0,
+      },
+    });
+    chart.timeScale().fitContent();
 
     window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.remove();
-      }
+      chart.remove();
     };
-  }, [chartContainerRef, getChartHeight, fetchStockData, currentStock]);
+  }, [chartData, getChartHeight]);
 
   const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
@@ -306,10 +289,6 @@ export default function StockChart() {
       stock.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
   ).slice(0, 10);
-
-  const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 750;
-  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -416,11 +395,11 @@ export default function StockChart() {
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
                   <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                   <Badge 
-  variant={currentStock.lastCandleChange && currentStock.lastCandleChange >= 0 ? "default" : "destructive"}
-  className="text-sm ml-2 sm:ml-0 sm:mt-1"
->
-  {currentStock.lastCandleChange && currentStock.lastCandleChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.lastCandleChange || 0).toFixed(2)}%
-</Badge>
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
+                  >
+                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                  </Badge>
                 </div>
               </div>
             </CardContent>
