@@ -116,7 +116,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 600;
+    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 350 : 750;
   }, []);
 
   useEffect(() => {
@@ -200,8 +200,8 @@ export default function StockChart() {
       timeScale: {
         borderColor: chartColors.borderColor,
         timeVisible: false,
-        rightOffset: 4,
-        minBarSpacing: 6,
+        rightOffset: 5,
+        minBarSpacing: 3,
       },
     });
 
