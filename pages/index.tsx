@@ -71,8 +71,8 @@ const getCssVariableColor = (variableName: string): string => {
   }
   
   const fallbacks: Record<string, string> = {
-    '--background': '#020617',
-    '--foreground': '#f8fafc',
+    '--background': '#f0fdf4',
+    '--foreground': '#052e16',
     '--border': '#1e293b',
     '--success': '#10b981',
     '--destructive': '#ef4444',
