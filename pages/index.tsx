@@ -408,17 +408,17 @@ export default function StockChart() {
         <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-0">
             {loading ? (
-              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+              <div className="h-[600px] sm:h-[550px] md:h-[600px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
             ) : error ? (
-              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+              <div className="h-[600px] sm:h-[550px] md:h-[600px] flex flex-col items-center justify-center">
                 <div className="text-destructive text-sm mb-2">{error}</div>
                 <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
+              <div ref={chartContainerRef} className="h-[600px] sm:h-[550px] md:h-[600px]" />
             )}
           </CardContent>
         </Card>
