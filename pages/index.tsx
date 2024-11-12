@@ -384,32 +384,27 @@ export default function StockChart() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-4">
-        {currentStock && (
-         <Card className="mb-4">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="mb-2 sm:mb-0">
-                <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">
-                  {currentStock.name}
-                </p>
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                <Badge 
-                  variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-sm mt-1"
-                >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                </Badge>
+        <div className="bg-card text-card-foreground rounded-lg shadow-sm overflow-hidden">
+          {currentStock && (
+            <div className="p-4 border-b">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
+                </div>
+                <div className="flex items-center justify-between sm:flex-col sm:items-end">
+                  <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                  <Badge 
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
+                  >
+                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                  </Badge>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        )}
-
-        <Card className="mb-4">
-          <CardContent className="p-0">
+          )}
+          <div className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -423,8 +418,8 @@ export default function StockChart() {
             ) : (
               <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
 
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
