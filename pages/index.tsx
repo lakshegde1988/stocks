@@ -194,11 +194,7 @@ export default function StockChart() {
         vertLines: { visible: false },
         horzLines: { visible: false },
       },
-      rightPriceScale: {
-        borderColor: chartColors.borderColor,
-      },
       timeScale: {
-        borderColor: chartColors.borderColor,
         timeVisible: false,
         rightOffset: 5,
         minBarSpacing: 3,
@@ -210,9 +206,6 @@ export default function StockChart() {
     const candlestickSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
-      borderVisible: false,
-      wickUpColor: chartColors.upColor,
-      wickDownColor: chartColors.downColor,
     });
 
     candlestickSeriesRef.current = candlestickSeries;
