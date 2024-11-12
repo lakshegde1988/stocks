@@ -73,8 +73,8 @@ const getCssVariableColor = (variableName: string): string => {
   const fallbacks: Record<string, string> = {
     '--background': '#020617',
     '--foreground': '#f8fafc',
-    '--border': '#e5e7eb',
-    '--success': '#089981',
+    '--border': '#1e293b',
+    '--success': '#10b981',
     '--destructive': '#ef4444',
   };
   
@@ -291,10 +291,10 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-20 bg-background border-b border-border">
+      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-foreground">dotcharts</h1>
+            <h1 className="text-xl font-bold">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
@@ -320,7 +320,7 @@ export default function StockChart() {
               )}
 
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -343,7 +343,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
@@ -382,7 +382,7 @@ export default function StockChart() {
 
       <main className="flex-1 container mx-auto px-4 py-4">
         {currentStock && (
-         <Card className="mb-4">
+         <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-4">
             <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1">
@@ -405,7 +405,7 @@ export default function StockChart() {
         </Card>
         )}
 
-        <Card className="mb-4">
+        <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
@@ -424,7 +424,7 @@ export default function StockChart() {
         </Card>
       </main>
 
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border">
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-12">
             <Button
