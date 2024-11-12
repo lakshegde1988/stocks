@@ -207,7 +207,7 @@ export default function StockChart() {
 
     chartInstanceRef.current = chart;
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
       borderVisible: false,
