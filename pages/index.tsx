@@ -71,7 +71,7 @@ const getCssVariableColor = (variableName: string): string => {
   }
   
   const fallbacks: Record<string, string> = {
-    '--background': '#f0fdf4',
+    '--background': '#cbd5e1',
     '--foreground': '#052e16',
     '--border': '#1e293b',
     '--success': '#10b981',
@@ -431,7 +431,7 @@ export default function StockChart() {
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-xs"
+              className="h-8 px-2 text-sm"
               aria-label="Previous stock"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -448,7 +448,7 @@ export default function StockChart() {
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-xs"
+              className="h-8 px-2 text-sm"
               aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
