@@ -289,12 +289,12 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
-  return (
+ return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5">
+      <nav className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">dotcharts</h1>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
@@ -304,12 +304,12 @@ export default function StockChart() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-sm h-9"
+                className="pr-8 text-sm h-9 bg-slate-800/50 border-slate-700 focus:border-blue-500 transition-colors"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
@@ -320,7 +320,7 @@ export default function StockChart() {
               )}
 
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 animate-in fade-in-50 slide-in-from-top-5">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -330,7 +330,7 @@ export default function StockChart() {
                         setSearchTerm('');
                         setShowDropdown(false);
                       }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                      className="w-full px-3 py-1.5 text-left hover:bg-slate-700/50 transition-colors"
                     >
                       <div className="font-medium text-xs">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
@@ -350,7 +350,7 @@ export default function StockChart() {
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] text-sm bg-background">
+              <SelectTrigger className="w-[140px] text-sm bg-slate-800/50 border-slate-700">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
@@ -369,7 +369,7 @@ export default function StockChart() {
                   variant={selectedInterval === interval.value ? "default" : "secondary"}
                   size="sm"
                   onClick={() => handleIntervalChange(interval.value)}
-                  className="text-xs px-2 h-7"
+                  className="text-xs px-2 h-7 bg-slate-800 hover:bg-slate-700 border-slate-700"
                   title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
                 >
                   {interval.label}
@@ -381,8 +381,8 @@ export default function StockChart() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-4">
-        {currentStock && (
-         <Card className="mb-4 border border-slate-200/5">
+        {currentStock ? (
+         <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
@@ -392,24 +392,44 @@ export default function StockChart() {
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="text-lg font-semibold">{currentStock.price?.toFixed(2)}</div>
+                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-xs mt-1"
+                  className="text-sm mt-1 flex items-center gap-1"
                 >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                 </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
+        ) : (
+          <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-6 w-24 mb-2" />
+                  <Skeleton className="h-4 w-48" />
+                </div>
+                <div className="flex flex-col items-end ml-4">
+                  <Skeleton className="h-6 w-16 mb-2" />
+                  <Skeleton className="h-5 w-12" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        <Card className="mb-4 border border-slate-200/5">
+        <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
           <CardContent className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
             ) : error ? (
@@ -431,7 +451,7 @@ export default function StockChart() {
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-sm"
+              className="h-8 px-2 text-xs hover:bg-slate-800/50"
               aria-label="Previous stock"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -448,7 +468,7 @@ export default function StockChart() {
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-sm"
+              className="h-8 px-2 text-xs hover:bg-slate-800/50"
               aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
