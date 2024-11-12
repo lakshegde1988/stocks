@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -289,16 +289,13 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
- return (
+  return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="top-0 z-20 bg-background border-b border-slate-200/5 shadow-sm">
+      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold flex items-center">
-              <TrendingUp className="mr-2 text-primary" />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">dotcharts</span>
-            </h1>
-            <div className="relative w-64" ref={searchRef}>
+            <h1 className="text-xl font-bold">dotcharts</h1>
+            <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -307,19 +304,19 @@ export default function StockChart() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-sm h-10 bg-muted/50 border-none focus-visible:ring-primary"
+                className="pr-8 text-sm h-9"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
                   }}
                 />
               ) : (
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               )}
 
               {showDropdown && searchTerm && (
@@ -333,9 +330,9 @@ export default function StockChart() {
                         setSearchTerm('');
                         setShowDropdown(false);
                       }}
-                      className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
                     >
-                      <div className="font-medium text-sm">{stock.symbol}</div>
+                      <div className="font-medium text-xs">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
                     </button>
                   ))}
@@ -346,14 +343,14 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
-        <div className="container mx-auto px-4 py-3">
+      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
+        <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[180px] text-sm bg-muted/50 border-none focus:ring-primary">
+              <SelectTrigger className="w-[140px] text-sm bg-background">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
@@ -365,14 +362,14 @@ export default function StockChart() {
               </SelectContent>
             </Select>
 
-            <div className="flex space-x-1 bg-muted/50 rounded-md p-1">
+            <div className="flex space-x-1">
               {INTERVALS.map((interval) => (
                 <Button
                   key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "ghost"}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
                   size="sm"
                   onClick={() => handleIntervalChange(interval.value)}
-                  className="text-xs px-3 h-8"
+                  className="text-xs px-2 h-7"
                   title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
                 >
                   {interval.label}
@@ -383,22 +380,22 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="sticky flex-1 container mx-auto px-4 py-2 shadow-sm">
+      <main className="flex-1 container mx-auto px-4 py-4">
         {currentStock && (
-         <Card className="mb-4 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
+         <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold truncate">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate mt-1">
+                <h2 className="text-lg font-semibold truncate">{currentStock.symbol}</h2>
+                <p className="text-sm text-muted-foreground truncate">
                   {currentStock.name}
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="text-lg font-bold">{currentStock.price?.toFixed(2)}</div>
+                <div className="text-lg font-semibold">{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-sm mt-1"
+                  className="text-xs mt-1"
                 >
                   {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                 </Badge>
@@ -408,54 +405,54 @@ export default function StockChart() {
         </Card>
         )}
 
-        <Card className="mb-4 border border-slate-200/5 shadow-md">
+        <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-0">
             {loading ? (
-              <div className="h-[400px] sm:h-[450px] md:h-[500px] flex flex-col items-center justify-center bg-muted/10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
             ) : error ? (
-              <div className="h-[400px] sm:h-[450px] md:h-[500px] flex flex-col items-center justify-center bg-muted/10">
-                <div className="text-destructive text-lg mb-2">{error}</div>
-                <p className="text-sm text-muted-foreground">Please try again later or select a different stock.</p>
+              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
+                <div className="text-destructive text-sm mb-2">{error}</div>
+                <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] md:h-[500px]" />
+              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
             )}
           </CardContent>
         </Card>
       </main>
 
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5 shadow-md">
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-12">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-10 px-4 text-sm"
+              className="h-8 px-2 text-sm"
               aria-label="Previous stock"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Previous</span>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Prev</span>
             </Button>
             
-            <span className="text-sm font-medium">
-              <span className="text-primary">{currentStockIndex + 1}</span>
-              <span className="text-muted-foreground mx-2">/</span>
+            <span className="text-xs">
+              <span className="font-medium">{currentStockIndex + 1}</span>
+              <span className="text-muted-foreground mx-1">/</span>
               <span className="text-muted-foreground">{stocks.length}</span>
             </span>
             
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-10 px-4 text-sm"
+              className="h-8 px-2 text-sm"
               aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 ml-2" />
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
