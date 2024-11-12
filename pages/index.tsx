@@ -82,11 +82,11 @@ const getCssVariableColor = (variableName: string): string => {
 };
 
 const chartColors = {
-  upColor: 'var(--chart-up)',
-  downColor: 'var(--chart-down)',
-  backgroundColor: 'var(--background)',
-  textColor: 'var(--foreground)',
-  borderColor: 'var(--border)',
+  upColor: getCssVariableColor('--success'),
+  downColor: getCssVariableColor('--destructive'),
+  backgroundColor: getCssVariableColor('--background'),
+  textColor: getCssVariableColor('--foreground'),
+  borderColor: getCssVariableColor('--border'),
 };
 
 export default function StockChart() {
@@ -188,7 +188,6 @@ export default function StockChart() {
       layout: {
         background: { type: ColorType.Solid, color: chartColors.backgroundColor },
         textColor: chartColors.textColor,
-        
       },
       grid: {
         vertLines: { visible: false },
@@ -292,13 +291,12 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* New top navbar */}
       <nav className="sticky top-0 z-20 bg-background border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
-            <Input
+              <Input
                 type="text"
                 placeholder="Search stocks..."
                 value={searchTerm}
@@ -345,7 +343,6 @@ export default function StockChart() {
         </div>
       </nav>
 
-      {/* Existing header with index selector and interval buttons */}
       <header className="sticky top-[57px] z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
