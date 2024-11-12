@@ -392,7 +392,7 @@ export default function StockChart() {
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                <div className="text-lg font-semibold">{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                   className="text-xs mt-1"
