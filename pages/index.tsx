@@ -383,7 +383,7 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main className="flex-1 container mx-auto px-4 py-4">
         {currentStock && (
          <Card className="mb-4 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardContent className="p-4">
@@ -392,9 +392,6 @@ export default function StockChart() {
                 <h2 className="text-lg font-bold truncate">{currentStock.symbol}</h2>
                 <p className="text-sm text-muted-foreground truncate mt-1">
                   {currentStock.name}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {currentStock.industry}
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
@@ -411,11 +408,11 @@ export default function StockChart() {
         </Card>
         )}
 
-        <Card className="mb-6 border border-slate-200/5 shadow-md overflow-hidden">
+        <Card className="mb-4 border border-slate-200/5 shadow-md">
           <CardContent className="p-0">
             {loading ? (
               <div className="h-[400px] sm:h-[450px] md:h-[500px] flex flex-col items-center justify-center bg-muted/10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
             ) : error ? (
