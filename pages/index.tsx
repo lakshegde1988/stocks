@@ -343,7 +343,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
+      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
@@ -408,7 +408,7 @@ export default function StockChart() {
         <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-0">
             {loading ? (
-              <div className="h-[600px] sm:h-[550px] md:h-[600px] flex flex-col items-center justify-center">
+              <div className="h-[500px] sm:h-[500px] md:h-[500px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
@@ -418,7 +418,7 @@ export default function StockChart() {
                 <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[600px] sm:h-[550px] md:h-[600px]" />
+              <div ref={chartContainerRef} className="h-[500px] sm:h-[500px] md:h-[500px]" />
             )}
           </CardContent>
         </Card>
