@@ -82,11 +82,11 @@ const getCssVariableColor = (variableName: string): string => {
 };
 
 const chartColors = {
-  upColor: getCssVariableColor('--success'),
-  downColor: getCssVariableColor('--destructive'),
-  backgroundColor: getCssVariableColor('--background'),
-  textColor: getCssVariableColor('--foreground'),
-  borderColor: getCssVariableColor('--border'),
+  upColor: 'var(--chart-up)',
+  downColor: 'var(--chart-down)',
+  backgroundColor: 'var(--background)',
+  textColor: 'var(--foreground)',
+  borderColor: 'var(--border)',
 };
 
 export default function StockChart() {
