@@ -290,8 +290,8 @@ export default function StockChart() {
   ).slice(0, 10);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5">
+    <div className="flex flex-col max-w-screen-md	min-h-screen bg-background text-foreground">
+      <nav className="top-0 z-20 bg-background border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">dotcharts</h1>
