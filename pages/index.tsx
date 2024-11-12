@@ -290,7 +290,7 @@ export default function StockChart() {
   ).slice(0, 10);
 
   return (
-    <div className="flex flex-col	min-h-screen bg-background text-foreground">
+    <div className="flex flex-col	max-w-screen max-w-6xl mx-auto w-full flex justify-between items-center min-h-screen bg-background text-foreground">
       <nav className="top-0 z-20 bg-background border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
