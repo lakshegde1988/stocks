@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, TrendingUp } from 'lucide-react';
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
@@ -291,11 +291,14 @@ export default function StockChart() {
 
  return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
+      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent">dotcharts</h1>
-            <div className="relative w-48" ref={searchRef}>
+            <h1 className="text-2xl font-bold flex items-center">
+              <TrendingUp className="mr-2 text-primary" />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">dotcharts</span>
+            </h1>
+            <div className="relative w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -304,23 +307,23 @@ export default function StockChart() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-sm h-9 bg-slate-800/50 border-slate-700 focus:border-blue-500 transition-colors"
+                className="pr-8 text-sm h-10 bg-muted/50 border-none focus-visible:ring-primary"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer transition-colors" 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
                   }}
                 />
               ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               )}
 
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 animate-in fade-in-50 slide-in-from-top-5">
+                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -330,9 +333,9 @@ export default function StockChart() {
                         setSearchTerm('');
                         setShowDropdown(false);
                       }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-slate-700/50 transition-colors"
+                      className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors"
                     >
-                      <div className="font-medium text-xs">{stock.symbol}</div>
+                      <div className="font-medium text-sm">{stock.symbol}</div>
                       <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
                     </button>
                   ))}
@@ -343,14 +346,14 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
-        <div className="container mx-auto px-4 py-2">
+      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5 shadow-sm">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] text-sm bg-slate-800/50 border-slate-700">
+              <SelectTrigger className="w-[180px] text-sm bg-muted/50 border-none focus:ring-primary">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
@@ -362,14 +365,14 @@ export default function StockChart() {
               </SelectContent>
             </Select>
 
-            <div className="flex space-x-1">
+            <div className="flex space-x-1 bg-muted/50 rounded-md p-1">
               {INTERVALS.map((interval) => (
                 <Button
                   key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  variant={selectedInterval === interval.value ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleIntervalChange(interval.value)}
-                  className="text-xs px-2 h-7 bg-slate-800 hover:bg-slate-700 border-slate-700"
+                  className="text-xs px-3 h-8"
                   title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
                 >
                   {interval.label}
@@ -380,99 +383,82 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-4">
-        {currentStock ? (
-         <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
-          <CardContent className="p-4">
+      <main className="flex-1 container mx-auto px-4 py-6">
+        {currentStock && (
+         <Card className="mb-6 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-semibold truncate">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate">
+                <h2 className="text-2xl font-bold truncate">{currentStock.symbol}</h2>
+                <p className="text-sm text-muted-foreground truncate mt-1">
                   {currentStock.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {currentStock.industry}
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                <div className="text-3xl font-bold">{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-sm mt-1 flex items-center gap-1"
+                  className="text-sm mt-2 px-2 py-0.5"
                 >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                 </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
-        ) : (
-          <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <Skeleton className="h-6 w-24 mb-2" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-                <div className="flex flex-col items-end ml-4">
-                  <Skeleton className="h-6 w-16 mb-2" />
-                  <Skeleton className="h-5 w-12" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         )}
 
-        <Card className="mb-4 border border-slate-200/5 bg-slate-800/50 overflow-hidden">
+        <Card className="mb-6 border border-slate-200/5 shadow-md overflow-hidden">
           <CardContent className="p-0">
             {loading ? (
-              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+              <div className="h-[400px] sm:h-[450px] md:h-[500px] flex flex-col items-center justify-center bg-muted/10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                 <p className="text-sm text-muted-foreground">Loading stock data...</p>
               </div>
             ) : error ? (
-              <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
-                <div className="text-destructive text-sm mb-2">{error}</div>
-                <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
+              <div className="h-[400px] sm:h-[450px] md:h-[500px] flex flex-col items-center justify-center bg-muted/10">
+                <div className="text-destructive text-lg mb-2">{error}</div>
+                <p className="text-sm text-muted-foreground">Please try again later or select a different stock.</p>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
+              <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] md:h-[500px]" />
             )}
           </CardContent>
         </Card>
       </main>
 
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5 shadow-md">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-16">
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-xs hover:bg-slate-800/50"
+              className="h-10 px-4 text-sm"
               aria-label="Previous stock"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Prev</span>
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             
-            <span className="text-xs">
-              <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-muted-foreground mx-1">/</span>
+            <span className="text-sm font-medium">
+              <span className="text-primary">{currentStockIndex + 1}</span>
+              <span className="text-muted-foreground mx-2">/</span>
               <span className="text-muted-foreground">{stocks.length}</span>
             </span>
             
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-xs hover:bg-slate-800/50"
+              className="h-10 px-4 text-sm"
               aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 ml-1" />
+              <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
         </div>
