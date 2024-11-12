@@ -291,7 +291,7 @@ export default function StockChart() {
 
  return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-20 bg-background border-b border-slate-200/5 shadow-sm">
+      <nav className="top-0 z-20 bg-background border-b border-slate-200/5 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold flex items-center">
@@ -346,7 +346,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5 shadow-sm">
+      <header className="top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Select 
@@ -383,7 +383,7 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-4">
+      <main className="sticky flex-1 container mx-auto px-4 py-4">
         {currentStock && (
          <Card className="mb-4 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
           <CardContent className="p-4">
@@ -398,7 +398,7 @@ export default function StockChart() {
                 <div className="text-lg font-bold">{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-sm mt-2 px-2 py-0.5"
+                  className="text-sm mt-1"
                 >
                   {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                 </Badge>
