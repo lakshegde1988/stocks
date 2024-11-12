@@ -384,13 +384,13 @@ export default function StockChart() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-4">
-        <div className="bg-card text-card-foreground rounded-lg shadow-sm overflow-hidden">
-          {currentStock && (
-            <div className="p-4 border-b">
+        {currentStock && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="mb-2 sm:mb-0">
                   <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">{currentStock.name}</p>
+                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[160px]">{currentStock.name}</p>
                 </div>
                 <div className="flex items-center justify-between sm:flex-col sm:items-end">
                   <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
@@ -402,9 +402,12 @@ export default function StockChart() {
                   </Badge>
                 </div>
               </div>
-            </div>
-          )}
-          <div className="p-0">
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="mb-4">
+          <CardContent className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -416,10 +419,10 @@ export default function StockChart() {
                 <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
               </div>
             ) : (
-              <div ref={chartContainerRef} className="h-[700px] sm:h-[500px] md:h-[400px]" />
+              <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
 
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
