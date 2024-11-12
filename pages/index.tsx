@@ -343,7 +343,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
+      <header className="top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
@@ -380,7 +380,7 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="flex-1 sticky container mx-auto px-4 py-4">
+      <main className="sticky flex-1 sticky container mx-auto px-4 py-4">
         {currentStock && (
          <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-4">
