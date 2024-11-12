@@ -431,14 +431,14 @@ export default function StockChart() {
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-sm"
+              className="h-8 px-2 text-lg"
               aria-label="Previous stock"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Prev</span>
             </Button>
             
-            <span className="text-xs">
+            <span className="text-lg">
               <span className="font-medium">{currentStockIndex + 1}</span>
               <span className="text-muted-foreground mx-1">/</span>
               <span className="text-muted-foreground">{stocks.length}</span>
@@ -448,7 +448,7 @@ export default function StockChart() {
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-sm"
+              className="h-8 px-2 text-lg"
               aria-label="Next stock"
             >
               <span className="hidden sm:inline">Next</span>
