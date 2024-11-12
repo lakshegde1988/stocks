@@ -387,14 +387,23 @@ export default function StockChart() {
         {currentStock && (
          <Card className="mb-4">
           <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="mb-2 sm:mb-0">
+            <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between sm:block">
                 <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">
-                  {currentStock.name}
-                </p>
+                <div className="flex flex-col items-end sm:hidden">
+                  <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                  <Badge 
+                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                    className="text-sm mt-1"
+                  >
+                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                  </Badge>
+                </div>
               </div>
-              <div className="flex flex-col items-end">
+              <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">
+                {currentStock.name}
+              </p>
+              <div className="hidden sm:flex sm:flex-col sm:items-end">
                 <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
