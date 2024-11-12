@@ -384,14 +384,14 @@ export default function StockChart() {
         {currentStock && (
          <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-4">
-            <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-full">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-semibold truncate">{currentStock.symbol}</h2>
+                <p className="text-sm text-muted-foreground truncate">
                   {currentStock.name}
                 </p>
               </div>
-              <div className="flex flex-col items-end justify-start">
+              <div className="flex flex-col items-end ml-4">
                 <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
