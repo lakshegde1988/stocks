@@ -290,11 +290,11 @@ export default function StockChart() {
   ).slice(0, 10);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <nav className="sticky top-0 z-20 bg-backgroun">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <nav className="sticky top-0 z-20 bg-background border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-slate-50">dotcharts</h1>
+            <h1 className="text-xl font-bold text-foreground">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
@@ -320,7 +320,7 @@ export default function StockChart() {
               )}
 
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                <div className="absolute w-full mt-1 py-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -343,7 +343,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-[57px] z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
@@ -424,7 +424,7 @@ export default function StockChart() {
         </Card>
       </main>
 
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-12">
             <Button
