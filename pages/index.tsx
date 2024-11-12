@@ -188,7 +188,6 @@ export default function StockChart() {
       layout: {
         background: { type: ColorType.Solid, color: chartColors.backgroundColor },
         textColor: chartColors.textColor,
-        
       },
       grid: {
         vertLines: { visible: false },
@@ -292,13 +291,12 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* New top navbar */}
       <nav className="sticky top-0 z-20 bg-background border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
-            <Input
+              <Input
                 type="text"
                 placeholder="Search stocks..."
                 value={searchTerm}
@@ -345,7 +343,6 @@ export default function StockChart() {
         </div>
       </nav>
 
-      {/* Existing header with index selector and interval buttons */}
       <header className="sticky top-[57px] z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
@@ -384,27 +381,32 @@ export default function StockChart() {
       </header>
 
       <main className="flex-1 container mx-auto px-4 py-4">
-        <div className="bg-card text-card-foreground rounded-lg shadow-sm overflow-hidden">
-          {currentStock && (
-            <div className="p-4 border-b">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div className="mb-2 sm:mb-0">
-                  <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">{currentStock.name}</p>
-                </div>
-                <div className="flex items-center justify-between sm:flex-col sm:items-end">
-                  <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                  <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
-                  >
-                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                  </Badge>
-                </div>
+        {currentStock && (
+         <Card className="mb-4">
+          <CardContent className="p-4">
+            <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
+                <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-full">
+                  {currentStock.name}
+                </p>
+              </div>
+              <div className="flex flex-col items-end justify-start">
+                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                <Badge 
+                  variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                  className="text-sm mt-1"
+                >
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                </Badge>
               </div>
             </div>
-          )}
-          <div className="p-0">
+          </CardContent>
+        </Card>
+        )}
+
+        <Card className="mb-4">
+          <CardContent className="p-0">
             {loading ? (
               <div className="h-[300px] sm:h-[350px] md:h-[400px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -418,8 +420,8 @@ export default function StockChart() {
             ) : (
               <div ref={chartContainerRef} className="h-[300px] sm:h-[350px] md:h-[400px]" />
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
 
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t">
