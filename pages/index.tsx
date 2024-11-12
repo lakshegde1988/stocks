@@ -380,7 +380,7 @@ export default function StockChart() {
         </div>
       </header>
 
-      <main className="sticky flex-1 sticky container mx-auto px-4 py-4">
+      <main className="sticky flex-1 container mx-auto px-4 py-4">
         {currentStock && (
          <Card className="mb-4 border border-slate-200/5">
           <CardContent className="p-4">
