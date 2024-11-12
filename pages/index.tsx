@@ -385,25 +385,27 @@ export default function StockChart() {
 
       <main className="flex-1 container mx-auto px-4 py-4">
         {currentStock && (
-          <Card className="mb-4">
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div className="mb-2 sm:mb-0">
-                  <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[160px]">{currentStock.name}</p>
-                </div>
-                <div className="flex items-center justify-between sm:flex-col sm:items-end">
-                  <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
-                  <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className="text-sm ml-2 sm:ml-0 sm:mt-1"
-                  >
-                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                  </Badge>
-                </div>
+         <Card className="mb-4">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-2 sm:mb-0">
+                <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
+                <p className="text-sm text-muted-foreground truncate max-w-[200px] sm:max-w-[200px]">
+                  {currentStock.name}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex flex-col items-end">
+                <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
+                <Badge 
+                  variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                  className="text-sm mt-1"
+                >
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         )}
 
         <Card className="mb-4">
