@@ -395,7 +395,7 @@ export default function StockChart() {
                 <div className="text-lg font-semibold">₹{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-sm mt-1"
+                  className="text-xs mt-1"
                 >
                   {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                 </Badge>
