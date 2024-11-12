@@ -385,11 +385,11 @@ export default function StockChart() {
 
       <main className="flex-1 container mx-auto px-4 py-6">
         {currentStock && (
-         <Card className="mb-6 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
+         <Card className="mb-4 border border-slate-200/5 shadow-md hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold truncate">{currentStock.symbol}</h2>
+                <h2 className="text-lg font-bold truncate">{currentStock.symbol}</h2>
                 <p className="text-sm text-muted-foreground truncate mt-1">
                   {currentStock.name}
                 </p>
@@ -398,7 +398,7 @@ export default function StockChart() {
                 </p>
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="text-3xl font-bold">{currentStock.price?.toFixed(2)}</div>
+                <div className="text-lg font-bold">{currentStock.price?.toFixed(2)}</div>
                 <Badge 
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                   className="text-sm mt-2 px-2 py-0.5"
