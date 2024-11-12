@@ -291,10 +291,10 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <nav className="sticky top-0 z-20 bg-background border-b">
+      <nav className="sticky top-0 z-20 bg-backgroun">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">dotcharts</h1>
+            <h1 className="text-xl font-bold text-slate-50">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
@@ -343,7 +343,7 @@ export default function StockChart() {
         </div>
       </nav>
 
-      <header className="sticky top-[57px] z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-[57px] z-10  bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Select 
