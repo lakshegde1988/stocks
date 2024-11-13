@@ -283,7 +283,7 @@ export default function Component() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0f172a] text-slate-200">
-      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <nav className="bg-slate-800/50 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">dotcharts</h1>
