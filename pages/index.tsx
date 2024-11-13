@@ -100,7 +100,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 420 : window.innerWidth < 1024 ? 500 : 600;
+    return window.innerWidth < 640 ? 450 : window.innerWidth < 1024 ? 500 : 600;
   }, []);
 
   useEffect(() => {
@@ -406,17 +406,17 @@ export default function Component() {
           <Card className="bg-slate-800/50 bg-slate-800/50">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
-                <div className="h-[600px] flex flex-col items-center justify-center">
+                <div className="h-[450px] flex flex-col items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-slate-400 mb-2" />
                   <p className="text-sm text-slate-400">Loading stock data...</p>
                 </div>
               ) : error ? (
-                <div className="h-[600px] flex flex-col items-center justify-center">
+                <div className="h-[450px] flex flex-col items-center justify-center">
                   <div className="text-rose-500 text-sm mb-2">{error}</div>
                   <p className="text-xs text-slate-400">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div ref={chartContainerRef} className="h-[600px]" />
+                <div ref={chartContainerRef} className="h-[450px]" />
               )}
             </CardContent>
           </Card>
