@@ -372,7 +372,7 @@ export default function Component() {
           </div>
         </header>
 
-        <main className="space-y-4">
+        <main className="space-y-4 bg-slate-800/50">
           {currentStock && (
             <div className="grid grid-cols-1">
               <Card className="border-slate-700 bg-slate-800/50">
