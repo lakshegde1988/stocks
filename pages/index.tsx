@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 
 // Import JSON data
-import nifty50Data from '@/data/nifty50.json';
-import niftyNext50Data from '@/data/niftynext50.json';
-import midcap150Data from '@/data/midcap150.json';
-import smallcap250Data from '@/data/smallcap250.json';
-import microCap250Data from '@/data/microcap250.json';
+import nifty50Data from '../public/nifty50.json';
+import niftyNext50Data from '../public/niftynext50.json';
+import midcap150Data from '../public/midcap150.json';
+import smallcap250Data from '../public/smallcap250.json';
+import microCap250Data from '../public/microcap250.json';
+
 
 interface StockData {
   Symbol: string;
