@@ -403,7 +403,7 @@ export default function Component() {
             </div>
           )}
 
-          <Card className="bg-slate-800/50">
+          <Card className="bg-slate-800/50 bg-slate-800/50">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
                 <div className="h-[600px] flex flex-col items-center justify-center">
