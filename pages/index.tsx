@@ -100,7 +100,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 420 : window.innerWidth < 1024 ? 500 : 700;
+    return window.innerWidth < 640 ? 420 : window.innerWidth < 1024 ? 500 : 600;
   }, []);
 
   useEffect(() => {
