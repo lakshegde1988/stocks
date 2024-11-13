@@ -97,7 +97,6 @@ export default function Component() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
   const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
-  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
@@ -216,17 +215,6 @@ export default function Component() {
     });
 
     barSeriesRef.current = barSeries;
-
-    const volumeSeries = chart.addHistogramSeries({
-      color: chartColors.upColor,
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '',
-    });
-
-    volumeSeriesRef.current = volumeSeries;
-
     barSeries.setData(chartData.map(d => ({
       time: d.time,
       open: d.open,
@@ -235,22 +223,10 @@ export default function Component() {
       close: d.close,
     } as BarData)));
 
-    volumeSeries.setData(chartData.map((d, index) => ({
-      time: d.time,
-      value: d.volume,
-      color: chartColors.barColors[index % chartColors.barColors.length],
-    } as HistogramData)));
-
     barSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
-      },
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.7,
-        bottom: 0.1,
       },
     });
     chart.timeScale().fitContent();
