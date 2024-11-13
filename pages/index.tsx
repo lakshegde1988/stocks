@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
@@ -86,7 +86,7 @@ export default function Component() {
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -180,15 +180,13 @@ export default function Component() {
 
     chartInstanceRef.current = chart;
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const barSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
-      borderVisible: false,
-      wickUpColor: chartColors.upColor,
-      wickDownColor: chartColors.downColor,
+      thinBars: false,
     });
 
-    candlestickSeriesRef.current = candlestickSeries;
+    barSeriesRef.current = barSeries;
 
     const volumeSeries = chart.addHistogramSeries({
       color: chartColors.upColor,
@@ -200,14 +198,21 @@ export default function Component() {
 
     volumeSeriesRef.current = volumeSeries;
 
-    candlestickSeries.setData(chartData as CandlestickData[]);
+    barSeries.setData(chartData.map(d => ({
+      time: d.time,
+      open: d.open,
+      high: d.high,
+      low: d.low,
+      close: d.close,
+    } as BarData)));
+
     volumeSeries.setData(chartData.map(d => ({
       time: d.time,
       value: d.volume,
       color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
     } as HistogramData)));
 
-    candlestickSeries.priceScale().applyOptions({
+    barSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
