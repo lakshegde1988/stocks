@@ -3,13 +3,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+
+// Import JSON data
+import nifty50Data from '@/data/nifty50.json';
+import niftyNext50Data from '@/data/niftynext50.json';
+import midcap150Data from '@/data/midcap150.json';
+import smallcap250Data from '@/data/smallcap250.json';
+import microCap250Data from '@/data/microcap250.json';
 
 interface StockData {
   Symbol: string;
@@ -57,16 +64,16 @@ const chartColors = {
   borderColor: '#1e293b',
   gridColor: '#1e293b',
   crosshairColor: '#475569',
-  barColors: ['#3366cc', '#e0407d', '#e68a19', '#9c4ed6', '#26a37f'],
+  barColors: ['#3366cc', '#e0407d'],
 };
 
 export default function Component() {
   const [indexData] = useState<IndexData[]>([
-    { label: 'Nifty 50', data: [] },
-    { label: 'Nifty Next 50', data: [] },
-    { label: 'Midcap 150', data: [] },
-    { label: 'Smallcap 250', data: [] },
-    { label: 'MicroCap 250', data: [] },
+    { label: 'Nifty 50', data: nifty50Data },
+    { label: 'Nifty Next 50', data: niftyNext50Data },
+    { label: 'Midcap 150', data: midcap150Data },
+    { label: 'Smallcap 250', data: smallcap250Data },
+    { label: 'MicroCap 250', data: microCap250Data },
   ]);
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
@@ -79,7 +86,6 @@ export default function Component() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [marketStatus, setMarketStatus] = useState<'open' | 'closed'>('closed');
   const [stockStats, setStockStats] = useState({
     dayHigh: 0,
     dayLow: 0,
@@ -94,7 +100,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 550 : window.innerWidth < 1024 ? 350 : 650;
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 500 : 600;
   }, []);
 
   useEffect(() => {
@@ -242,8 +248,8 @@ export default function Component() {
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.7, // Reduced from 0.8
-        bottom: 0.1, // Increased from 0
+        top: 0.7,
+        bottom: 0.1,
       },
     });
     chart.timeScale().fitContent();
@@ -303,13 +309,7 @@ export default function Component() {
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <nav className="bg-slate-800/50 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-white">dotcharts</h1>
-              <Badge variant="outline" className="text-xs">
-                <Clock className="w-3 h-3 mr-1" />
-                {marketStatus === 'open' ? 'Market Open' : 'Market Closed'}
-              </Badge>
-            </div>
+            <h1 className="text-xl font-bold text-white">dotcharts</h1>
             <div className="relative w-48" ref={searchRef}>
               <Input
                 type="text"
