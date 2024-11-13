@@ -398,7 +398,7 @@ export default function Component() {
 
         <main className="space-y-4">
           {currentStock && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1">
               <Card className="border-slate-700 bg-slate-800/50">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
@@ -420,37 +420,6 @@ export default function Component() {
                       >
                         {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                       </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-slate-700 bg-slate-800/50">
-                <CardContent className="p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-slate-400">Day Range</div>
-                      <div className="text-sm font-medium mt-1">
-                        {stockStats.dayLow.toFixed(2)} - {stockStats.dayHigh.toFixed(2)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400">Volume</div>
-                      <div className="text-sm font-medium mt-1">
-                        {formatNumber(stockStats.volume)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400">Avg Volume</div>
-                      <div className="text-sm font-medium mt-1">
-                        {formatNumber(stockStats.avgVolume)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-slate-400">Market Cap</div>
-                      <div className="text-sm font-medium mt-1">
-                        {formatNumber(stockStats.volume * (currentStock.price || 0))}
-                      </div>
                     </div>
                   </div>
                 </CardContent>
