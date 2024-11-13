@@ -1,21 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Clock } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-
-import nifty50Data from '../public/nifty50.json';
-import niftyNext50Data from '../public/niftynext50.json';
-import midcap150Data from '../public/midcap150.json';
-import smallcap250Data from '../public/smallcap250.json';
-import microCap250Data from '../public/microcap250.json';
 
 interface StockData {
   Symbol: string;
@@ -56,22 +50,23 @@ const INTERVALS = [
 ];
 
 const chartColors = {
-  upColor: '#26a37f',  // --chart-5
-  downColor: '#e0407d', // --chart-2
-  backgroundColor: '#111827',
-  textColor: '#e5e7eb',
-  borderColor: '#374151',
-  gridColor: '#1f2937',
-  barColors: ['#3366cc', '#e0407d', '#e68a19', '#9c4ed6', '#26a37f'], // All chart colors
+  upColor: '#26a37f',
+  downColor: '#e0407d',
+  backgroundColor: '#0f172a',
+  textColor: '#94a3b8',
+  borderColor: '#1e293b',
+  gridColor: '#1e293b',
+  crosshairColor: '#475569',
+  barColors: ['#3366cc', '#e0407d', '#e68a19', '#9c4ed6', '#26a37f'],
 };
 
 export default function Component() {
   const [indexData] = useState<IndexData[]>([
-    { label: 'Nifty 50', data: nifty50Data },
-    { label: 'Nifty Next 50', data: niftyNext50Data },
-    { label: 'Midcap 150', data: midcap150Data },
-    { label: 'Smallcap 250', data: smallcap250Data },
-    { label: 'MicroCap 250', data: microCap250Data },
+    { label: 'Nifty 50', data: [] },
+    { label: 'Nifty Next 50', data: [] },
+    { label: 'Midcap 150', data: [] },
+    { label: 'Smallcap 250', data: [] },
+    { label: 'MicroCap 250', data: [] },
   ]);
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
@@ -84,6 +79,13 @@ export default function Component() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [marketStatus, setMarketStatus] = useState<'open' | 'closed'>('closed');
+  const [stockStats, setStockStats] = useState({
+    dayHigh: 0,
+    dayLow: 0,
+    volume: 0,
+    avgVolume: 0,
+  });
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -134,6 +136,12 @@ export default function Component() {
           change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
         });
+        setStockStats({
+          dayHigh: Math.max(...response.data.map(d => d.high)),
+          dayLow: Math.min(...response.data.map(d => d.low)),
+          volume: response.data[response.data.length - 1]?.volume || 0,
+          avgVolume: response.data.reduce((sum, d) => sum + d.volume, 0) / response.data.length,
+        });
       }
     } catch (err) {
       setError((err as Error).message || 'Failed to fetch stock data');
@@ -176,6 +184,19 @@ export default function Component() {
         borderColor: chartColors.borderColor,
         timeVisible: true,
         secondsVisible: false,
+        rightOffset: 5,
+        minBarSpacing: 3,
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: {
+          color: chartColors.crosshairColor,
+          labelBackgroundColor: chartColors.backgroundColor,
+        },
+        horzLine: {
+          color: chartColors.crosshairColor,
+          labelBackgroundColor: chartColors.backgroundColor,
+        },
       },
     });
 
@@ -221,8 +242,8 @@ export default function Component() {
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.8,
-        bottom: 0,
+        top: 0.7, // Reduced from 0.8
+        bottom: 0.1, // Increased from 0
       },
     });
     chart.timeScale().fitContent();
@@ -269,181 +290,219 @@ export default function Component() {
     )
   ).slice(0, 10);
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
-      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-        <nav className="top-0 z-20 bg-gray-800 border-b border-gray-700">
-          <div className="py-3">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-white">dotcharts</h1>
-              <div className="relative w-48" ref={searchRef}>
-                <Input
-                  type="text"
-                  placeholder="Search stocks..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  className="pr-8 text-sm h-9 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  aria-label="Search stocks"
-                />
-                {searchTerm ? (
-                  <X 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-white cursor-pointer" 
-                    onClick={() => {
-                      setSearchTerm('');
-                      setShowDropdown(false);
-                    }}
-                  />
-                ) : (
-                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                )}
+  // Format large numbers
+  const formatNumber = (num: number) => {
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    return num.toString();
+  };
 
-                {showDropdown && searchTerm && (
-                  <div className="absolute w-full mt-1 py-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                    {filteredStocks.map((stock) => (
-                      <button
-                        key={stock.symbol}
-                        onClick={() => {
-                          const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                          setCurrentStockIndex(stockIndex);
-                          setSearchTerm('');
-                          setShowDropdown(false);
-                        }}
-                        className="w-full px-3 py-1.5 text-left hover:bg-gray-700 transition-colors"
-                      >
-                        <div className="font-medium text-xs text-white">{stock.symbol}</div>
-                        <div className="text-xs text-gray-400 truncate">{stock.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+  return (
+    <div className="flex flex-col min-h-screen bg-[#0f172a] text-slate-200">
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+        <nav className="bg-slate-800/50 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-bold text-white">dotcharts</h1>
+              <Badge variant="outline" className="text-xs">
+                <Clock className="w-3 h-3 mr-1" />
+                {marketStatus === 'open' ? 'Market Open' : 'Market Closed'}
+              </Badge>
+            </div>
+            <div className="relative w-48" ref={searchRef}>
+              <Input
+                type="text"
+                placeholder="Search stocks..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowDropdown(true);
+                }}
+                className="pr-8 text-sm h-9 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400"
+                aria-label="Search stocks"
+              />
+              {searchTerm ? (
+                <X 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-white cursor-pointer" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setShowDropdown(false);
+                  }}
+                />
+              ) : (
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              )}
+
+              {showDropdown && searchTerm && (
+                <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                  {filteredStocks.map((stock) => (
+                    <button
+                      key={stock.symbol}
+                      onClick={() => {
+                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                        setCurrentStockIndex(stockIndex);
+                        setSearchTerm('');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-1.5 text-left hover:bg-slate-700 transition-colors"
+                    >
+                      <div className="font-medium text-xs text-white">{stock.symbol}</div>
+                      <div className="text-xs text-slate-400 truncate">{stock.name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </nav>
 
-        <header className="top-[57px] z-10 bg-gray-800/95 backdrop-blur supports-[backdrop-filter]:bg-gray-800/60 border-b border-gray-700">
-          <div className="py-2">
-            <div className="flex items-center justify-between">
-              <Select 
-                value={selectedIndexId.toString()} 
-                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-              >
-                <SelectTrigger className="w-[140px] text-sm bg-gray-700 border-gray-600 text-white">
-                  <SelectValue placeholder="Select Index" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                  {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-sm">
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <div className="flex space-x-1">
-                {INTERVALS.map((interval) => (
-                  <Button
-                    key={interval.value}
-                    variant={selectedInterval === interval.value ? "default" : "secondary"}
-                    size="sm"
-                    onClick={() => handleIntervalChange(interval.value)}
-                    className={`text-xs px-2 h-7 ${
-                      selectedInterval === interval.value
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                    title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
-                  >
-                    {interval.label}
-                  </Button>
+        <header className="bg-slate-800/50 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-[140px] text-sm bg-slate-700/50 border-slate-600 text-white">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                {indexData.map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
+                    {item.label}
+                  </SelectItem>
                 ))}
-              </div>
+              </SelectContent>
+            </Select>
+
+            <div className="flex space-x-1">
+              {INTERVALS.map((interval) => (
+                <Button
+                  key={interval.value}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => handleIntervalChange(interval.value)}
+                  className={`text-xs px-2 h-7 ${
+                    selectedInterval === interval.value
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600'
+                  }`}
+                >
+                  {interval.label}
+                </Button>
+              ))}
             </div>
           </div>
         </header>
 
-        <main className="sticky flex-1 py-4">
+        <main className="space-y-4">
           {currentStock && (
-           <Card className="mb-4 border-gray-700 bg-gray-800">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-semibold truncate text-white">{currentStock.symbol}</h2>
-                  <p className="text-sm text-gray-400 truncate">
-                    {currentStock.name}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end ml-4">
-                  <div className="text-lg font-semibold text-white">{currentStock.price?.toFixed(2)}</div>
-                  <Badge 
-                    variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                    className={`text-xs mt-1 ${
-                      currentStock.todayChange && currentStock.todayChange >= 0
-                        ? 'bg-green-600 text-white'
-                        : 'bg-red-600 text-white'
-                    }`}
-                  >
-                    {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-lg font-semibold truncate text-white">{currentStock.symbol}</h2>
+                      <p className="text-sm text-slate-400 truncate">
+                        {currentStock.name}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end ml-4">
+                      <div className="text-lg font-semibold text-white">{currentStock.price?.toFixed(2)}</div>
+                      <Badge 
+                        variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                        className={`text-xs mt-1 ${
+                          currentStock.todayChange && currentStock.todayChange >= 0
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-rose-600 text-white'
+                        }`}
+                      >
+                        {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-700 bg-slate-800/50">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-slate-400">Day Range</div>
+                      <div className="text-sm font-medium mt-1">
+                        {stockStats.dayLow.toFixed(2)} - {stockStats.dayHigh.toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400">Volume</div>
+                      <div className="text-sm font-medium mt-1">
+                        {formatNumber(stockStats.volume)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400">Avg Volume</div>
+                      <div className="text-sm font-medium mt-1">
+                        {formatNumber(stockStats.avgVolume)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-400">Market Cap</div>
+                      <div className="text-sm font-medium mt-1">
+                        {formatNumber(stockStats.volume * (currentStock.price || 0))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
-          <Card className="mb-4 border-gray-700 bg-gray-800">
+          <Card className="border-slate-700 bg-slate-800/50">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
-                <div className="h-[550px] sm:h-[550px] md:h-[550px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-400">Loading stock data...</p>
+                <div className="h-[600px] flex flex-col items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mb-2" />
+                  <p className="text-sm text-slate-400">Loading stock data...</p>
                 </div>
               ) : error ? (
-                <div className="h-[550px] sm:h-[550px] md:h-[550px] flex flex-col items-center justify-center">
-                  <div className="text-red-500 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-gray-400">Please try again later or select a different stock.</p>
+                <div className="h-[600px] flex flex-col items-center justify-center">
+                  <div className="text-rose-500 text-sm mb-2">{error}</div>
+                  <p className="text-xs text-slate-400">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div ref={chartContainerRef} className="h-[550px] sm:h-[550px] md:h-[550px]" />
+                <div ref={chartContainerRef} className="h-[600px]" />
               )}
             </CardContent>
           </Card>
         </main>
 
-        <footer className="sticky bottom-0 bg-gray-800/95 backdrop-blur supports-[backdrop-filter]:bg-gray-800/60 border-t border-gray-700">
-          <div className="py-2">
-            <div className="flex items-center justify-between h-12">
-              <Button
-                variant="ghost"
-                onClick={handlePrevious}
-                disabled={currentStockIndex === 0}
-                className="h-8 px-2 text-lg text-gray-300 hover:text-white hover:bg-gray-700"
-                aria-label="Previous stock"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Prev</span>
-              </Button>
-              
-              <span className="text-lg text-gray-300">
-                <span className="font-medium">{currentStockIndex + 1}</span>
-                <span className="text-gray-500 mx-1">/</span>
-                <span className="text-gray-500">{stocks.length}</span>
-              </span>
-              
-              <Button
-                variant="ghost"
-                onClick={handleNext}
-                disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-2 text-lg text-gray-300 hover:text-white hover:bg-gray-700"
-                aria-label="Next stock"
-              >
-                <span className="hidden sm:inline">Next</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
+        <footer className="bg-slate-800/50 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={handlePrevious}
+              disabled={currentStockIndex === 0}
+              className="h-8 px-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">Prev</span>
+            </Button>
+            
+            <span className="text-sm text-slate-300">
+              <span className="font-medium">{currentStockIndex + 1}</span>
+              <span className="text-slate-500 mx-1">/</span>
+              <span className="text-slate-500">{stocks.length}</span>
+            </span>
+            
+            <Button
+              variant="ghost"
+              onClick={handleNext}
+              disabled={currentStockIndex === stocks.length - 1}
+              className="h-8 px-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
         </footer>
       </div>
