@@ -56,13 +56,13 @@ const INTERVALS = [
 ];
 
 const chartColors = {
-  upColor: '#3366cc',  // --chart-5
+  upColor: '#26a37f',  // --chart-5
   downColor: '#e0407d', // --chart-2
   backgroundColor: '#111827',
   textColor: '#e5e7eb',
   borderColor: '#374151',
   gridColor: '#1f2937',
-  barColors: ['#3366cc', '#e0407d'], // All chart colors
+  barColors: ['#3366cc', '#e0407d', '#e68a19', '#9c4ed6', '#26a37f'], // All chart colors
 };
 
 export default function Component() {
@@ -176,8 +176,6 @@ export default function Component() {
         borderColor: chartColors.borderColor,
         timeVisible: true,
         secondsVisible: false,
-        rightOffset: 5,
-        minBarSpacing: 2,
       },
     });
 
@@ -273,7 +271,7 @@ export default function Component() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
-      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8">
         <nav className="top-0 z-20 bg-gray-800 border-b border-gray-700">
           <div className="py-3">
             <div className="flex items-center justify-between">
