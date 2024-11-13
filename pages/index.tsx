@@ -372,7 +372,7 @@ export default function Component() {
           </div>
         </header>
 
-        <main className="space-y-1">
+        <main className="space-y-4">
           {currentStock && (
             <div className="grid grid-cols-1">
               <Card className="border-slate-700 bg-slate-800/50">
@@ -416,7 +416,7 @@ export default function Component() {
                   <p className="text-xs text-slate-400">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div ref={chartContainerRef} className="h-[550px]" />
+                <div ref={chartContainerRef} className="h-[400px]" />
               )}
             </CardContent>
           </Card>
