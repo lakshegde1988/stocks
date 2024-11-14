@@ -165,8 +165,8 @@ export default function Component() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { color: chartColors.gridColor },
-        horzLines: { color: chartColors.gridColor },
+        vertLines: { visible:false },
+        horzLines: { visible:false },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
