@@ -260,56 +260,59 @@ export default function Component() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
-      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <nav className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
-            <div className="relative w-48 sm:w-64" ref={searchRef}>
-              <Input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
-                }}
-                className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
-                aria-label="Search stocks"
-              />
-              {searchTerm ? (
-                <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
+      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+        <nav className="w-full">
+          <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
+              <div className="relative w-48 sm:w-64" ref={searchRef}>
+                <Input
+                  type="text"
+                  placeholder="Search stocks..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowDropdown(true);
                   }}
+                  className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
+                  aria-label="Search stocks"
                 />
-              ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              )}
-
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
-                      <div className="text-xs text-gray-600 truncate">{stock.name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                {searchTerm ? (
+                  <X 
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
+                    onClick={() => {
+                      setSearchTerm('');
+                      setShowDropdown(false);
+                    }}
+                  />
+                ) : (
+                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                )}
+  
+                {showDropdown && searchTerm && (
+                  <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                    {filteredStocks.map((stock) => (
+                      <button
+                        key={stock.symbol}
+                        onClick={() => {
+                          const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                          setCurrentStockIndex(stockIndex);
+                          setSearchTerm('');
+                          setShowDropdown(false);
+                        }}
+                        className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
+                        <div className="text-xs text-gray-600 truncate">{stock.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
           </div>
-        </nav>
+        </div>
+      </nav>
+    </div>
 
         <header className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
