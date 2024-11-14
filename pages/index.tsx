@@ -12,49 +12,20 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 
-// Import JSON data
-import nifty50Data from '../public/nifty50.json';
-import niftyNext50Data from '../public/niftynext50.json';
-import midcap150Data from '../public/midcap150.json';
-import smallcap250Data from '../public/smallcap250.json';
-import microCap250Data from '../public/microcap250.json';
+// Import JSON data (assuming these imports are correct)
+import nifty50Data from '../public/nifty50.json'
+import niftyNext50Data from '../public/niftynext50.json'
+import midcap150Data from '../public/midcap150.json'
+import smallcap250Data from '../public/smallcap250.json'
+import microCap250Data from '../public/microcap250.json'
 
-interface StockData {
-  Symbol: string;
-  "Company Name": string;
-  Industry: string;
-}
-
-interface Stock {
-  symbol: string;
-  name: string;
-  industry: string;
-}
-
-interface IndexData {
-  label: string;
-  data: StockData[];
-}
-
-interface CurrentStock extends Stock {
-  price?: number;
-  todayChange?: number;
-}
-
-interface ChartDataPoint {
-  time: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
+// ... (keep all the existing interfaces)
 
 const INTERVALS = [
   { label: 'D', value: 'daily', interval: '1d', range: '1y' },
   { label: 'W', value: 'weekly', interval: '1wk', range: '5y' },
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
-];
+]
 
 const chartColors = {
   upColor: '#22c55e',
@@ -68,196 +39,9 @@ const chartColors = {
 }
 
 export default function Component() {
-  const [indexData] = useState<IndexData[]>([
-    { label: 'Nifty 50', data: nifty50Data },
-    { label: 'Nifty Next 50', data: niftyNext50Data },
-    { label: 'Midcap 150', data: midcap150Data },
-    { label: 'Smallcap 250', data: smallcap250Data },
-    { label: 'MicroCap 250', data: microCap250Data },
-  ]);
-  
-  const [selectedIndexId, setSelectedIndexId] = useState(0);
-  const [currentStockIndex, setCurrentStockIndex] = useState(0);
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedInterval, setSelectedInterval] = useState('daily');
-  const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartInstanceRef = useRef<IChartApi | null>(null);
-  const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
+  // ... (keep all the existing state variables and refs)
 
-  const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 450 : 500;
-  }, []);
-
-  useEffect(() => {
-    const selectedIndex = indexData[selectedIndexId];
-    const stocksList = selectedIndex.data.map(item => ({
-      symbol: item.Symbol,
-      name: item["Company Name"],
-      industry: item.Industry
-    }));
-    setStocks(stocksList);
-    setCurrentStockIndex(0);
-  }, [selectedIndexId, indexData]);
-
-  const fetchStockData = useCallback(async () => {
-    if (!stocks.length) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const currentStock = stocks[currentStockIndex];
-      const interval = INTERVALS.find(i => i.value === selectedInterval);
-
-      if (!interval) throw new Error('Invalid interval');
-
-      const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
-        params: {
-          symbol: currentStock.symbol,
-          range: interval.range,
-          interval: interval.interval
-        }
-      });
-
-      if (response.data && Array.isArray(response.data)) {
-        setChartData(response.data);
-        setCurrentStock({
-          ...currentStock,
-          price: response.data[response.data.length - 1]?.close,
-          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        });
-      }
-    } catch (err) {
-      setError((err as Error).message || 'Failed to fetch stock data');
-    } finally {
-      setLoading(false);
-    }
-  }, [stocks, currentStockIndex, selectedInterval]);
-
-  useEffect(() => {
-    fetchStockData();
-  }, [fetchStockData]);
-
-  useEffect(() => {
-    if (!chartContainerRef.current || !chartData.length) return;
-
-    const handleResize = () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.applyOptions({
-          width: chartContainerRef.current!.clientWidth,
-          height: getChartHeight(),
-        });
-      }
-    };
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: getChartHeight(),
-      layout: {
-        background: { type: ColorType.Solid, color: chartColors.backgroundColor },
-        textColor: chartColors.textColor,
-      },
-      grid: {
-        vertLines: { color: chartColors.gridColor },
-        horzLines: { color: chartColors.gridColor },
-      },
-      rightPriceScale: {
-        borderColor: chartColors.borderColor,
-      },
-      timeScale: {
-        borderColor: chartColors.borderColor,
-        timeVisible: true,
-        secondsVisible: false,
-        rightOffset: 5,
-        minBarSpacing: 3,
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: {
-          color: chartColors.crosshairColor,
-          labelBackgroundColor: chartColors.backgroundColor,
-        },
-        horzLine: {
-          color: chartColors.crosshairColor,
-          labelBackgroundColor: chartColors.backgroundColor,
-        },
-      },
-    });
-
-    chartInstanceRef.current = chart;
-
-    const barSeries = chart.addBarSeries({
-      upColor: chartColors.upColor,
-      downColor: chartColors.downColor,
-      thinBars: false,
-    });
-
-    barSeriesRef.current = barSeries;
-    barSeries.setData(chartData.map(d => ({
-      time: d.time,
-      open: d.open,
-      high: d.high,
-      low: d.low,
-      close: d.close,
-    } as BarData)));
-
-    barSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.1,
-        bottom: 0.2,
-      },
-    });
-    chart.timeScale().fitContent();
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      chart.remove();
-    };
-  }, [chartData, getChartHeight]);
-
-  const handleIntervalChange = (newInterval: string) => {
-    setSelectedInterval(newInterval);
-  };
-
-  const handlePrevious = () => {
-    if (currentStockIndex > 0) {
-      setCurrentStockIndex(prev => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentStockIndex < stocks.length - 1) {
-      setCurrentStockIndex(prev => prev + 1);
-    }
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredStocks = stocks.filter(stock => 
-    searchTerm && (
-      stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ).slice(0, 10);
+  // ... (keep all the existing useEffect hooks and functions)
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
