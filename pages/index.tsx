@@ -92,7 +92,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 550 : 600;
+    return window.innerWidth < 640 ? 450 : window.innerWidth < 1024 ? 500 : 550;
   }, []);
 
   useEffect(() => {
@@ -363,27 +363,31 @@ export default function Component() {
                   <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div className="relative">
+                <div className="flex flex-col">
                   {currentStock && (
-                    <div className="absolute top-4 left-4 z-10 bg-white bg-opacity-80 p-2 rounded-lg shadow-sm">
-                      <h2 className="text-lg font-semibold text-gray-900">{currentStock.symbol}</h2>
-                      <p className="text-sm text-gray-600 truncate">{currentStock.name}</p>
-                      <div className="flex items-center mt-1">
-                        <span className="text-lg font-semibold text-gray-900 mr-2">{currentStock.price?.toFixed(2)}</span>
-                        <Badge 
-                          variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                          className={`text-xs ${
-                            currentStock.todayChange && currentStock.todayChange >= 0
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                        </Badge>
+                    <div className="w-full bg-white bg-opacity-80 p-4 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
+                          <p className="text-sm text-gray-600 truncate">{currentStock.name}</p>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-xl font-semibold text-gray-900 mr-2">{currentStock.price?.toFixed(2)}</span>
+                          <Badge 
+                            variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                            className={`text-sm ${
+                              currentStock.todayChange && currentStock.todayChange >= 0
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   )}
-                  <div ref={chartContainerRef} className="h-[500px] sm:h-[550px] lg:h-[600px]" />
+                  <div ref={chartContainerRef} className="h-[450px] sm:h-[500px] lg:h-[550px]" />
                 </div>
               )}
             </CardContent>
