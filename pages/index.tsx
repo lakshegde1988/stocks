@@ -356,7 +356,7 @@ export default function Component() {
         </div>
       </header>
 
-      <main className="space-y-4">
+      <main className="space-y-4 rounded-lg">
         <Card className="bg-white shadow-sm">
           <CardContent className="p-0 sm:p-2">
             {loading ? (
