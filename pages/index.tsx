@@ -92,7 +92,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500;
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 450 : 500;
   }, []);
 
   useEffect(() => {
@@ -264,7 +264,7 @@ export default function Component() {
         <nav className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
-            <div className="relative w-64" ref={searchRef}>
+            <div className="relative w-48 sm:w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -381,17 +381,17 @@ export default function Component() {
           <Card className="bg-white shadow-sm">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
-                <div className="h-[300px] sm:h-[400px] lg:h-[500px] flex flex-col items-center justify-center">
+                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
                   <p className="text-sm text-gray-600">Loading stock data...</p>
                 </div>
               ) : error ? (
-                <div className="h-[300px] sm:h-[400px] lg:h-[500px] flex flex-col items-center justify-center">
+                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
                   <div className="text-red-600 text-sm mb-2">{error}</div>
                   <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div ref={chartContainerRef} className="h-[300px] sm:h-[400px] lg:h-[500px]" />
+                <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] lg:h-[500px]" />
               )}
             </CardContent>
           </Card>
