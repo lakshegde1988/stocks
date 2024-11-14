@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData, CrosshairMode } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
 
@@ -37,7 +37,6 @@ interface IndexData {
 
 interface CurrentStock extends Stock {
   price?: number;
-  change?: number;
   todayChange?: number;
 }
 
@@ -86,12 +85,6 @@ export default function Component() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [stockStats, setStockStats] = useState({
-    dayHigh: 0,
-    dayLow: 0,
-    volume: 0,
-    avgVolume: 0,
-  });
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -138,14 +131,7 @@ export default function Component() {
         setCurrentStock({
           ...currentStock,
           price: response.data[response.data.length - 1]?.close,
-          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
           todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        });
-        setStockStats({
-          dayHigh: Math.max(...response.data.map(d => d.high)),
-          dayLow: Math.min(...response.data.map(d => d.low)),
-          volume: response.data[response.data.length - 1]?.volume || 0,
-          avgVolume: response.data.reduce((sum, d) => sum + d.volume, 0) / response.data.length,
         });
       }
     } catch (err) {
@@ -272,21 +258,13 @@ export default function Component() {
     )
   ).slice(0, 10);
 
-  // Format large numbers
-  const formatNumber = (num: number) => {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num.toString();
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
         <nav className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
-            <div className="relative w-full sm:w-64" ref={searchRef}>
+            <div className="relative w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -334,12 +312,12 @@ export default function Component() {
         </nav>
 
         <header className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-full sm:w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
+              <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-300 text-gray-900">
@@ -373,33 +351,31 @@ export default function Component() {
 
         <main className="space-y-4">
           {currentStock && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-semibold truncate text-gray-900">{currentStock.symbol}</h2>
-                      <p className="text-sm text-gray-600 truncate">
-                        {currentStock.name}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end ml-4">
-                      <div className="text-lg font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</div>
-                      <Badge 
-                        variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                        className={`text-xs mt-1 ${
-                          currentStock.todayChange && currentStock.todayChange >= 0
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                      </Badge>
-                    </div>
+            <Card className="border-gray-200 bg-white shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-semibold truncate text-gray-900">{currentStock.symbol}</h2>
+                    <p className="text-sm text-gray-600 truncate">
+                      {currentStock.name}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>              
-            </div>
+                  <div className="flex flex-col items-end ml-4">
+                    <div className="text-lg font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</div>
+                    <Badge 
+                      variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                      className={`text-xs mt-1 ${
+                        currentStock.todayChange && currentStock.todayChange >= 0
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           <Card className="bg-white shadow-sm">
