@@ -398,40 +398,7 @@ export default function Component() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Day Range</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-900">{stockStats.dayLow.toFixed(2)}</span>
-                    <span className="text-sm text-gray-900">{stockStats.dayHigh.toFixed(2)}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{
-                        width: `${((currentStock.price || 0) - stockStats.dayLow) / (stockStats.dayHigh - stockStats.dayLow) * 100}%`
-                      }}
-                    ></div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Volume</h3>
-                  <div className="text-lg font-semibold text-gray-900">{formatNumber(stockStats.volume)}</div>
-                  <p className="text-sm text-gray-600">Avg: {formatNumber(stockStats.avgVolume)}</p>
-                </CardContent>
-              </Card>
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardContent className="p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Change</h3>
-                  <div className={`text-lg font-semibold ${currentStock.change && currentStock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {currentStock.change && currentStock.change >= 0 ? '+' : ''}{currentStock.change?.toFixed(2)}%
-                  </div>
-                  <p className="text-sm text-gray-600">Since {INTERVALS.find(i => i.value === selectedInterval)?.label}</p>
-                </CardContent>
-              </Card>
+              </Card>              
             </div>
           )}
 
