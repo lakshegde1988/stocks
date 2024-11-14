@@ -387,7 +387,7 @@ export default function Component() {
                       </div>
                     </div>
                   )}
-                  <div ref={chartContainerRef} className="h-[450px] sm:h-[500px] lg:h-[550px]" />
+                  <div ref={chartContainerRef} className="h-[500px] sm:h-[550px] lg:h-[600px]" />
                 </div>
               )}
             </CardContent>
