@@ -317,7 +317,7 @@ export default function Component() {
     </div>
     
     {/* Add padding to prevent content from hiding behind sticky nav */}
-    <div className="pt-[90px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+    <div className="pt-[85px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
       <header className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between">
           <Select 
