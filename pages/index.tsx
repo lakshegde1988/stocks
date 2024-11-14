@@ -407,13 +407,13 @@ export default function Component() {
             variant="ghost"
             onClick={handlePrevious}
             disabled={currentStockIndex === 0}
-            className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">Prev</span>
           </Button>
           
-          <span className="text-sm text-gray-600">
+          <span className="text-md text-gray-600">
             <span className="font-medium">{currentStockIndex + 1}</span>
             <span className="text-gray-400 mx-1">/</span>
             <span className="text-gray-400">{stocks.length}</span>
@@ -423,7 +423,7 @@ export default function Component() {
             variant="ghost"
             onClick={handleNext}
             disabled={currentStockIndex === stocks.length - 1}
-            className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
             <span className="hidden sm:inline">Next</span>
             <ChevronRight className="h-4 w-4 ml-1" />
