@@ -365,7 +365,7 @@ export default function Component() {
               ) : (
                 <div className="flex flex-col">
                   {currentStock && (
-                    <div className="w-full bg-white bg-opacity-80 p-4 border-b border-gray-200">
+                    <div className="w-full bg-white bg-opacity-80 p-4 border-gray-200">
                       <div className="flex justify-between items-center">
                         <div>
                           <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
