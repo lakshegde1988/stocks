@@ -317,7 +317,7 @@ export default function Component() {
     </div>
     
     {/* Add padding to prevent content from hiding behind sticky nav */}
-    <div className="pt-[72px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+    <div className="pt-[92px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
       <header className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between">
           <Select 
@@ -394,7 +394,7 @@ export default function Component() {
                     </div>
                   </div>
                 )}
-                <div ref={chartContainerRef} className="h-[500px] sm:h-[500px] lg:h-[600px]" />
+                <div ref={chartContainerRef} className="h-[500px] sm:h-[450px] lg:h-[600px]" />
               </div>
             )}
           </CardContent>
