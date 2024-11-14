@@ -282,127 +282,158 @@ export default function Component() {
   };
 
  return (
-    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900"> {/* Inverted: Light background */}
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <header className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"> {/* Inverted: White background */}
-          <div className="flex items-center space-x-4">
-            <BarChart className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
-              dotcharts
-            </h1>
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+      <header className="sticky top-0 z-10 bg-white shadow-md">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <BarChart className="h-8 w-8 text-blue-600" />
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+                dotcharts
+              </h1>
+            </div>
+            <div className="relative w-64" ref={searchRef}>
+              <Input
+                type="text"
+                placeholder="Search stocks..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  setShowDropdown(true)
+                }}
+                className="pr-8 text-sm h-10 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500 rounded-full"
+                aria-label="Search stocks"
+              />
+              {searchTerm ? (
+                <X 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" 
+                  onClick={() => {
+                    setSearchTerm('')
+                    setShowDropdown(false)
+                  }}
+                />
+              ) : (
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              )}
+              {/* Dropdown implementation remains the same */}
+            </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <nav className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm"> {/* Inverted: White background */}
-          <Select 
-            value={selectedIndexId.toString()} 
-            onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-          >
-            <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900 rounded-md">
-              <SelectValue placeholder="Select Index" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-gray-300 text-gray-900">
-              {/* Assume indexData is defined */}
-              {[{ label: 'Nifty 50' }].map((item, index) => (
-                <SelectItem key={index} value={index.toString()} className="text-sm">
-                  {item.label}
-                </SelectItem>
+      <div className="flex-grow">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+          <nav className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900 rounded-md">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-300 text-gray-900">
+                {/* Assume indexData is defined */}
+                {[{ label: 'Nifty 50' }].map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex space-x-2">
+              {INTERVALS.map((interval) => (
+                <Button
+                  key={interval.value}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => setSelectedInterval(interval.value)}
+                  className={`text-xs px-3 py-1 rounded-full ${
+                    selectedInterval === interval.value
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {interval.label}
+                </Button>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+          </nav>
 
-          <div className="flex space-x-2">
-            {INTERVALS.map((interval) => (
-              <Button
-                key={interval.value}
-                variant={selectedInterval === interval.value ? "default" : "secondary"}
-                size="sm"
-                onClick={() => setSelectedInterval(interval.value)}
-                className={`text-xs px-3 py-1 rounded-full ${
-                  selectedInterval === interval.value
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {interval.label}
-              </Button>
-            ))}
-          </div>
-        </nav>
+          <main className="space-y-6">
+            {currentStock && (
+              <Card className="border-gray-200 bg-white overflow-hidden shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">{currentStock.symbol}</h2>
+                      <p className="text-sm text-gray-600">{currentStock.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-gray-900">{currentStock.price?.toFixed(2)}</div>
+                      <Badge 
+                        variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                        className={`text-sm mt-1 ${
+                          currentStock.todayChange && currentStock.todayChange >= 0
+                            ? 'bg-green-600 text-white'
+                            : 'bg-red-600 text-white'
+                        }`}
+                      >
+                        {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-        <main className="space-y-6">
-          {currentStock && (
-            <Card className="border-gray-200 bg-white overflow-hidden shadow-sm"> {/* Inverted: White background */}
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{currentStock.symbol}</h2>
-                    <p className="text-sm text-gray-600">{currentStock.name}</p>
+            <Card className="border-gray-200 bg-white shadow-sm">
+              <CardContent className="p-0 sm:p-2">
+                {loading ? (
+                  <div className="h-[500px] flex flex-col items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                    <p className="text-sm text-gray-600">Loading stock data...</p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-900">{currentStock.price?.toFixed(2)}</div>
-                    <Badge 
-                      variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                      className={`text-sm mt-1 ${
-                        currentStock.todayChange && currentStock.todayChange >= 0
-                          ? 'bg-green-600 text-white'
-                          : 'bg-red-600 text-white'
-                      }`}
-                    >
-                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                    </Badge>
+                ) : error ? (
+                  <div className="h-[500px] flex flex-col items-center justify-center">
+                    <div className="text-red-600 text-sm mb-2">{error}</div>
+                    <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                   </div>
-                </div>
+                ) : (
+                  <div ref={chartContainerRef} className="h-[500px]" />
+                )}
               </CardContent>
             </Card>
-          )}
+          </main>
 
-          <Card className="border-gray-200 bg-white shadow-sm"> {/* Inverted: White background */}
-            <CardContent className="p-0 sm:p-2">
-              {loading ? (
-                <div className="h-[500px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
-                  <p className="text-sm text-gray-600">Loading stock data...</p>
-                </div>
-              ) : error ? (
-                <div className="h-[500px] flex flex-col items-center justify-center">
-                  <div className="text-red-600 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
-                </div>
-              ) : (
-                <div ref={chartContainerRef} className="h-[500px]" />
-              )}
-            </CardContent>
-          </Card>
-        </main>
-
-        <footer className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm"> {/* Inverted: White background */}
-          <Button
-            variant="ghost"
-            onClick={handlePrevious}
-            disabled={currentStockIndex === 0}
-            className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            <span className="hidden sm:inline">Previous</span>
-          </Button>
-          
-          <span className="text-sm text-gray-600">
-            <span className="font-medium">{currentStockIndex + 1}</span>
-            <span className="mx-1">/</span>
-            <span>{stocks.length}</span>
-          </span>
-          
-          <Button
-            variant="ghost"
-            onClick={handleNext}
-            disabled={currentStockIndex === stocks.length - 1}
-            className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
-          >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="h-5 w-5 ml-1" />
-          </Button>
-        </footer>
+          <footer className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
+            <Button
+              variant="ghost"
+              onClick={handlePrevious}
+              disabled={currentStockIndex === 0}
+              className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
+            >
+              <ChevronLeft className="h-5 w-5 mr-1" />
+              <span className="hidden sm:inline">Previous</span>
+            </Button>
+            
+            <span className="text-sm text-gray-600">
+              <span className="font-medium">{currentStockIndex + 1}</span>
+              <span className="mx-1">/</span>
+              <span>{stocks.length}</span>
+            </span>
+            
+            <Button
+              variant="ghost"
+              onClick={handleNext}
+              disabled={currentStockIndex === stocks.length - 1}
+              className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
+            >
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="h-5 w-5 ml-1" />
+            </Button>
+          </footer>
+        </div>
       </div>
     </div>
   )
