@@ -259,174 +259,177 @@ export default function Component() {
   ).slice(0, 10);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
-      <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
-        <nav className="w-full">
-          <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
-              <div className="relative w-48 sm:w-64" ref={searchRef}>
-                <Input
-                  type="text"
-                  placeholder="Search stocks..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowDropdown(true);
+  <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
+    {/* Sticky nav wrapper */}
+    <div className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+      <nav className="w-full">
+        {/* Inner wrapper for content alignment */}
+        <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
+            <div className="relative w-48 sm:w-64" ref={searchRef}>
+              <Input
+                type="text"
+                placeholder="Search stocks..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowDropdown(true);
+                }}
+                className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
+                aria-label="Search stocks"
+              />
+              {searchTerm ? (
+                <X 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setShowDropdown(false);
                   }}
-                  className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
-                  aria-label="Search stocks"
                 />
-                {searchTerm ? (
-                  <X 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
-                    onClick={() => {
-                      setSearchTerm('');
-                      setShowDropdown(false);
-                    }}
-                  />
-                ) : (
-                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                )}
-  
-                {showDropdown && searchTerm && (
-                  <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                    {filteredStocks.map((stock) => (
-                      <button
-                        key={stock.symbol}
-                        onClick={() => {
-                          const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                          setCurrentStockIndex(stockIndex);
-                          setSearchTerm('');
-                          setShowDropdown(false);
-                        }}
-                        className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
-                        <div className="text-xs text-gray-600 truncate">{stock.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              ) : (
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              )}
+
+              {showDropdown && searchTerm && (
+                <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                  {filteredStocks.map((stock) => (
+                    <button
+                      key={stock.symbol}
+                      onClick={() => {
+                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                        setCurrentStockIndex(stockIndex);
+                        setSearchTerm('');
+                        setShowDropdown(false);
+                      }}
+                      className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
+                      <div className="text-xs text-gray-600 truncate">{stock.name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
     </div>
-
-        <header className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <Select 
-              value={selectedIndexId.toString()} 
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex space-x-1">
-              {INTERVALS.map((interval) => (
-                <Button
-                  key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => handleIntervalChange(interval.value)}
-                  className={`text-xs px-2 h-7 ${
-                    selectedInterval === interval.value
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {interval.label}
-                </Button>
+    
+    {/* Add padding to prevent content from hiding behind sticky nav */}
+    <div className="pt-[72px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+      <header className="bg-white rounded-lg shadow-sm p-4">
+        <div className="flex items-center justify-between">
+          <Select 
+            value={selectedIndexId.toString()} 
+            onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+          >
+            <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
+              <SelectValue placeholder="Select Index" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-300 text-gray-900">
+              {indexData.map((item, index) => (
+                <SelectItem key={index} value={index.toString()} className="text-sm">
+                  {item.label}
+                </SelectItem>
               ))}
-            </div>
-          </div>
-        </header>
+            </SelectContent>
+          </Select>
 
-        <main className="space-y-4">
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-0 sm:p-2">
-              {loading ? (
-                <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
-                  <p className="text-sm text-gray-600">Loading stock data...</p>
-                </div>
-              ) : error ? (
-                <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
-                  <div className="text-red-600 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  {currentStock && (
-                    <div className="w-full bg-white bg-opacity-80 p-4 border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
-                          <p className="text-sm text-gray-600 truncate">{currentStock.name}</p>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className="text-xl font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</span>
-                          <Badge 
-                            variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                            className={`text-sm mt-1 ${
-                              currentStock.todayChange && currentStock.todayChange >= 0
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                          </Badge>
-                        </div>
+          <div className="flex space-x-1">
+            {INTERVALS.map((interval) => (
+              <Button
+                key={interval.value}
+                variant={selectedInterval === interval.value ? "default" : "secondary"}
+                size="sm"
+                onClick={() => handleIntervalChange(interval.value)}
+                className={`text-xs px-2 h-7 ${
+                  selectedInterval === interval.value
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {interval.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main className="space-y-4">
+        <Card className="bg-white shadow-sm">
+          <CardContent className="p-0 sm:p-2">
+            {loading ? (
+              <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
+                <p className="text-sm text-gray-600">Loading stock data...</p>
+              </div>
+            ) : error ? (
+              <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
+                <div className="text-red-600 text-sm mb-2">{error}</div>
+                <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                {currentStock && (
+                  <div className="w-full bg-white bg-opacity-80 p-4 border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
+                        <p className="text-sm text-gray-600 truncate">{currentStock.name}</p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xl font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</span>
+                        <Badge 
+                          variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                          className={`text-sm mt-1 ${
+                            currentStock.todayChange && currentStock.todayChange >= 0
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                        </Badge>
                       </div>
                     </div>
-                  )}
-                  <div ref={chartContainerRef} className="h-[500px] sm:h-[550px] lg:h-[600px]" />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </main>
+                  </div>
+                )}
+                <div ref={chartContainerRef} className="h-[500px] sm:h-[550px] lg:h-[600px]" />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </main>
 
-        <footer className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={handlePrevious}
-              disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Prev</span>
-            </Button>
-            
-            <span className="text-sm text-gray-600">
-              <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-gray-400 mx-1">/</span>
-              <span className="text-gray-400">{stocks.length}</span>
-            </span>
-            
-            <Button
-              variant="ghost"
-              onClick={handleNext}
-              disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </footer>
-      </div>
+      <footer className="bg-white rounded-lg shadow-sm p-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={handlePrevious}
+            disabled={currentStockIndex === 0}
+            className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Prev</span>
+          </Button>
+          
+          <span className="text-sm text-gray-600">
+            <span className="font-medium">{currentStockIndex + 1}</span>
+            <span className="text-gray-400 mx-1">/</span>
+            <span className="text-gray-400">{stocks.length}</span>
+          </span>
+          
+          <Button
+            variant="ghost"
+            onClick={handleNext}
+            disabled={currentStockIndex === stocks.length - 1}
+            className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </footer>
     </div>
-  );
-}
+  </div>
+);
