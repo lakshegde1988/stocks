@@ -92,7 +92,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 450 : 500;
+    return window.innerWidth < 640 ? 500 : window.innerWidth < 1024 ? 550 : 600;
   }, []);
 
   useEffect(() => {
@@ -353,12 +353,12 @@ export default function Component() {
           <Card className="bg-white shadow-sm">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
-                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
+                <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
                   <p className="text-sm text-gray-600">Loading stock data...</p>
                 </div>
               ) : error ? (
-                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
+                <div className="h-[500px] sm:h-[550px] lg:h-[600px] flex flex-col items-center justify-center">
                   <div className="text-red-600 text-sm mb-2">{error}</div>
                   <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                 </div>
@@ -383,7 +383,7 @@ export default function Component() {
                       </div>
                     </div>
                   )}
-                  <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] lg:h-[500px]" />
+                  <div ref={chartContainerRef} className="h-[500px] sm:h-[550px] lg:h-[600px]" />
                 </div>
               )}
             </CardContent>
