@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, BarChart } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, X, Loader2 ,BarChart} from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,233 +58,163 @@ const INTERVALS = [
 ];
 
 const chartColors = {
-  upColor: '#3366cc',
-  downColor: '#e0407d',
-  backgroundColor: '#ffffff',
-  textColor: '#94a3b8',
-  borderColor: '#1e293b',
-  gridColor: '#1e293b',
-  crosshairColor: '#475569',
-  barColors: ['#3366cc', '#e0407d'],
-};
+  upColor: '#22c55e',
+  downColor: '#ef4444',
+  backgroundColor: '#f3f4f6',
+  textColor: '#1f2937', // Darker text color for better visibility
+  gridColor: '#e5e7eb',
+  crosshairColor: '#9ca3af',
+}
 
 export default function Component() {
-  const [indexData] = useState<IndexData[]>([
-    { label: 'Nifty 50', data: nifty50Data },
-    { label: 'Nifty Next 50', data: niftyNext50Data },
-    { label: 'Midcap 150', data: midcap150Data },
-    { label: 'Smallcap 250', data: smallcap250Data },
-    { label: 'MicroCap 250', data: microCap250Data },
-  ]);
-  
-  const [selectedIndexId, setSelectedIndexId] = useState(0);
-  const [currentStockIndex, setCurrentStockIndex] = useState(0);
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedInterval, setSelectedInterval] = useState('daily');
-  const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [stockStats, setStockStats] = useState({
-    dayHigh: 0,
-    dayLow: 0,
-    volume: 0,
-    avgVolume: 0,
-  });
-  
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartInstanceRef = useRef<IChartApi | null>(null);
-  const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [selectedIndexId, setSelectedIndexId] = useState(0)
+  const [currentStockIndex, setCurrentStockIndex] = useState(0)
+  const [stocks, setStocks] = useState([])
+  const [chartData, setChartData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [selectedInterval, setSelectedInterval] = useState('daily')
+  const [currentStock, setCurrentStock] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
 
-  const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 450 : window.innerWidth < 1024 ? 500 : 600;
-  }, []);
+  const chartContainerRef = useRef(null)
+  const chartInstanceRef = useRef(null)
+  const searchRef = useRef(null)
 
   useEffect(() => {
-    const selectedIndex = indexData[selectedIndexId];
-    const stocksList = selectedIndex.data.map(item => ({
+    // Simulating stock data fetch
+    setStocks(nifty50Data.map(item => ({
       symbol: item.Symbol,
       name: item["Company Name"],
       industry: item.Industry
-    }));
-    setStocks(stocksList);
-    setCurrentStockIndex(0);
-  }, [selectedIndexId, indexData]);
+    })))
+    setLoading(false)
+  }, [])
 
-  const fetchStockData = useCallback(async () => {
-    if (!stocks.length) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const currentStock = stocks[currentStockIndex];
-      const interval = INTERVALS.find(i => i.value === selectedInterval);
-
-      if (!interval) throw new Error('Invalid interval');
-
-      const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
-        params: {
-          symbol: currentStock.symbol,
-          range: interval.range,
-          interval: interval.interval
-        }
-      });
-
-      if (response.data && Array.isArray(response.data)) {
-        setChartData(response.data);
-        setCurrentStock({
-          ...currentStock,
-          price: response.data[response.data.length - 1]?.close,
-          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
-          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        });
-        setStockStats({
-          dayHigh: Math.max(...response.data.map(d => d.high)),
-          dayLow: Math.min(...response.data.map(d => d.low)),
-          volume: response.data[response.data.length - 1]?.volume || 0,
-          avgVolume: response.data.reduce((sum, d) => sum + d.volume, 0) / response.data.length,
-        });
-      }
-    } catch (err) {
-      setError((err as Error).message || 'Failed to fetch stock data');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (stocks.length > 0) {
+      setCurrentStock(stocks[currentStockIndex])
     }
-  }, [stocks, currentStockIndex, selectedInterval]);
+  }, [stocks, currentStockIndex])
 
   useEffect(() => {
-    fetchStockData();
-  }, [fetchStockData]);
+    if (currentStock) {
+      fetchStockData()
+    }
+  }, [currentStock, selectedInterval])
+
+  const fetchStockData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      // Simulating API call
+      const response = await new Promise(resolve => setTimeout(() => resolve({
+        data: Array.from({ length: 30 }, (_, i) => ({
+          time: `2023-${(i + 1).toString().padStart(2, '0')}-01`,
+          open: Math.random() * 100 + 50,
+          high: Math.random() * 100 + 60,
+          low: Math.random() * 100 + 40,
+          close: Math.random() * 100 + 50,
+        }))
+      }), 1000))
+
+      setChartData(response.data)
+      updateChart(response.data)
+    } catch (err) {
+      setError("Failed to fetch stock data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateChart = (data) => {
+    if (chartInstanceRef.current) {
+      const series = chartInstanceRef.current.series()[0]
+      series.setData(data)
+      chartInstanceRef.current.timeScale().fitContent()
+    }
+  }
 
   useEffect(() => {
-    if (!chartContainerRef.current || !chartData.length) return;
-
-    const handleResize = () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.applyOptions({
-          width: chartContainerRef.current!.clientWidth,
-          height: getChartHeight(),
-        });
+    if (chartContainerRef.current && chartData.length > 0) {
+      const handleResize = () => {
+        chartInstanceRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
       }
-    };
 
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: getChartHeight(),
-      layout: {
-        background: { type: ColorType.Solid, color: chartColors.backgroundColor },
-        textColor: chartColors.textColor,
-      },
-      grid: {
-        vertLines: { visible:false },
-        horzLines: { visible:false },
-      },
-      rightPriceScale: {
-        borderColor: chartColors.borderColor,
-      },
-      timeScale: {
-        borderColor: chartColors.borderColor,
-        timeVisible: true,
-        secondsVisible: false,
-        rightOffset: 5,
-        minBarSpacing: 3,
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: {
-          color: chartColors.crosshairColor,
-          labelBackgroundColor: chartColors.backgroundColor,
+      chartInstanceRef.current = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: 500,
+        layout: {
+          background: { type: ColorType.Solid, color: chartColors.backgroundColor },
+          textColor: chartColors.textColor,
         },
-        horzLine: {
-          color: chartColors.crosshairColor,
-          labelBackgroundColor: chartColors.backgroundColor,
+        grid: {
+          vertLines: { color: chartColors.gridColor },
+          horzLines: { color: chartColors.gridColor },
         },
-      },
-    });
+        crosshair: {
+          mode: CrosshairMode.Normal,
+          vertLine: { color: chartColors.crosshairColor },
+          horzLine: { color: chartColors.crosshairColor },
+        },
+        rightPriceScale: {
+          borderColor: chartColors.gridColor,
+        },
+        timeScale: {
+          borderColor: chartColors.gridColor,
+          timeVisible: true,
+          secondsVisible: false,
+        },
+      })
 
-    chartInstanceRef.current = chart;
+      const candlestickSeries = chartInstanceRef.current.addCandlestickSeries({
+        upColor: chartColors.upColor,
+        downColor: chartColors.downColor,
+      })
 
-    const barSeries = chart.addBarSeries({
-      upColor: chartColors.upColor,
-      downColor: chartColors.downColor,
-      thinBars: false,
-    });
+      candlestickSeries.setData(chartData)
 
-    barSeriesRef.current = barSeries;
-    barSeries.setData(chartData.map(d => ({
-      time: d.time,
-      open: d.open,
-      high: d.high,
-      low: d.low,
-      close: d.close,
-    } as BarData)));
+      window.addEventListener('resize', handleResize)
 
-    barSeries.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.1,
-        bottom: 0.2,
-      },
-    });
-    chart.timeScale().fitContent();
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      chart.remove();
-    };
-  }, [chartData, getChartHeight]);
-
-  const handleIntervalChange = (newInterval: string) => {
-    setSelectedInterval(newInterval);
-  };
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        chartInstanceRef.current.remove()
+      }
+    }
+  }, [chartData])
 
   const handlePrevious = () => {
     if (currentStockIndex > 0) {
-      setCurrentStockIndex(prev => prev - 1);
+      setCurrentStockIndex(prev => prev - 1)
     }
-  };
+  }
 
   const handleNext = () => {
     if (currentStockIndex < stocks.length - 1) {
-      setCurrentStockIndex(prev => prev + 1);
+      setCurrentStockIndex(prev => prev + 1)
     }
-  };
+  }
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
+  const handleSearch = (term) => {
+    setSearchTerm(term)
+    if (term) {
+      const filteredStocks = stocks.filter(stock => 
+        stock.symbol.toLowerCase().includes(term.toLowerCase()) ||
+        stock.name.toLowerCase().includes(term.toLowerCase())
+      )
+      if (filteredStocks.length > 0) {
+        const index = stocks.findIndex(stock => stock.symbol === filteredStocks[0].symbol)
+        setCurrentStockIndex(index)
+        setShowDropdown(false)
       }
     }
+  }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredStocks = stocks.filter(stock => 
-    searchTerm && (
-      stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ).slice(0, 10);
-
-  // Format large numbers
-  const formatNumber = (num: number) => {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num.toString();
-  };
-
- return (
+  return (
     <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900">
       <header className="sticky top-0 z-10 bg-white shadow-md">
-        <div className="max-w-7xl mx-auto w-full">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <BarChart className="h-8 w-8 text-blue-600" />
@@ -297,25 +227,18 @@ export default function Component() {
                 type="text"
                 placeholder="Search stocks..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value)
-                  setShowDropdown(true)
-                }}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pr-8 text-sm h-10 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500 rounded-full"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
                   className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" 
-                  onClick={() => {
-                    setSearchTerm('')
-                    setShowDropdown(false)
-                  }}
+                  onClick={() => handleSearch('')}
                 />
               ) : (
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               )}
-              {/* Dropdown implementation remains the same */}
             </div>
           </div>
         </div>
@@ -332,7 +255,6 @@ export default function Component() {
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-300 text-gray-900">
-                {/* Assume indexData is defined */}
                 {[{ label: 'Nifty 50' }].map((item, index) => (
                   <SelectItem key={index} value={index.toString()} className="text-sm">
                     {item.label}
@@ -370,16 +292,24 @@ export default function Component() {
                       <p className="text-sm text-gray-600">{currentStock.name}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-gray-900">{currentStock.price?.toFixed(2)}</div>
+                      <div className="text-3xl font-bold text-gray-900">
+                        {chartData.length > 0 ? chartData[chartData.length - 1].close.toFixed(2) : 'N/A'}
+                      </div>
                       <Badge 
-                        variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                        variant={chartData.length > 1 && chartData[chartData.length - 1].close > chartData[chartData.length - 2].close ? "default" : "destructive"}
                         className={`text-sm mt-1 ${
-                          currentStock.todayChange && currentStock.todayChange >= 0
+                          chartData.length > 1 && chartData[chartData.length - 1].close > chartData[chartData.length - 2].close
                             ? 'bg-green-600 text-white'
                             : 'bg-red-600 text-white'
                         }`}
                       >
-                        {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                        {chartData.length > 1 ? (
+                          chartData[chartData.length - 1].close > chartData[chartData.length - 2].close ? '↑' : '↓'
+                        ) : ''} 
+                        {chartData.length > 1 
+                          ? ((chartData[chartData.length - 1].close - chartData[chartData.length - 2].close) / chartData[chartData.length - 2].close * 100).toFixed(2)
+                          : 0
+                        }%
                       </Badge>
                     </div>
                   </div>
