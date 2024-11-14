@@ -281,54 +281,29 @@ export default function Component() {
     return num.toString();
   };
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
+ return (
+    <div className="flex flex-col min-h-screen bg-gray-100 text-gray-900"> {/* Inverted: Light background */}
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"> {/* Inverted: White background */}
           <div className="flex items-center space-x-4">
-            <BarChart className="h-8 w-8 text-blue-500" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent">
+            <BarChart className="h-8 w-8 text-blue-600" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
               dotcharts
             </h1>
           </div>
-          <div className="relative w-64" ref={searchRef}>
-            <Input
-              type="text"
-              placeholder="Search stocks..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setShowDropdown(true)
-              }}
-              className="pr-8 text-sm h-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 rounded-full"
-              aria-label="Search stocks"
-            />
-            {searchTerm ? (
-              <X 
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-white cursor-pointer" 
-                onClick={() => {
-                  setSearchTerm('')
-                  setShowDropdown(false)
-                }}
-              />
-            ) : (
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            )}
-            {/* Dropdown implementation remains the same */}
-          </div>
         </header>
 
-        <nav className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+        <nav className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm"> {/* Inverted: White background */}
           <Select 
             value={selectedIndexId.toString()} 
             onValueChange={(value) => setSelectedIndexId(parseInt(value))}
           >
-            <SelectTrigger className="w-[180px] text-sm bg-gray-700 border-gray-600 text-white rounded-md">
+            <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900 rounded-md">
               <SelectValue placeholder="Select Index" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700 text-white">
+            <SelectContent className="bg-white border-gray-300 text-gray-900">
               {/* Assume indexData is defined */}
-              {indexData.map((item, index) => (
+              {[{ label: 'Nifty 50' }].map((item, index) => (
                 <SelectItem key={index} value={index.toString()} className="text-sm">
                   {item.label}
                 </SelectItem>
@@ -346,7 +321,7 @@ export default function Component() {
                 className={`text-xs px-3 py-1 rounded-full ${
                   selectedInterval === interval.value
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
                 {interval.label}
@@ -357,15 +332,15 @@ export default function Component() {
 
         <main className="space-y-6">
           {currentStock && (
-            <Card className="border-gray-700 bg-gray-800 overflow-hidden">
+            <Card className="border-gray-200 bg-white overflow-hidden shadow-sm"> {/* Inverted: White background */}
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white">{currentStock.symbol}</h2>
-                    <p className="text-sm text-gray-400">{currentStock.name}</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{currentStock.symbol}</h2>
+                    <p className="text-sm text-gray-600">{currentStock.name}</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-white">{currentStock.price?.toFixed(2)}</div>
+                    <div className="text-3xl font-bold text-gray-900">{currentStock.price?.toFixed(2)}</div>
                     <Badge 
                       variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                       className={`text-sm mt-1 ${
@@ -382,17 +357,17 @@ export default function Component() {
             </Card>
           )}
 
-          <Card className="border-gray-700 bg-gray-800">
+          <Card className="border-gray-200 bg-white shadow-sm"> {/* Inverted: White background */}
             <CardContent className="p-0 sm:p-2">
               {loading ? (
                 <div className="h-[500px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-                  <p className="text-sm text-gray-400">Loading stock data...</p>
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                  <p className="text-sm text-gray-600">Loading stock data...</p>
                 </div>
               ) : error ? (
                 <div className="h-[500px] flex flex-col items-center justify-center">
-                  <div className="text-red-500 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-gray-400">Please try again later or select a different stock.</p>
+                  <div className="text-red-600 text-sm mb-2">{error}</div>
+                  <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                 </div>
               ) : (
                 <div ref={chartContainerRef} className="h-[500px]" />
@@ -401,18 +376,18 @@ export default function Component() {
           </Card>
         </main>
 
-        <footer className="flex items-center justify-between bg-gray-800 rounded-lg p-4">
+        <footer className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm"> {/* Inverted: White background */}
           <Button
             variant="ghost"
             onClick={handlePrevious}
             disabled={currentStockIndex === 0}
-            className="h-10 px-4 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-full"
+            className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
           >
             <ChevronLeft className="h-5 w-5 mr-1" />
             <span className="hidden sm:inline">Previous</span>
           </Button>
           
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-600">
             <span className="font-medium">{currentStockIndex + 1}</span>
             <span className="mx-1">/</span>
             <span>{stocks.length}</span>
@@ -422,7 +397,7 @@ export default function Component() {
             variant="ghost"
             onClick={handleNext}
             disabled={currentStockIndex === stocks.length - 1}
-            className="h-10 px-4 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-full"
+            className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full"
           >
             <span className="hidden sm:inline">Next</span>
             <ChevronRight className="h-5 w-5 ml-1" />
