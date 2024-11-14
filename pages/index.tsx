@@ -371,11 +371,11 @@ export default function Component() {
                           <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
                           <p className="text-sm text-gray-600 truncate">{currentStock.name}</p>
                         </div>
-                        <div className="flex items-center">
-                          <span className="text-xl font-semibold text-gray-900 mr-2">{currentStock.price?.toFixed(2)}</span>
+                        <div className="flex flex-col items-end">
+                          <span className="text-xl font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</span>
                           <Badge 
                             variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                            className={`text-sm ${
+                            className={`text-sm mt-1 ${
                               currentStock.todayChange && currentStock.todayChange >= 0
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-red-100 text-red-800'
