@@ -357,7 +357,7 @@ export default function Component() {
       </header>
 
       <main className="space-y-4 rounded-lg">
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-white sm:p-4">
           <CardContent className="p-0 sm:p-2">
             {loading ? (
               <div className="h-[400px] sm:h-400px] lg:h-[600px] flex flex-col items-center justify-center">
