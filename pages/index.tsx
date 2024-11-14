@@ -1,15 +1,16 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, BarData, CrosshairMode } from 'lightweight-charts';
-import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, CrosshairMode } from 'lightweight-charts'
+import axios from 'axios'
+import { ChevronLeft, ChevronRight, Search, X, Loader2, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 
 // Import JSON data
 import nifty50Data from '../public/nifty50.json';
@@ -64,7 +65,7 @@ const chartColors = {
   gridColor: '#f3f4f6',
   crosshairColor: '#9ca3af',
   barColors: ['#3b82f6', '#ef4444'],
-};
+}
 
 export default function Component() {
   const [indexData] = useState<IndexData[]>([
@@ -260,173 +261,156 @@ export default function Component() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
-      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <nav className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
-            <div className="relative w-48 sm:w-64" ref={searchRef}>
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <header className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h1 className="text-3xl font-bold text-blue-600">dotcharts</h1>
+            <div className="relative w-full sm:w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
+                  setSearchTerm(e.target.value)
+                  setShowDropdown(true)
                 }}
-                className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
+                className="pr-8 text-sm h-10 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500 rounded-lg"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
                   onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
+                    setSearchTerm('')
+                    setShowDropdown(false)
                   }}
                 />
               ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               )}
-
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
-                      <div className="text-xs text-gray-600 truncate">{stock.name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </nav>
-
-        <header className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex items-center justify-between">
-            <Select 
-              value={selectedIndexId.toString()} 
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex space-x-1">
-              {INTERVALS.map((interval) => (
-                <Button
-                  key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => handleIntervalChange(interval.value)}
-                  className={`text-xs px-2 h-7 ${
-                    selectedInterval === interval.value
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {interval.label}
-                </Button>
-              ))}
+              <AnimatePresence>
+                {showDropdown && filteredStocks.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto"
+                  >
+                    {filteredStocks.map((stock, index) => (
+                      <div
+                        key={stock.symbol}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        onClick={() => {
+                          setCurrentStockIndex(stocks.findIndex(s => s.symbol === stock.symbol))
+                          setSearchTerm('')
+                          setShowDropdown(false)
+                        }}
+                      >
+                        <div className="font-medium">{stock.symbol}</div>
+                        <div className="text-gray-500">{stock.name}</div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
 
-        <main className="space-y-4">
-          {currentStock && (
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-semibold truncate text-gray-900">{currentStock.symbol}</h2>
-                    <p className="text-sm text-gray-600 truncate">
-                      {currentStock.name}
-                    </p>
+        <main className="space-y-8">
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
+              {currentStock && (
+                <div className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">{currentStock.symbol}</h2>
+                      <p className="text-blue-100">{currentStock.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold">{currentStock.price?.toFixed(2)}</div>
+                      <Badge 
+                        variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                        className={`text-sm mt-1 ${
+                          currentStock.todayChange && currentStock.todayChange >= 0
+                            ? 'bg-green-500 text-white'
+                            : 'bg-red-500 text-white'
+                        }`}
+                      >
+                        {currentStock.todayChange && currentStock.todayChange >= 0 ? (
+                          <ArrowUpRight className="inline mr-1 h-4 w-4" />
+                        ) : (
+                          <ArrowDownRight className="inline mr-1 h-4 w-4" />
+                        )}
+                        {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end ml-4">
-                    <div className="text-lg font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</div>
-                    <Badge 
-                      variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                      className={`text-xs mt-1 ${
-                        currentStock.todayChange && currentStock.todayChange >= 0
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                    </Badge>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="bg-white shadow-sm">
-            <CardContent className="p-0 sm:p-2">
-              {loading ? (
-                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
-                  <p className="text-sm text-gray-600">Loading stock data...</p>
-                </div>
-              ) : error ? (
-                <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
-                  <div className="text-red-600 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
-                </div>
-              ) : (
-                <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] lg:h-[500px]" />
               )}
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <Select value={selectedInterval} onValueChange={handleIntervalChange}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select interval" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTERVALS.map((interval) => (
+                        <SelectItem key={interval.value} value={interval.value}>
+                          {interval.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {loading ? (
+                  <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                    <p className="text-lg text-gray-600">Loading stock data...</p>
+                  </div>
+                ) : error ? (
+                  <div className="h-[400px] sm:h-[450px] lg:h-[500px] flex flex-col items-center justify-center">
+                    <div className="text-red-600 text-lg mb-2">{error}</div>
+                    <p className="text-gray-600">Please try again later or select a different stock.</p>
+                  </div>
+                ) : (
+                  <div ref={chartContainerRef} className="h-[400px] sm:h-[450px] lg:h-[500px]" />
+                )}
+              </div>
             </CardContent>
           </Card>
         </main>
 
-        <footer className="bg-white rounded-lg shadow-sm p-4">
+        <footer className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between">
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Prev</span>
+              <ChevronLeft className="h-5 w-5 mr-2" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             
             <span className="text-sm text-gray-600">
               <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-gray-400 mx-1">/</span>
+              <span className="text-gray-400 mx-2">/</span>
               <span className="text-gray-400">{stocks.length}</span>
             </span>
             
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="h-10 px-4 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 ml-1" />
+              <ChevronRight className="h-5 w-5 ml-2" />
             </Button>
           </div>
         </footer>
       </div>
     </div>
-  );
+  )
 }
