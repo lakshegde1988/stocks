@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, BarChart } from 'lucide-react'
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
