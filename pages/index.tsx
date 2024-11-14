@@ -317,7 +317,7 @@ export default function Component() {
     </div>
     
     {/* Add padding to prevent content from hiding behind sticky nav */}
-    <div className="pt-[92px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+    <div className="pt-[82px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
       <header className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between">
           <Select 
@@ -360,12 +360,12 @@ export default function Component() {
         <Card className="bg-white shadow-sm">
           <CardContent className="p-0 sm:p-2">
             {loading ? (
-              <div className="h-[500px] sm:h-[500px] lg:h-[600px] flex flex-col items-center justify-center">
+              <div className="h-[400px] sm:h-400px] lg:h-[600px] flex flex-col items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
                 <p className="text-sm text-gray-600">Loading stock data...</p>
               </div>
             ) : error ? (
-              <div className="h-[500px] sm:h-[500px] lg:h-[600px] flex flex-col items-center justify-center">
+              <div className="h-[400px] sm:h-[400px] lg:h-[600px] flex flex-col items-center justify-center">
                 <div className="text-red-600 text-sm mb-2">{error}</div>
                 <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
               </div>
@@ -394,7 +394,7 @@ export default function Component() {
                     </div>
                   </div>
                 )}
-                <div ref={chartContainerRef} className="h-[500px] sm:h-[450px] lg:h-[600px]" />
+                <div ref={chartContainerRef} className="h-[400px] sm:h-[400px] lg:h-[600px]" />
               </div>
             )}
           </CardContent>
