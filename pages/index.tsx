@@ -58,7 +58,7 @@ const INTERVALS = [
 const chartColors = {
   upColor: '#16a34a',
   downColor: '#ef4444',
-  backgroundColor: '#e2e8f0',
+  backgroundColor: '#ffffff',
   textColor: '#1f2937',
   borderColor: '#e5e7eb',
   gridColor: '#f3f4f6',
