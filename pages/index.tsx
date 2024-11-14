@@ -317,7 +317,7 @@ export default function Component() {
     </div>
     
     {/* Add padding to prevent content from hiding behind sticky nav */}
-    <div className="pt-[82px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
+    <div className="pt-[90px] max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
       <header className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between">
           <Select 
@@ -372,7 +372,7 @@ export default function Component() {
             ) : (
               <div className="flex flex-col">
                 {currentStock && (
-                  <div className="w-full bg-white bg-opacity-80 p-4 border-gray-200">
+                  <div className="w-full bg-white border-b bg-opacity-80 p-4 border-gray-200">
                     <div className="flex justify-between items-center">
                       <div>
                         <h2 className="text-xl font-semibold text-gray-900">{currentStock.symbol}</h2>
