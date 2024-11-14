@@ -18,7 +18,6 @@ import midcap150Data from '../public/midcap150.json';
 import smallcap250Data from '../public/smallcap250.json';
 import microCap250Data from '../public/microcap250.json';
 
-
 interface StockData {
   Symbol: string;
   "Company Name": string;
@@ -58,14 +57,14 @@ const INTERVALS = [
 ];
 
 const chartColors = {
-  upColor: '#3366cc',
-  downColor: '#e0407d',
-  backgroundColor: '#0f172a',
-  textColor: '#94a3b8',
-  borderColor: '#1e293b',
-  gridColor: '#1e293b',
-  crosshairColor: '#475569',
-  barColors: ['#3366cc', '#e0407d'],
+  upColor: '#22c55e',
+  downColor: '#ef4444',
+  backgroundColor: '#ffffff',
+  textColor: '#1f2937',
+  borderColor: '#e5e7eb',
+  gridColor: '#f3f4f6',
+  crosshairColor: '#9ca3af',
+  barColors: ['#3b82f6', '#ef4444'],
 };
 
 export default function Component() {
@@ -100,7 +99,7 @@ export default function Component() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 450 : window.innerWidth < 1024 ? 500 : 600;
+    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 500;
   }, []);
 
   useEffect(() => {
@@ -180,8 +179,8 @@ export default function Component() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { visible:false },
-        horzLines: { visible:false },
+        vertLines: { color: chartColors.gridColor },
+        horzLines: { color: chartColors.gridColor },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
@@ -282,12 +281,12 @@ export default function Component() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0f172a] text-slate-200">
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 space-y-4">
-        <nav className="bg-slate-800/50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-white">dotcharts</h1>
-            <div className="relative w-48" ref={searchRef}>
+        <nav className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h1 className="text-2xl font-bold text-blue-600">dotcharts</h1>
+            <div className="relative w-full sm:w-64" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -296,23 +295,23 @@ export default function Component() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-sm h-9 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400"
+                className="pr-8 text-sm h-9 bg-gray-100 border-gray-300 text-gray-900 placeholder-gray-500"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
                 <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-white cursor-pointer" 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" 
                   onClick={() => {
                     setSearchTerm('');
                     setShowDropdown(false);
                   }}
                 />
               ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               )}
 
               {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                <div className="absolute w-full mt-1 py-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
                   {filteredStocks.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -322,10 +321,10 @@ export default function Component() {
                         setSearchTerm('');
                         setShowDropdown(false);
                       }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-slate-700 transition-colors"
+                      className="w-full px-3 py-1.5 text-left hover:bg-gray-100 transition-colors"
                     >
-                      <div className="font-medium text-xs text-white">{stock.symbol}</div>
-                      <div className="text-xs text-slate-400 truncate">{stock.name}</div>
+                      <div className="font-medium text-sm text-gray-900">{stock.symbol}</div>
+                      <div className="text-xs text-gray-600 truncate">{stock.name}</div>
                     </button>
                   ))}
                 </div>
@@ -334,16 +333,16 @@ export default function Component() {
           </div>
         </nav>
 
-        <header className="bg-slate-800/50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <header className="bg-white rounded-lg shadow-sm p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] text-sm bg-slate-700/50 border-slate-600 text-white">
+              <SelectTrigger className="w-full sm:w-[180px] text-sm bg-gray-100 border-gray-300 text-gray-900">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+              <SelectContent className="bg-white border-gray-300 text-gray-900">
                 {indexData.map((item, index) => (
                   <SelectItem key={index} value={index.toString()} className="text-sm">
                     {item.label}
@@ -362,7 +361,7 @@ export default function Component() {
                   className={`text-xs px-2 h-7 ${
                     selectedInterval === interval.value
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   {interval.label}
@@ -372,26 +371,26 @@ export default function Component() {
           </div>
         </header>
 
-        <main className="space-y-4 bg-slate-800/50">
+        <main className="space-y-4">
           {currentStock && (
-            <div className="grid grid-cols-1">
-              <Card className="border-slate-700 bg-slate-800/50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="border-gray-200 bg-white shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-semibold truncate text-white">{currentStock.symbol}</h2>
-                      <p className="text-sm text-slate-400 truncate">
+                      <h2 className="text-lg font-semibold truncate text-gray-900">{currentStock.symbol}</h2>
+                      <p className="text-sm text-gray-600 truncate">
                         {currentStock.name}
                       </p>
                     </div>
                     <div className="flex flex-col items-end ml-4">
-                      <div className="text-lg font-semibold text-white">{currentStock.price?.toFixed(2)}</div>
+                      <div className="text-lg font-semibold text-gray-900">{currentStock.price?.toFixed(2)}</div>
                       <Badge 
                         variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                         className={`text-xs mt-1 ${
                           currentStock.todayChange && currentStock.todayChange >= 0
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-rose-600 text-white'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                         }`}
                       >
                         {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
@@ -400,51 +399,84 @@ export default function Component() {
                   </div>
                 </CardContent>
               </Card>
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Day Range</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-900">{stockStats.dayLow.toFixed(2)}</span>
+                    <span className="text-sm text-gray-900">{stockStats.dayHigh.toFixed(2)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{
+                        width: `${((currentStock.price || 0) - stockStats.dayLow) / (stockStats.dayHigh - stockStats.dayLow) * 100}%`
+                      }}
+                    ></div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Volume</h3>
+                  <div className="text-lg font-semibold text-gray-900">{formatNumber(stockStats.volume)}</div>
+                  <p className="text-sm text-gray-600">Avg: {formatNumber(stockStats.avgVolume)}</p>
+                </CardContent>
+              </Card>
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardContent className="p-4">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Change</h3>
+                  <div className={`text-lg font-semibold ${currentStock.change && currentStock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {currentStock.change && currentStock.change >= 0 ? '+' : ''}{currentStock.change?.toFixed(2)}%
+                  </div>
+                  <p className="text-sm text-gray-600">Since {INTERVALS.find(i => i.value === selectedInterval)?.label}</p>
+                </CardContent>
+              </Card>
             </div>
           )}
 
-          <Card className="bg-slate-800/50 bg-slate-800/50">
+          <Card className="bg-white shadow-sm">
             <CardContent className="p-0 sm:p-2">
               {loading ? (
-                <div className="h-[450px] flex flex-col items-center justify-center">
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mb-2" />
-                  <p className="text-sm text-slate-400">Loading stock data...</p>
+                <div className="h-[300px] sm:h-[400px] lg:h-[500px] flex flex-col items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600 mb-2" />
+                  <p className="text-sm text-gray-600">Loading stock data...</p>
                 </div>
               ) : error ? (
-                <div className="h-[450px] flex flex-col items-center justify-center">
-                  <div className="text-rose-500 text-sm mb-2">{error}</div>
-                  <p className="text-xs text-slate-400">Please try again later or select a different stock.</p>
+                <div className="h-[300px] sm:h-[400px] lg:h-[500px] flex flex-col items-center justify-center">
+                  <div className="text-red-600 text-sm mb-2">{error}</div>
+                  <p className="text-xs text-gray-600">Please try again later or select a different stock.</p>
                 </div>
               ) : (
-                <div ref={chartContainerRef} className="h-[450px]" />
+                <div ref={chartContainerRef} className="h-[300px] sm:h-[400px] lg:h-[500px]" />
               )}
             </CardContent>
           </Card>
         </main>
 
-        <footer className="bg-slate-800/50 rounded-lg p-4">
+        <footer className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               onClick={handlePrevious}
               disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700"
+              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Prev</span>
             </Button>
             
-            <span className="text-sm text-slate-300">
+            <span className="text-sm text-gray-600">
               <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-slate-500 mx-1">/</span>
-              <span className="text-slate-500">{stocks.length}</span>
+              <span className="text-gray-400 mx-1">/</span>
+              <span className="text-gray-400">{stocks.length}</span>
             </span>
             
             <Button
               variant="ghost"
               onClick={handleNext}
               disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700"
+              className="h-8 px-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
               <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4 ml-1" />
