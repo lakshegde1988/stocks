@@ -120,7 +120,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerHeight - 80; // Subtracting height of bottom navbar
+    return window.innerHeight - 112; // Subtracting height of both bottom bars (16px + 12px) and some padding
   }, []);
 
   useEffect(() => {
@@ -337,7 +337,7 @@ export default function StockChart() {
 
       <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20 py-2 space-x-4">
+          <div className="flex items-center justify-between h-16 py-2 space-x-4">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
@@ -399,28 +399,6 @@ export default function StockChart() {
               )}
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm">
-                {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
             <div className="flex space-x-1">
               {INTERVALS.map((interval) => (
                 <Button
@@ -435,6 +413,29 @@ export default function StockChart() {
                 </Button>
               ))}
             </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 border-t border-slate-200/5">
+          <div className="flex items-center justify-center h-12 py-2 space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </footer>
