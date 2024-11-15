@@ -437,4 +437,96 @@ export default function StockChart() {
       </footer>
     </div>
   );
-}
+}return (
+  <div className="flex flex-col h-screen bg-background text-foreground">
+    <main className="flex-1 relative overflow-hidden">
+      {/* Floating Header: Search + Interval Buttons */}
+      <div className="absolute top-4 left-4 z-20 flex flex-col space-y-2 bg-background/80 p-2 rounded-lg shadow-md backdrop-blur">
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Search Stocks..."
+            className="text-sm w-48 bg-muted/10 rounded-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Button className="px-2 py-1">
+            <Search className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex space-x-2">
+          {INTERVALS.map((interval) => (
+            <Button
+              key={interval.value}
+              variant={selectedInterval === interval.value ? "default" : "secondary"}
+              size="sm"
+              className={`rounded-lg ${selectedInterval === interval.value ? "shadow-md" : ""}`}
+              onClick={() => handleIntervalChange(interval.value)}
+            >
+              {interval.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart Area */}
+      <div className="absolute inset-0">
+        {loading ? (
+          <div className="h-full flex flex-col items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Loading stock data...</p>
+          </div>
+        ) : error ? (
+          <div className="h-full flex flex-col items-center justify-center">
+            <div className="text-destructive text-sm mb-2">{error}</div>
+            <p className="text-xs text-muted-foreground">
+              Please try again later or select a different stock.
+            </p>
+          </div>
+        ) : (
+          <div ref={chartContainerRef} className="h-full rounded-lg shadow-md bg-muted"></div>
+        )}
+      </div>
+    </main>
+
+    {/* Bottom Navigation Bar */}
+    <footer className="fixed bottom-0 w-full bg-background border-t border-slate-200/10">
+      <div className="flex justify-around items-center py-2">
+        <Button
+          variant="ghost"
+          className="flex flex-col items-center"
+          onClick={handlePrevious}
+          disabled={currentStockIndex === 0}
+        >
+          <ChevronLeft className="w-6 h-6 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Prev</span>
+        </Button>
+        <Button
+          variant="ghost"
+          className="flex flex-col items-center"
+          onClick={handleNext}
+          disabled={currentStockIndex === stocks.length - 1}
+        >
+          <ChevronRight className="w-6 h-6 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Next</span>
+        </Button>
+        <Select
+          value={selectedIndexId.toString()}
+          onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+        >
+          <SelectTrigger className="w-[180px] text-sm bg-background">
+            <SelectValue placeholder="Select Index" />
+          </SelectTrigger>
+          <SelectContent>
+            {indexData.map((item, index) => (
+              <SelectItem key={index} value={index.toString()} className="text-sm">
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </footer>
+  </div>
+);
+
