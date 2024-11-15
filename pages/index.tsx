@@ -297,7 +297,7 @@ export default function StockChart() {
   {currentStock && (
     <>
       <div>
-        <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
+        <p className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</p>
         <div className="flex items-center mt-1">
           <span
             className={`text-xs font-medium ${
