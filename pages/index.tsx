@@ -381,5 +381,4 @@ export default function StockChart() {
     </footer>
   </div>
 );
-
-
+}
