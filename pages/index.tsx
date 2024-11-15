@@ -241,14 +241,18 @@ export default function StockChart() {
   };
 
   const handlePrevious = () => {
-    if (currentStockIndex > 0) {
-      setCurrentStockIndex(prev => prev - 1);
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
   };
 
   const handleNext = () => {
-    if (currentStockIndex < stocks.length - 1) {
-      setCurrentStockIndex(prev => prev + 1);
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
   };
 
@@ -272,47 +276,8 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
-      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-4 w-full sm:w-auto">
-            <Select 
-              value={selectedIndexId.toString()} 
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-[180px] text-sm bg-background">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent>
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex space-x-1">
-              {INTERVALS.map((interval) => (
-                <Button
-                  key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => handleIntervalChange(interval.value)}
-                  className="text-xs px-2 h-7"
-                  title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
-                >
-                  {interval.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/*Removed search bar from here */}
-        </div>
-      </header>
-
       <main className="flex-1 relative overflow-hidden">
-        <div className="absolute top-4 right-4 z-20 w-64" ref={searchRef}>
+        <div className="absolute top-4 right-4 z-20 w-48" ref={searchRef}>
           <Input
             type="text"
             placeholder="Search stocks..."
@@ -389,33 +354,65 @@ export default function StockChart() {
         </div>
       </main>
 
-      <footer className="bg-white rounded-lg shadow-sm p-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={handlePrevious}
-            disabled={currentStockIndex === 0}
-            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">Prev</span>
-          </Button>
-          
-          <span className="text-md text-gray-600">
-            <span className="font-medium">{currentStockIndex + 1}</span>
-            <span className="text-gray-400 mx-1">/</span>
-            <span className="text-gray-400">{stocks.length}</span>
-          </span>
-          
-          <Button
-            variant="ghost"
-            onClick={handleNext}
-            disabled={currentStockIndex === stocks.length - 1}
-            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          >
-            <span className="hidden sm:inline">Next</span>
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+      <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between py-4 gap-4 border-b border-slate-200/5">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-full sm:w-[180px] text-sm bg-background">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent>
+                {indexData.map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex space-x-1">
+              {INTERVALS.map((interval) => (
+                <Button
+                  key={interval.value}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => handleIntervalChange(interval.value)}
+                  className="text-xs px-2 h-7"
+                  title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
+                >
+                  {interval.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between h-12 py-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrevious}
+              disabled={currentPage === 1}
+              className="w-24"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Prev
+            </Button>
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className="w-24"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </footer>
     </div>
