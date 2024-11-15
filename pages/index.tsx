@@ -55,16 +55,38 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
-const ITEMS_PER_PAGE = 50;
+const getCssVariableColor = (variableName: string): string => {
+  if (typeof window === 'undefined') return '#000000';
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
+  
+  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
+    return cssVariable;
+  }
+  
+  const cssValues = cssVariable.split(',').map(v => v.trim());
+  if (cssValues.length === 3 && cssValues.every(v => !isNaN(Number(v)))) {
+    return `hsl(${cssValues.join(',')})`;
+  }
+  
+  const fallbacks: Record<string, string> = {
+    '--background': '#ffffff',
+    '--foreground': '#000000',
+    '--border': '#e5e7eb',
+    '--success': '#089981',
+    '--destructive': '#ef4444',
+  };
+  
+  return fallbacks[variableName] || '#000000';
+};
 
 const chartColors = {
-  upColor: '#16a34a',
-  downColor: '#ef4444',
-  backgroundColor: '#ffffff',
-  textColor: '#1f2937',
-  borderColor: '#e5e7eb',
-  gridColor: '#f3f4f6',
-  crosshairColor: '#9ca3af',
+  upColor: getCssVariableColor('--success'),
+  downColor: getCssVariableColor('--destructive'),
+  backgroundColor: getCssVariableColor('--background'),
+  textColor: getCssVariableColor('--foreground'),
+  borderColor: getCssVariableColor('--border'),
 };
 
 export default function StockChart() {
@@ -86,8 +108,6 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -96,7 +116,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerHeight - 200; // Adjust this value as needed
+    return window.innerWidth < 640 ? 550 : window.innerWidth < 1024 ? 350 : 650;
   }, []);
 
   useEffect(() => {
@@ -108,8 +128,6 @@ export default function StockChart() {
     }));
     setStocks(stocksList);
     setCurrentStockIndex(0);
-    setTotalPages(Math.ceil(stocksList.length / ITEMS_PER_PAGE));
-    setCurrentPage(1);
   }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
@@ -180,8 +198,9 @@ export default function StockChart() {
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: true,
-        secondsVisible: false,
+        timeVisible: false,
+        rightOffset: 5,
+        minBarSpacing: 3,
       },
     });
 
@@ -222,7 +241,7 @@ export default function StockChart() {
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.8,
+        top: 0.7,
         bottom: 0,
       },
     });
