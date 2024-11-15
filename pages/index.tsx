@@ -289,13 +289,14 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
-  return (
+ return (
   <div className="flex flex-col h-screen bg-background text-foreground">
     <main className="flex-1 relative overflow-hidden">
       {/* Stock Info and Search */}
-      <div className="z-20 flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-4">
+      <div className="z-20 flex items-center space-x-4 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-4">
         {currentStock && (
           <>
+            {/* Stock Info */}
             <div>
               <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
               <p className="text-sm text-muted-foreground">{currentStock.name}</p>
@@ -310,6 +311,8 @@ export default function StockChart() {
                 </Badge>
               </div>
             </div>
+
+            {/* Search Box */}
             <div className="w-48 relative" ref={searchRef}>
               <Input
                 type="text"
@@ -358,7 +361,7 @@ export default function StockChart() {
       </div>
 
       {/* Chart Area */}
-      <div className="h-full pt-16">
+      <div className="h-full pt-20">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -443,5 +446,6 @@ export default function StockChart() {
     </footer>
   </div>
 );
+
 
 }
