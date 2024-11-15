@@ -372,7 +372,7 @@ export default function StockChart() {
         </div>
       </main>
 
-      <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+      <footer className="sticky bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
           <div className="flex flex-row items-center justify-between py-4 gap-4 border-b border-slate-200/5">
             <Select 
