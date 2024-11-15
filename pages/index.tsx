@@ -293,77 +293,74 @@ export default function StockChart() {
   <div className="flex flex-col h-screen bg-background text-foreground">
     <main className="flex-1 relative overflow-hidden">
       {/* Stock Info and Search */}
-      <div className="z-20 flex items-center space-x-4 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2">
-        {currentStock && (
-          <>
-            {/* Stock Info */}
-            <div>
-              <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
-              <div className="flex items-center mt-1">
-                <span
-                  className={`text-xs font-medium ${
-                    currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                  }`}
-                >
-                  {currentStock.price?.toFixed(2)}
-                </span>
-                <span
-                  className={`text-xs ml-2 ${
-                    currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                  }`}
-                >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-
-            {/* Search Box */}
-            <div className="w-32 relative" ref={searchRef}>
-              <Input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
+      <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-4 justify-between w-full">
+  {currentStock && (
+    <>
+      <div>
+        <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
+        <div className="flex items-center mt-1">
+          <span
+            className={`text-xs font-medium ${
+              currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {currentStock.price?.toFixed(2)}
+          </span>
+          <span
+            className={`text-xs ml-2 ${
+              currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+          </span>
+        </div>
+      </div>
+      <div className="w-32 relative" ref={searchRef}>
+        <Input
+          type="text"
+          placeholder="Search stocks..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setShowDropdown(true);
+          }}
+          className="pr-8 text-sm h-9 w-full bg-background/80 backdrop-blur-sm"
+          aria-label="Search stocks"
+        />
+        {searchTerm ? (
+          <X
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+            onClick={() => {
+              setSearchTerm('');
+              setShowDropdown(false);
+            }}
+          />
+        ) : (
+          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        )}
+        {showDropdown && searchTerm && (
+          <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+            {filteredStocks.map((stock) => (
+              <button
+                key={stock.symbol}
+                onClick={() => {
+                  const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                  setCurrentStockIndex(stockIndex);
+                  setSearchTerm('');
+                  setShowDropdown(false);
                 }}
-                className="pr-8 text-sm h-9 w-full bg-background/80 backdrop-blur-sm"
-                aria-label="Search stocks"
-              />
-              {searchTerm ? (
-                <X
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
-                  }}
-                />
-              ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              )}
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="font-medium text-xs">{stock.symbol}</div>
-                      <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
+                className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+              >
+                <div className="font-medium text-xs">{stock.symbol}</div>
+                <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+              </button>
+            ))}
+          </div>
         )}
       </div>
+    </>
+  )}
+</div>
 
       {/* Chart Area */}
       <div className="h-full pt-20">
