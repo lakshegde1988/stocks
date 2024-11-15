@@ -300,14 +300,20 @@ export default function StockChart() {
             <div>
               <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
               <div className="flex items-center mt-1">
-                <span className="text-xs font-medium">{currentStock.price?.toFixed(2)}</span>
-                <Badge
-                  variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-xs"
+                <span
+                  className={`text-xs font-medium ${
+                    currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                  }`}
                 >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'}{' '}
-                  {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                </Badge>
+                  {currentStock.price?.toFixed(2)}
+                </span>
+                <span
+                  className={`text-xs ml-2 ${
+                    currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                  }`}
+                >
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                </span>
               </div>
             </div>
 
