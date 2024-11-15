@@ -296,10 +296,10 @@ export default function StockChart() {
       <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-4 justify-between w-full">
   {currentStock && (
     <>
-     <div className="flex items-center">
+     <div>
          <p className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</p>
          {loading && <Loader2 className="h-5 w-5 ml-2 animate-spin text-muted-foreground" />}
-         <div className="flex items-center ml-2">
+         <div className="flex items-center mt-2">
            <span
              className={`text-xs font-medium ${
                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
