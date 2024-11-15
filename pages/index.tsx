@@ -55,6 +55,8 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
+const ITEMS_PER_PAGE = 50;
+
 const getCssVariableColor = (variableName: string): string => {
   if (typeof window === 'undefined') return '#000000';
   const root = document.documentElement;
@@ -108,6 +110,8 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -128,6 +132,8 @@ export default function StockChart() {
     }));
     setStocks(stocksList);
     setCurrentStockIndex(0);
+    setTotalPages(Math.ceil(stocksList.length / ITEMS_PER_PAGE));
+    setCurrentPage(1);
   }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
@@ -289,6 +295,11 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <main className="flex-1 container mx-auto px-4 py-4">
@@ -333,6 +344,28 @@ export default function StockChart() {
             )}
           </CardContent>
         </Card>
+
+        <div className="flex items-center justify-center space-x-2 mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
       </main>
 
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
