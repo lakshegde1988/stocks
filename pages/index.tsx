@@ -120,7 +120,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 550 : window.innerWidth < 1024 ? 350 : 650;
+    return window.innerHeight - 80; // Subtracting height of bottom navbar
   }, []);
 
   useEffect(() => {
@@ -266,14 +266,18 @@ export default function StockChart() {
   };
 
   const handlePrevious = () => {
-    if (currentStockIndex > 0) {
-      setCurrentStockIndex(prev => prev - 1);
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
   };
 
   const handleNext = () => {
-    if (currentStockIndex < stocks.length - 1) {
-      setCurrentStockIndex(prev => prev + 1);
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
   };
 
@@ -295,82 +299,45 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <main className="flex-1 container mx-auto px-4 py-4">
-        {currentStock && (
-         <Card className="mb-4 border border-slate-200/5">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-semibold truncate">{currentStock.symbol}</h2>
-                <p className="text-sm text-muted-foreground truncate">
-                  {currentStock.name}
-                </p>
-              </div>
-              <div className="flex flex-col items-end ml-4">
-                <div className="text-lg font-semibold">{currentStock.price?.toFixed(2)}</div>
-                <Badge 
-                  variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
-                  className="text-xs mt-1"
-                >
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
-                </Badge>
-              </div>
+    <div className="flex flex-col h-screen bg-background text-foreground">
+      <main className="flex-1 relative">
+        <div className="absolute inset-0">
+          {loading ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">Loading stock data...</p>
             </div>
-          </CardContent>
-        </Card>
-        )}
-
-        <Card className="mb-4 border border-slate-200/5">
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="h-[550px] sm:h-[550px] md:h-[550px] flex flex-col items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Loading stock data...</p>
-              </div>
-            ) : error ? (
-              <div className="h-[550px] sm:h-[550px] md:h-[550px] flex flex-col items-center justify-center">
-                <div className="text-destructive text-sm mb-2">{error}</div>
-                <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
-              </div>
-            ) : (
-              <div ref={chartContainerRef} className="h-[550px] sm:h-[550px] md:h-[550px]" />
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex items-center justify-center space-x-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
+          ) : error ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="text-destructive text-sm mb-2">{error}</div>
+              <p className="text-xs text-muted-foreground">Please try again later or select a different stock.</p>
+            </div>
+          ) : (
+            <div className="h-full" ref={chartContainerRef}>
+              {currentStock && (
+                <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+                  <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
+                  <p className="text-sm text-muted-foreground">{currentStock.name}</p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-lg font-semibold mr-2">{currentStock.price?.toFixed(2)}</span>
+                    <Badge 
+                      variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
+                      className="text-xs"
+                    >
+                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
 
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+      <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 py-2">
+          <div className="flex items-center justify-between h-20 py-2 space-x-4">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
@@ -430,6 +397,28 @@ export default function StockChart() {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="flex space-x-1">
