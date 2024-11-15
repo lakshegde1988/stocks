@@ -424,7 +424,7 @@ export default function StockChart() {
               <span className="hidden sm:inline">Prev</span>
             </Button>
 
-            <span className="text-md text-gray-600">
+            <span className="text-sm text-gray-600">
               <span className="font-medium">{currentStockIndex + 1}</span>
               <span className="text-gray-400 mx-1">/</span>
               <span className="text-gray-400">{stocks.length}</span>
