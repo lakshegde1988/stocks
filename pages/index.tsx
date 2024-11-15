@@ -298,7 +298,7 @@ export default function StockChart() {
           <>
             {/* Stock Info */}
             <div>
-              <p className="text-sm font-semibold">{currentStock.name}</p>
+              <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
               <div className="flex items-center mt-1">
                 <span className="text-xs font-medium">{currentStock.price?.toFixed(2)}</span>
                 <Badge
