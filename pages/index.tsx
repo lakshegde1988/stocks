@@ -298,7 +298,6 @@ export default function StockChart() {
           <>
             {/* Stock Info */}
             <div>
-              <h2 className="text-lg font-semibold">{currentStock.symbol}</h2>
               <p className="text-sm text-muted-foreground">{currentStock.name}</p>
               <div className="flex items-center mt-1">
                 <span className="text-lg font-semibold mr-2">{currentStock.price?.toFixed(2)}</span>
