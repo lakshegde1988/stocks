@@ -57,38 +57,14 @@ const INTERVALS = [
 
 const ITEMS_PER_PAGE = 50;
 
-const getCssVariableColor = (variableName: string): string => {
-  if (typeof window === 'undefined') return '#000000';
-  const root = document.documentElement;
-  const computedStyle = getComputedStyle(root);
-  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
-  
-  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
-    return cssVariable;
-  }
-  
-  const cssValues = cssVariable.split(',').map(v => v.trim());
-  if (cssValues.length === 3 && cssValues.every(v => !isNaN(Number(v)))) {
-    return `hsl(${cssValues.join(',')})`;
-  }
-  
-  const fallbacks: Record<string, string> = {
-    '--background': '#ffffff',
-    '--foreground': '#000000',
-    '--border': '#e5e7eb',
-    '--success': '#089981',
-    '--destructive': '#ef4444',
-  };
-  
-  return fallbacks[variableName] || '#000000';
-};
-
 const chartColors = {
-  upColor: getCssVariableColor('--success'),
-  downColor: getCssVariableColor('--destructive'),
-  backgroundColor: getCssVariableColor('--background'),
-  textColor: getCssVariableColor('--foreground'),
-  borderColor: getCssVariableColor('--border'),
+  upColor: '#16a34a',
+  downColor: '#ef4444',
+  backgroundColor: '#ffffff',
+  textColor: '#1f2937',
+  borderColor: '#e5e7eb',
+  gridColor: '#f3f4f6',
+  crosshairColor: '#9ca3af',
 };
 
 export default function StockChart() {
@@ -120,7 +96,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerHeight - 112; // Subtracting height of both bottom bars (16px + 12px) and some padding
+    return window.innerHeight - 200; // Adjust this value as needed
   }, []);
 
   useEffect(() => {
@@ -174,7 +150,7 @@ export default function StockChart() {
 
   useEffect(() => {
     fetchStockData();
-  }, [fetchStockData, currentStockIndex]);
+  }, [fetchStockData]);
 
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
@@ -204,9 +180,8 @@ export default function StockChart() {
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: false,
-        rightOffset: 5,
-        minBarSpacing: 3,
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
@@ -247,7 +222,7 @@ export default function StockChart() {
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.7,
+        top: 0.8,
         bottom: 0,
       },
     });
@@ -265,21 +240,21 @@ export default function StockChart() {
     setSelectedInterval(newInterval);
   };
 
-  const handlePrevious = useCallback(() => {
+  const handlePrevious = () => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
-  }, [currentPage]);
+  };
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
-  }, [currentPage, totalPages]);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -301,7 +276,88 @@ export default function StockChart() {
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
-      <main className="flex-1 relative">
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-slate-200/5 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-4 w-full sm:w-auto">
+            <Select 
+              value={selectedIndexId.toString()} 
+              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+            >
+              <SelectTrigger className="w-[180px] text-sm bg-background">
+                <SelectValue placeholder="Select Index" />
+              </SelectTrigger>
+              <SelectContent>
+                {indexData.map((item, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-sm">
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex space-x-1">
+              {INTERVALS.map((interval) => (
+                <Button
+                  key={interval.value}
+                  variant={selectedInterval === interval.value ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => handleIntervalChange(interval.value)}
+                  className="text-xs px-2 h-7"
+                >
+                  {interval.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative w-full sm:w-64" ref={searchRef}>
+            <Input
+              type="text"
+              placeholder="Search stocks..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowDropdown(true);
+              }}
+              className="pr-8 text-sm h-9 w-full"
+              aria-label="Search stocks"
+            />
+            {searchTerm ? (
+              <X 
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setShowDropdown(false);
+                }}
+              />
+            ) : (
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            )}
+
+            {showDropdown && searchTerm && (
+              <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                {filteredStocks.map((stock) => (
+                  <button
+                    key={stock.symbol}
+                    onClick={() => {
+                      const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
+                      setCurrentStockIndex(stockIndex);
+                      setSearchTerm('');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="font-medium text-xs">{stock.symbol}</div>
+                    <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 relative overflow-hidden">
         <div className="absolute inset-0">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center">
@@ -337,85 +393,6 @@ export default function StockChart() {
 
       <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-2 space-y-2 sm:space-y-0 sm:space-x-4">
-            <Select 
-              value={selectedIndexId.toString()} 
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-full sm:w-[140px] text-sm bg-background">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent>
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="relative w-full sm:w-48" ref={searchRef}>
-              <Input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
-                }}
-                className="pr-8 text-sm h-9 w-full"
-                aria-label="Search stocks"
-              />
-              {searchTerm ? (
-                <X 
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
-                  }}
-                />
-              ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              )}
-
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex(s => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="font-medium text-xs">{stock.symbol}</div>
-                      <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex space-x-1">
-              {INTERVALS.map((interval) => (
-                <Button
-                  key={interval.value}
-                  variant={selectedInterval === interval.value ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => handleIntervalChange(interval.value)}
-                  className="text-xs px-2 h-7"
-                  title={`Show ${interval.label === 'D' ? 'Daily' : interval.label === 'W' ? 'Weekly' : 'Monthly'} data`}
-                >
-                  {interval.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="container mx-auto px-4 border-t border-slate-200/5">
           <div className="flex items-center justify-between h-12 py-2">
             <Button
               variant="outline"
