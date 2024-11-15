@@ -315,7 +315,7 @@ export default function StockChart() {
           </span>
         </div>
       </div>
-      <div className="w-48 relative mr-4 px-4" ref={searchRef}>
+      <div className="w-48 relative px-4" ref={searchRef}>
         <Input
           type="text"
           placeholder="Search stocks..."
@@ -364,22 +364,22 @@ export default function StockChart() {
 
      {/* Chart Area */}
       <div className="h-full flex items-center justify-center">
-      {loading ? (
-        <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-muted-foreground/20 rounded w-32"></div>
-          <div className="h-40 bg-muted-foreground/20 rounded"></div>
-        </div>
-      ) : error ? (
-        <div>
-          <div className="text-destructive text-sm mb-2">{error}</div>
-          <p className="text-xs text-muted-foreground">
-            Please try again later or select a different stock.
-          </p>
-        </div>
-      ) : (
-        <div className="h-full" ref={chartContainerRef}></div>
-      )}
-    </div>
+       {loading ? (
+         <div className="flex items-center">
+           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
+           <p className="text-sm text-muted-foreground">Loading stock data...</p>
+         </div>
+       ) : error ? (
+         <div>
+           <div className="text-destructive text-sm mb-2">{error}</div>
+           <p className="text-xs text-muted-foreground">
+             Please try again later or select a different stock.
+           </p>
+         </div>
+       ) : (
+         <div className="h-full" ref={chartContainerRef}></div>
+       )}
+      </div>
     </main>
 
     {/* Footer */}
