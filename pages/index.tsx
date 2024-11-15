@@ -293,7 +293,7 @@ export default function StockChart() {
   <div className="flex flex-col h-screen bg-background text-foreground">
     <main className="flex-1 relative overflow-hidden">
       {/* Stock Info and Search */}
-      <div className="absolute top-4 left-4 z-20 flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+      <div className="z-20 flex items-center space-x-2 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-4">
         {currentStock && (
           <>
             <div>
@@ -358,7 +358,7 @@ export default function StockChart() {
       </div>
 
       {/* Chart Area */}
-      <div className="absolute inset-0">
+      <div className="h-full pt-16">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -443,4 +443,5 @@ export default function StockChart() {
     </footer>
   </div>
 );
+
 }
