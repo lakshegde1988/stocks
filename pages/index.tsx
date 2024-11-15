@@ -241,18 +241,14 @@ export default function StockChart() {
   };
 
   const handlePrevious = () => {
-    if (currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
-      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
+    if (currentStockIndex > 0) {
+      setCurrentStockIndex(prev => prev - 1);
     }
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) {
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
-      setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
+    if (currentStockIndex < stocks.length - 1) {
+      setCurrentStockIndex(prev => prev + 1);
     }
   };
 
@@ -291,14 +287,14 @@ export default function StockChart() {
           />
           {searchTerm ? (
             <X 
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+              className=" top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" 
               onClick={() => {
                 setSearchTerm('');
                 setShowDropdown(false);
               }}
             />
           ) : (
-            <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className=" top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           )}
 
           {showDropdown && searchTerm && (
@@ -388,31 +384,33 @@ export default function StockChart() {
               ))}
             </div>
           </div>
-          <div className="flex items-center justify-between h-12 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevious}
-              disabled={currentPage === 1}
-              className="w-24"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Prev
-            </Button>
-            <span className="text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-              className="w-24"
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
+          <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={handlePrevious}
+            disabled={currentStockIndex === 0}
+            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Prev</span>
+          </Button>
+          
+          <span className="text-md text-gray-600">
+            <span className="font-medium">{currentStockIndex + 1}</span>
+            <span className="text-gray-400 mx-1">/</span>
+            <span className="text-gray-400">{stocks.length}</span>
+          </span>
+          
+          <Button
+            variant="ghost"
+            onClick={handleNext}
+            disabled={currentStockIndex === stocks.length - 1}
+            className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
         </div>
       </footer>
     </div>
