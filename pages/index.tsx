@@ -298,9 +298,9 @@ export default function StockChart() {
           <>
             {/* Stock Info */}
             <div>
-              <p className="text-sm text-muted-foreground">{currentStock.name}</p>
+              <p className="text-sm font-semibold">{currentStock.name}</p>
               <div className="flex items-center mt-1">
-                <span className="text-sm font-medium mr-2">{currentStock.price?.toFixed(2)}</span>
+                <span className="text-xs font-medium">{currentStock.price?.toFixed(2)}</span>
                 <Badge
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                   className="text-xs"
