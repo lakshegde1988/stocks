@@ -405,8 +405,7 @@ export default function StockChart() {
                 </Button>
               ))}
             </div>
-          </div>
-          <div className="flex items-center justify-between">
+         <div className="flex space-x-1">
             <Button
               variant="ghost"
               onClick={handlePrevious}
@@ -433,6 +432,7 @@ export default function StockChart() {
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
+        </div>
         </div>
       </footer>
     </div>
