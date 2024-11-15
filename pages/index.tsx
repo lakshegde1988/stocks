@@ -292,15 +292,30 @@ export default function StockChart() {
  return (
   <div className="flex flex-col h-screen bg-background text-foreground">
     <main className="flex-1 relative overflow-hidden">
-      {/* Stock Info and Search */}
-      <div className="z-20 flex items-center space-x-4 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2">
+      {/* Stock Info Bar */}
+      <div className="z-20 flex items-center justify-between bg-background/90 backdrop-blur-md p-2 px-4 rounded-b-lg absolute top-0 left-0 right-0">
+        {/* Stock Information */}
         {currentStock && (
-          <>
-            {/* Stock Info */}
+          <div className="flex items-center space-x-4">
+            {/* Stock Logo */}
+            <div className="flex items-center">
+              <div className="rounded-full bg-muted w-8 h-8 flex items-center justify-center">
+                <img
+                  src="/stock-logo.png"
+                  alt="Stock Logo"
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+            </div>
+
+            {/* Stock Details */}
             <div>
-              <p className="text-sm text-muted-foreground">{currentStock.name}</p>
+              <h2 className="text-base font-bold leading-none">{currentStock.name}</h2>
+              <p className="text-sm text-muted-foreground">{currentStock.symbol}</p>
               <div className="flex items-center mt-1">
-                <span className="text-sm font-medium mr-2">{currentStock.price?.toFixed(2)}</span>
+                <span className="text-lg font-semibold mr-2">
+                  {currentStock.price?.toFixed(2)}
+                </span>
                 <Badge
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                   className="text-xs"
@@ -310,57 +325,22 @@ export default function StockChart() {
                 </Badge>
               </div>
             </div>
-
-            {/* Search Box */}
-            <div className="w-32 relative" ref={searchRef}>
-              <Input
-                type="text"
-                placeholder="Search stocks..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowDropdown(true);
-                }}
-                className="pr-8 text-sm h-9 w-full bg-background/80 backdrop-blur-sm"
-                aria-label="Search stocks"
-              />
-              {searchTerm ? (
-                <X
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setShowDropdown(false);
-                  }}
-                />
-              ) : (
-                <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              )}
-              {showDropdown && searchTerm && (
-                <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                  {filteredStocks.map((stock) => (
-                    <button
-                      key={stock.symbol}
-                      onClick={() => {
-                        const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                        setCurrentStockIndex(stockIndex);
-                        setSearchTerm('');
-                        setShowDropdown(false);
-                      }}
-                      className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="font-medium text-xs">{stock.symbol}</div>
-                      <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
+          </div>
         )}
+
+        {/* Search Button */}
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" className="p-2 bg-muted/10 rounded-full">
+            <Search className="h-5 w-5 text-foreground" />
+          </Button>
+          <Button variant="ghost" className="p-2 bg-muted/10 rounded-full">
+            <Settings className="h-5 w-5 text-foreground" />
+          </Button>
+        </div>
       </div>
 
-      {/* Chart Area */}
-      <div className="h-full pt-20">
+      {/* Chart Section */}
+      <div className="h-full pt-16 pb-20">
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-2" />
@@ -380,64 +360,41 @@ export default function StockChart() {
     </main>
 
     {/* Footer */}
-    <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+    <footer className="sticky bottom-0 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 border-t border-slate-200/5">
       <div className="container mx-auto px-4">
-        <div className="flex flex-row items-center justify-between py-4 gap-4 border-b border-slate-200/5">
-          <Select
-            value={selectedIndexId.toString()}
-            onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-          >
-            <SelectTrigger className="w-[180px] text-sm bg-background">
-              <SelectValue placeholder="Select Index" />
-            </SelectTrigger>
-            <SelectContent>
-              {indexData.map((item, index) => (
-                <SelectItem key={index} value={index.toString()} className="text-sm">
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-row items-center justify-between py-4 gap-4">
+          {/* Stock Info */}
+          <div className="flex items-center space-x-2">
+            <img
+              src="/stock-logo.png"
+              alt="Stock Logo"
+              className="w-6 h-6 rounded-full object-contain"
+            />
+            <p className="font-medium">{currentStock?.symbol}</p>
+          </div>
 
-          <div className="flex space-x-1">
+          {/* Time Interval Options */}
+          <div className="flex space-x-2">
             {INTERVALS.map((interval) => (
               <Button
                 key={interval.value}
                 variant={selectedInterval === interval.value ? "default" : "secondary"}
                 size="sm"
                 onClick={() => handleIntervalChange(interval.value)}
-                className="text-xs px-2 h-7"
+                className="text-xs px-3 h-8"
               >
                 {interval.label}
               </Button>
             ))}
           </div>
 
-          <div className="flex space-x-1">
-            <Button
-              variant="ghost"
-              onClick={handlePrevious}
-              disabled={currentStockIndex === 0}
-              className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Prev</span>
+          {/* Footer Buttons */}
+          <div className="flex space-x-2">
+            <Button variant="ghost" className="p-2 bg-muted/10 rounded-full">
+              <Edit3 className="h-5 w-5 text-muted-foreground" />
             </Button>
-
-            <span className="text-sm text-gray-600">
-              <span className="font-medium">{currentStockIndex + 1}</span>
-              <span className="text-gray-400 mx-1">/</span>
-              <span className="text-gray-400">{stocks.length}</span>
-            </span>
-
-            <Button
-              variant="ghost"
-              onClick={handleNext}
-              disabled={currentStockIndex === stocks.length - 1}
-              className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            >
-              <span className="hidden sm:inline">Next</span>
-              <ChevronRight className="h-4 w-4 ml-1" />
+            <Button variant="ghost" className="p-2 bg-muted/10 rounded-full">
+              <Settings className="h-5 w-5 text-muted-foreground" />
             </Button>
           </div>
         </div>
