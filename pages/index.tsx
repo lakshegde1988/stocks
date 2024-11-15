@@ -174,7 +174,7 @@ export default function StockChart() {
 
   useEffect(() => {
     fetchStockData();
-  }, [fetchStockData]);
+  }, [fetchStockData, currentStockIndex]);
 
   useEffect(() => {
     if (!chartContainerRef.current || !chartData.length) return;
@@ -265,21 +265,21 @@ export default function StockChart() {
     setSelectedInterval(newInterval);
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
-  };
+  }, [currentPage]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       setCurrentStockIndex((newPage - 1) * ITEMS_PER_PAGE);
     }
-  };
+  }, [currentPage, totalPages]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -337,12 +337,12 @@ export default function StockChart() {
 
       <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 py-2 space-x-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between h-auto sm:h-16 py-2 space-y-2 sm:space-y-0 sm:space-x-4">
             <Select 
               value={selectedIndexId.toString()} 
               onValueChange={(value) => setSelectedIndexId(parseInt(value))}
             >
-              <SelectTrigger className="w-[140px] text-sm bg-background">
+              <SelectTrigger className="w-full sm:w-[140px] text-sm bg-background">
                 <SelectValue placeholder="Select Index" />
               </SelectTrigger>
               <SelectContent>
@@ -354,7 +354,7 @@ export default function StockChart() {
               </SelectContent>
             </Select>
 
-            <div className="relative w-48" ref={searchRef}>
+            <div className="relative w-full sm:w-48" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
@@ -363,7 +363,7 @@ export default function StockChart() {
                   setSearchTerm(e.target.value);
                   setShowDropdown(true);
                 }}
-                className="pr-8 text-sm h-9"
+                className="pr-8 text-sm h-9 w-full"
                 aria-label="Search stocks"
               />
               {searchTerm ? (
@@ -416,14 +416,16 @@ export default function StockChart() {
           </div>
         </div>
         <div className="container mx-auto px-4 border-t border-slate-200/5">
-          <div className="flex items-center justify-center h-12 py-2 space-x-4">
+          <div className="flex items-center justify-between h-12 py-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handlePrevious}
               disabled={currentPage === 1}
+              className="w-24"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Prev
             </Button>
             <span className="text-sm">
               Page {currentPage} of {totalPages}
@@ -433,8 +435,10 @@ export default function StockChart() {
               size="sm"
               onClick={handleNext}
               disabled={currentPage === totalPages}
+              className="w-24"
             >
-              <ChevronRight className="h-4 w-4" />
+              Next
+              <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
         </div>
