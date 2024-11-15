@@ -364,21 +364,21 @@ export default function StockChart() {
 
      {/* Chart Area */}
       <div className="h-full flex items-center justify-center">
-       {loading ? (
-         <div className="flex items-center">
-           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
-           <p className="text-sm text-muted-foreground">Loading stock data...</p>
-         </div>
-       ) : error ? (
-         <div>
-           <div className="text-destructive text-sm mb-2">{error}</div>
-           <p className="text-xs text-muted-foreground">
-             Please try again later or select a different stock.
-           </p>
-         </div>
-       ) : (
-         <div className="h-full" ref={chartContainerRef}></div>
-       )}
+        {loading ? (
+          <div className="flex items-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
+            <p className="text-sm text-muted-foreground">Loading stock data...</p>
+          </div>
+        ) : error ? (
+          <div>
+            <div className="text-destructive text-sm mb-2">{error}</div>
+            <p className="text-xs text-muted-foreground">
+              Please try again later or select a different stock.
+            </p>
+          </div>
+        ) : (
+          <div className="w-full h-full" ref={chartContainerRef}></div>
+        )}
       </div>
     </main>
 
