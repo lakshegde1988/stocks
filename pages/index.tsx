@@ -293,14 +293,14 @@ export default function StockChart() {
   <div className="flex flex-col h-screen bg-background text-foreground">
     <main className="flex-1 relative overflow-hidden">
       {/* Stock Info and Search */}
-      <div className="z-20 flex items-center space-x-4 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-4">
+      <div className="z-20 flex items-center space-x-4 bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2">
         {currentStock && (
           <>
             {/* Stock Info */}
             <div>
               <p className="text-sm text-muted-foreground">{currentStock.name}</p>
               <div className="flex items-center mt-1">
-                <span className="text-lg font-semibold mr-2">{currentStock.price?.toFixed(2)}</span>
+                <span className="text-sm font-medium mr-2">{currentStock.price?.toFixed(2)}</span>
                 <Badge
                   variant={currentStock.todayChange && currentStock.todayChange >= 0 ? "default" : "destructive"}
                   className="text-xs"
@@ -312,7 +312,7 @@ export default function StockChart() {
             </div>
 
             {/* Search Box */}
-            <div className="w-48 relative" ref={searchRef}>
+            <div className="w-32 relative" ref={searchRef}>
               <Input
                 type="text"
                 placeholder="Search stocks..."
