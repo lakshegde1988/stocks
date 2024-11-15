@@ -315,7 +315,7 @@ export default function StockChart() {
           </span>
         </div>
       </div>
-      <div className="w-32 relative" ref={searchRef}>
+      <div className="w-32 mr-4 relative" ref={searchRef}>
         <Input
           type="text"
           placeholder="Search stocks..."
