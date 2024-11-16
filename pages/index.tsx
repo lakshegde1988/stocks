@@ -329,7 +329,7 @@ export default function StockChart() {
                 {INTERVALS.map((interval) => (
                   <Button
                     key={interval.value}
-                    variant={selectedInterval === interval.value ? "default" : "secondary"}
+                    variant={selectedInterval === interval.value ? "default" : "primary"}
                     size="sm"
                     onClick={() => handleIntervalChange(interval.value)}
                     className="text-[10px] px-1.5 h-6 min-w-[24px]"
