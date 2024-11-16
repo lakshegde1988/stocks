@@ -293,10 +293,11 @@ export default function StockChart() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info, Intervals, and Search */}
-        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 justify-between w-full">
+        <div className="z-20 flex flex-wrap items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 gap-y-2 w-full">
           {currentStock && (
             <>
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Stock Info */}
+              <div className="flex items-center space-x-4 w-full sm:w-auto order-1">
                 <div className="min-w-[80px]">
                   <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
                   <div className="flex items-center">
@@ -314,7 +315,9 @@ export default function StockChart() {
                 </div>
                 {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               </div>
-              <div className="flex space-x-1 flex-shrink-0">
+
+              {/* Intervals - Now order-2 */}
+              <div className="flex space-x-1 order-2 mr-4">
                 {INTERVALS.map((interval) => (
                   <Button
                     key={interval.value}
@@ -327,7 +330,9 @@ export default function StockChart() {
                   </Button>
                 ))}
               </div>
-              <div className="w-32 sm:w-48 relative" ref={searchRef}>
+
+              {/* Search - Now order-3 */}
+              <div className="w-32 sm:w-48 relative order-3" ref={searchRef}>
                 <Input
                   type="text"
                   placeholder="Search..."
