@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     const adjClose = quotes.indicators.adjclose?.[0]?.adjclose || ohlcv.close;
 
     // Process the data into the format needed by the chart
-    const processedData = timestamps.map((timestamp, index) => {
+    let processedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
         !ohlcv.high[index] ||
@@ -62,8 +62,22 @@ export default async function handler(req, res) {
         return null;
       }
 
+      // Convert timestamp to Date object
+      const date = new Date(timestamp * 1000);
+      
+      // For weekly data, adjust the timestamp to Monday of that week
+      if (interval === '1wk') {
+        // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        const dayOfWeek = date.getUTCDay();
+        // Calculate how many days to subtract to get to Monday
+        // If it's Sunday (0), subtract 6 days to get to previous Monday
+        // If it's any other day, subtract (dayOfWeek - 1) days
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        date.setUTCDate(date.getUTCDate() - daysToSubtract);
+      }
+
       return {
-        time: new Date(timestamp * 1000).toISOString().split('T')[0],
+        time: date.toISOString().split('T')[0],
         open: parseFloat(ohlcv.open[index].toFixed(2)),
         high: parseFloat(ohlcv.high[index].toFixed(2)),
         low: parseFloat(ohlcv.low[index].toFixed(2)),
@@ -71,6 +85,30 @@ export default async function handler(req, res) {
         volume: parseInt(ohlcv.volume[index]),
       };
     }).filter(item => item !== null);
+
+    // Remove incomplete candles for weekly and monthly intervals
+    if (interval === '1wk' || interval === '1mo') {
+      const now = new Date();
+      // Set time to midnight UTC
+      now.setUTCHours(0, 0, 0, 0);
+
+      // For weekly interval, get the current week's Monday
+      if (interval === '1wk') {
+        const dayOfWeek = now.getUTCDay();
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        now.setUTCDate(now.getUTCDate() - daysToSubtract);
+      }
+      // For monthly interval, get the first day of the current month
+      else if (interval === '1mo') {
+        now.setUTCDate(1);
+      }
+
+      // Remove any candles that start on or after the current period's start
+      processedData = processedData.filter(candle => {
+        const candleDate = new Date(candle.time);
+        return candleDate < now;
+      });
+    }
 
     // Store response in cache
     cache.set(cacheKey, processedData);
