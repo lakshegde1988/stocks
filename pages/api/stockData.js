@@ -107,19 +107,12 @@ export default async function handler(req, res) {
       const lastCandle = processedData[processedData.length - 1];
       const lastCandleDate = new Date(lastCandle.time);
 
-      if (lastCandleDate.getTime() === now.getTime()) {
-        // The last candle is the current period, update its time to now
+      if (lastCandleDate < now) {
+        // The last candle is from a previous period, update its time to the current period
         lastCandle.time = now.toISOString().split('T')[0];
-      } else if (lastCandleDate < now) {
-        // The last candle is from a previous period, add a new candle for the current period
-        processedData.push({
-          time: now.toISOString().split('T')[0],
-          open: lastCandle.close,
-          high: lastCandle.close,
-          low: lastCandle.close,
-          close: lastCandle.close,
-          volume: 0,
-        });
+      } else if (lastCandleDate > now) {
+        // The last candle is from a future period (shouldn't happen, but just in case)
+        processedData.pop();
       }
     }
 
