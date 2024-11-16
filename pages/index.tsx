@@ -301,12 +301,12 @@ export default function StockChart() {
                 <div>
                   <p className="text-md font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
                   <div className="flex items-center">
-                    <span className={`text-[10px] font-medium ${
+                    <span className={`text-[14px] font-medium ${
                       currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
                     }`}>
                       {currentStock.price?.toFixed(2)}
                     </span>
-                    <span className={`text-[10px] ml-1 ${
+                    <span className={`text-[14px] ml-1 ${
                       currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
                     }`}>
                       {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
@@ -397,7 +397,7 @@ export default function StockChart() {
       </main>
 
       {/* Footer */}
-    <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+    <footer className="sticky w-full bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="container mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between py-2 sm:py-4 min-w-0">
             {/* Select Box - Left aligned */}
