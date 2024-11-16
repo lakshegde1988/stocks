@@ -420,7 +420,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-12 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 size="lg"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -428,7 +428,7 @@ export default function StockChart() {
               </Button>
 
               <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-xs sm:text-md text-gray-600 whitespace-nowrap">
+                <span className="text-md sm:text-md text-gray-600 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-gray-400 mx-1">/</span>
                   <span className="text-gray-400">{stocks.length}</span>
@@ -439,7 +439,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-12 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 size="lg"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
