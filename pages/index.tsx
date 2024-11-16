@@ -398,7 +398,7 @@ export default function StockChart() {
 
       {/* Footer */}
     <footer className="sticky w-full bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
-        <div className="container mx-auto px-2 sm:px-4">
+        <div className=" mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between py-2 sm:py-4 min-w-0">
             {/* Select Box - Left aligned */}
             <div className="flex-shrink-0 min-w-[120px] sm:min-w-[180px]">
