@@ -324,24 +324,6 @@ export default function StockChart() {
               {/* Spacer */}
               <div className="w-6" />
 
-              {/* Intervals - Fixed width container */}
-              <div className="flex space-x-0.5 min-w-[100px]">
-                {INTERVALS.map((interval) => (
-                  <Button
-                    key={interval.value}
-                    variant={selectedInterval === interval.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleIntervalChange(interval.value)}
-                    className="text-[10px] px-1.5 h-6 min-w-[24px]"
-                  >
-                    {interval.label}
-                  </Button>
-                ))}
-              </div>
-
-              {/* Spacer */}
-              <div className="w-4" />
-
               {/* Search - Fixed width container */}
               <div className="w-24 sm:w-64 relative" ref={searchRef}>
                 <Input
@@ -418,7 +400,20 @@ export default function StockChart() {
                 </SelectContent>
               </Select>
             </div>
-
+            {/* Intervals - Fixed width container */}
+              <div className="flex space-x-0.5 min-w-[100px]">
+                {INTERVALS.map((interval) => (
+                  <Button
+                    key={interval.value}
+                    variant={selectedInterval === interval.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleIntervalChange(interval.value)}
+                    className="text-[10px] px-1.5 h-6 min-w-[24px]"
+                  >
+                    {interval.label}
+                  </Button>
+                ))}
+              </div>
             {/* Pagination - Right aligned */}
             <div className="flex items-center space-x-1 flex-shrink-0">
               <Button
