@@ -293,46 +293,46 @@ export default function StockChart() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info, Intervals, and Search */}
-        <div className="z-20 flex flex-wrap items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 gap-y-2 w-full">
+        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 w-full">
           {currentStock && (
             <>
-              {/* Stock Info */}
-              <div className="flex items-center space-x-4 w-full sm:w-auto order-1">
-                <div className="min-w-[80px]">
-                  <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
+              {/* Stock Info - Minimized on mobile */}
+              <div className="flex items-center space-x-2 min-w-[70px]">
+                <div>
+                  <p className="text-xs font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
                   <div className="flex items-center">
-                    <span className={`text-xs font-medium ${
+                    <span className={`text-[10px] font-medium ${
                       currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
                     }`}>
                       {currentStock.price?.toFixed(2)}
                     </span>
-                    <span className={`text-xs ml-1 ${
+                    <span className={`text-[10px] ml-1 ${
                       currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
                     }`}>
-                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
+                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
                     </span>
                   </div>
                 </div>
-                {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                {loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
               </div>
 
-              {/* Intervals - Now order-2 */}
-              <div className="flex space-x-1 order-2 mr-4">
+              {/* Intervals - Compact on mobile */}
+              <div className="flex space-x-0.5">
                 {INTERVALS.map((interval) => (
                   <Button
                     key={interval.value}
                     variant={selectedInterval === interval.value ? "default" : "secondary"}
                     size="sm"
                     onClick={() => handleIntervalChange(interval.value)}
-                    className="text-xs px-2 h-7"
+                    className="text-[10px] px-1.5 h-6 min-w-[24px]"
                   >
                     {interval.label}
                   </Button>
                 ))}
               </div>
 
-              {/* Search - Now order-3 */}
-              <div className="w-32 sm:w-48 relative order-3" ref={searchRef}>
+              {/* Search - Always visible */}
+              <div className="w-20 sm:w-48 relative ml-auto" ref={searchRef}>
                 <Input
                   type="text"
                   placeholder="Search..."
@@ -341,7 +341,7 @@ export default function StockChart() {
                     setSearchTerm(e.target.value);
                     setShowDropdown(true);
                   }}
-                  className="pr-8 text-xs h-7 w-full bg-background/80 backdrop-blur-sm"
+                  className="pr-6 text-xs h-6 w-full bg-background/80 backdrop-blur-sm"
                   aria-label="Search stocks"
                 />
                 {searchTerm ? (
@@ -356,7 +356,7 @@ export default function StockChart() {
                   <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                 )}
                 {showDropdown && searchTerm && (
-                  <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                  <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
                     {filteredStocks.map((stock) => (
                       <button
                         key={stock.symbol}
