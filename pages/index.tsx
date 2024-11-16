@@ -406,12 +406,12 @@ export default function StockChart() {
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="h-8 text-xs sm:text-md bg-background">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent>
                   {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-md">
                       {item.label}
                     </SelectItem>
                   ))}
@@ -426,14 +426,14 @@ export default function StockChart() {
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="sm"
+                size="md"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
               </Button>
 
               <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                <span className="text-xs sm:text-md text-gray-600 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-gray-400 mx-1">/</span>
                   <span className="text-gray-400">{stocks.length}</span>
@@ -445,7 +445,7 @@ export default function StockChart() {
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="sm"
+                size="md"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
                 <ChevronRight className="h-4 w-4" />
