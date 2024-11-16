@@ -426,7 +426,7 @@ export default function StockChart() {
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="md"
+                size="lg"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
@@ -445,7 +445,7 @@ export default function StockChart() {
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="md"
+                size="lg"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
                 <ChevronRight className="h-4 w-4" />
