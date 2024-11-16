@@ -397,52 +397,59 @@ export default function StockChart() {
       </main>
 
       {/* Footer */}
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-row items-center justify-between py-4 gap-4 border-b border-slate-200/5">
-            <Select
-              value={selectedIndexId.toString()}
-              onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-            >
-              <SelectTrigger className="w-[180px] text-sm bg-background">
-                <SelectValue placeholder="Select Index" />
-              </SelectTrigger>
-              <SelectContent>
-                {indexData.map((item, index) => (
-                  <SelectItem key={index} value={index.toString()} className="text-sm">
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+     <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+        <div className="container mx-auto px-2 sm:px-4">
+          <div className="flex items-center justify-between py-4 gap-2 border-b border-slate-200/5">
+            <div className="flex-shrink-0">
+              <Select
+                value={selectedIndexId.toString()}
+                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+              >
+                <SelectTrigger className="w-[120px] sm:w-[180px] text-xs sm:text-sm bg-background h-8">
+                  <SelectValue placeholder="Select Index" />
+                </SelectTrigger>
+                <SelectContent>
+                  {indexData.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()} className="text-sm">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            <div className="flex space-x-1">
+            <div className="flex items-center space-x-1 flex-grow justify-center">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1 sm:px-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Prev</span>
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden sm:inline ml-1">Prev</span>
               </Button>
 
-              <span className="text-sm text-gray-600">
-                <span className="font-medium">{currentStockIndex + 1}</span>
-                <span className="text-gray-400 mx-1">/</span>
-                <span className="text-gray-400">{stocks.length}</span>
-              </span>
+              <div className="flex items-center min-w-[60px] justify-center">
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{currentStockIndex + 1}</span>
+                  <span className="mx-1">/</span>
+                  <span>{stocks.length}</span>
+                </span>
+              </div>
 
               <Button
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-2 text-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1 sm:px-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground"
               >
-                <span className="hidden sm:inline">Next</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <span className="hidden sm:inline mr-1">Next</span>
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
+            
+            {/* Add an empty div to balance the layout */}
+            <div className="flex-shrink-0 w-[120px] sm:w-[180px]"></div>
           </div>
         </div>
       </footer>
