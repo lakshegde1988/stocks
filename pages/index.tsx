@@ -330,14 +330,14 @@ export default function StockChart() {
         />
         {searchTerm ? (
           <X
-            className="w-48 relative px-4" -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
             onClick={() => {
               setSearchTerm('');
               setShowDropdown(false);
             }}
           />
         ) : (
-          <Search className="w-48 relative px-4" top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         )}
         {showDropdown && searchTerm && (
           <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
