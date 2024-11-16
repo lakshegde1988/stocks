@@ -334,7 +334,7 @@ export default function StockChart() {
                     setSearchTerm(e.target.value);
                     setShowDropdown(true);
                   }}
-                  className="pr-6 text-xs h-6 w-full bg-background/80 backdrop-blur-sm"
+                  className="pr-6 text-md h-6 w-full bg-background/80 backdrop-blur-sm"
                   aria-label="Search stocks"
                 />
                 {searchTerm ? (
@@ -361,8 +361,8 @@ export default function StockChart() {
                         }}
                         className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
                       >
-                        <div className="font-medium text-xs">{stock.symbol}</div>
-                        <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
+                        <div className="font-medium text-md">{stock.symbol}</div>
+                        <div className="text-md text-muted-foreground truncate">{stock.name}</div>
                       </button>
                     ))}
                   </div>
