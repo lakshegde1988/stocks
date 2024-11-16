@@ -50,10 +50,6 @@ export default async function handler(req, res) {
     const ohlcv = quotes.indicators.quote[0];
     const adjClose = quotes.indicators.adjclose?.[0]?.adjclose || ohlcv.close;
 
-    // Get the current date
-    const now = new Date();
-    now.setUTCHours(0, 0, 0, 0);
-
     // Process the data into the format needed by the chart
     let processedData = timestamps.map((timestamp, index) => {
       if (
@@ -90,8 +86,12 @@ export default async function handler(req, res) {
       };
     }).filter(item => item !== null);
 
-    // Handle incomplete candles for weekly and monthly intervals
+    // Remove incomplete candles for weekly and monthly intervals
     if (interval === '1wk' || interval === '1mo') {
+      const now = new Date();
+      // Set time to midnight UTC
+      now.setUTCHours(0, 0, 0, 0);
+
       // For weekly interval, get the current week's Monday
       if (interval === '1wk') {
         const dayOfWeek = now.getUTCDay();
@@ -103,17 +103,11 @@ export default async function handler(req, res) {
         now.setUTCDate(1);
       }
 
-      // Adjust the last candle to represent the current period
-      const lastCandle = processedData[processedData.length - 1];
-      const lastCandleDate = new Date(lastCandle.time);
-
-      if (lastCandleDate < now) {
-        // The last candle is from a previous period, update its time to the current period
-        lastCandle.time = now.toISOString().split('T')[0];
-      } else if (lastCandleDate > now) {
-        // The last candle is from a future period (shouldn't happen, but just in case)
-        processedData.pop();
-      }
+      // Remove any candles that start on or after the current period's start
+      processedData = processedData.filter(candle => {
+        const candleDate = new Date(candle.time);
+        return candleDate < now;
+      });
     }
 
     // Store response in cache
