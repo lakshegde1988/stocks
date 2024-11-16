@@ -388,12 +388,12 @@ export default function StockChart() {
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-md bg-background">
+                <SelectTrigger className="h-8 text-xs sm:text-lg bg-background">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent>
                   {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-md">
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-lg">
                       {item.label}
                     </SelectItem>
                   ))}
@@ -401,14 +401,14 @@ export default function StockChart() {
               </Select>
             </div>
             {/* Intervals - Fixed width container */}
-              <div className="flex space-x-0.5 min-w-[100px]">
+              <div className="flex min-w-[100px]">
                 {INTERVALS.map((interval) => (
                   <Button
                     key={interval.value}
                     variant={selectedInterval === interval.value ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleIntervalChange(interval.value)}
-                    className="text-[10px] px-1.5 h-6 min-w-[24px]"
+                    className="text-[12px] px-1.5 h-6 min-w-[24px]"
                   >
                     {interval.label}
                   </Button>
@@ -420,7 +420,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-12 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 size="lg"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -439,7 +439,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-12 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 size="lg"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
