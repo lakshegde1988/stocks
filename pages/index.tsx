@@ -293,66 +293,62 @@ export default function StockChart() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info, Intervals, and Search */}
-        <div className="z-20 flex flex-wrap items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 justify-between w-full">
+        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 justify-between w-full">
           {currentStock && (
             <>
-              <div className="flex items-center space-x-2 flex-grow">
-                <div className="min-w-[120px]">
-                  <p className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</p>
-                  {loading && <Loader2 className="h-5 w-5 ml-2 animate-spin text-muted-foreground" />}
-                  <div className="flex items-center mt-2">
-                    <span
-                      className={`text-xs font-medium ${
-                        currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                      }`}
-                    >
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="min-w-[80px]">
+                  <p className="text-sm font-semibold">{currentStock.symbol.toUpperCase()}</p>
+                  <div className="flex items-center">
+                    <span className={`text-xs font-medium ${
+                      currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                    }`}>
                       {currentStock.price?.toFixed(2)}
                     </span>
-                    <span
-                      className={`text-xs ml-2 ${
-                        currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                      }`}
-                    >
+                    <span className={`text-xs ml-1 ${
+                      currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                    }`}>
                       {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(2)}%
                     </span>
                   </div>
                 </div>
-                <div className="flex space-x-1">
-                  {INTERVALS.map((interval) => (
-                    <Button
-                      key={interval.value}
-                      variant={selectedInterval === interval.value ? "default" : "secondary"}
-                      size="sm"
-                      onClick={() => handleIntervalChange(interval.value)}
-                      className="text-xs px-2 h-7"
-                    >
-                      {interval.label}
-                    </Button>
-                  ))}
-                </div>
+                {loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               </div>
-              <div className="w-full sm:w-48 mt-2 sm:mt-0" ref={searchRef}>
+              <div className="flex space-x-1 flex-shrink-0">
+                {INTERVALS.map((interval) => (
+                  <Button
+                    key={interval.value}
+                    variant={selectedInterval === interval.value ? "default" : "secondary"}
+                    size="sm"
+                    onClick={() => handleIntervalChange(interval.value)}
+                    className="text-xs px-2 h-7"
+                  >
+                    {interval.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="w-32 sm:w-48 relative" ref={searchRef}>
                 <Input
                   type="text"
-                  placeholder="Search stocks..."
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setShowDropdown(true);
                   }}
-                  className="pr-8 text-sm h-9 w-full bg-background/80 backdrop-blur-sm"
+                  className="pr-8 text-xs h-7 w-full bg-background/80 backdrop-blur-sm"
                   aria-label="Search stocks"
                 />
                 {searchTerm ? (
                   <X
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
                     onClick={() => {
                       setSearchTerm('');
                       setShowDropdown(false);
                     }}
                   />
                 ) : (
-                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                 )}
                 {showDropdown && searchTerm && (
                   <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
@@ -379,7 +375,7 @@ export default function StockChart() {
         </div>
 
         {/* Chart Area */}
-        <div className="h-full pt-20">
+        <div className="h-full pt-12">
           <div className="h-full" ref={chartContainerRef}></div>
         </div>
       </main>
