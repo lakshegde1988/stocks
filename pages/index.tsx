@@ -299,7 +299,7 @@ export default function StockChart() {
               {/* Stock Info - Fixed width container */}
               <div className="flex items-center min-w-[120px] relative">
                 <div>
-                  <p className="text-xs font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
+                  <p className="text-md font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
                   <div className="flex items-center">
                     <span className={`text-[10px] font-medium ${
                       currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
