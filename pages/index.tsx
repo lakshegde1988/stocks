@@ -340,10 +340,10 @@ export default function StockChart() {
               </div>
 
               {/* Spacer */}
-              <div className="w-6" />
+              <div className="w-4" />
 
               {/* Search - Fixed width container */}
-              <div className="w-24 sm:w-48 relative" ref={searchRef}>
+              <div className="w-24 sm:w-64 relative" ref={searchRef}>
                 <Input
                   type="text"
                   placeholder="Search..."
