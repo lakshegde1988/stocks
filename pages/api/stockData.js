@@ -67,13 +67,13 @@ export default async function handler(req, res) {
       
       // For weekly data, adjust the timestamp to Monday of that week
       if (interval === '1wk') {
-        // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
         const dayOfWeek = date.getUTCDay();
-        // Calculate how many days to subtract to get to Monday
-        // If it's Sunday (0), subtract 6 days to get to previous Monday
-        // If it's any other day, subtract (dayOfWeek - 1) days
         const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
         date.setUTCDate(date.getUTCDate() - daysToSubtract);
+      }
+      // For monthly data, adjust the timestamp to the first day of the month
+      else if (interval === '1mo') {
+        date.setUTCDate(1);
       }
 
       return {
