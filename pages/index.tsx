@@ -293,11 +293,11 @@ export default function StockChart() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info, Intervals, and Search */}
-        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 space-x-2 w-full">
+        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 w-full">
           {currentStock && (
             <>
-              {/* Stock Info - Minimized on mobile */}
-              <div className="flex items-center space-x-2 min-w-[70px]">
+              {/* Stock Info */}
+              <div className="flex items-center min-w-[70px]">
                 <div>
                   <p className="text-xs font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
                   <div className="flex items-center">
@@ -313,10 +313,13 @@ export default function StockChart() {
                     </span>
                   </div>
                 </div>
-                {loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                {loading && <Loader2 className="h-3 w-3 ml-2 animate-spin text-muted-foreground" />}
               </div>
 
-              {/* Intervals - Compact on mobile */}
+              {/* Divider */}
+              <div className="mx-4 h-6 w-px bg-border"></div>
+
+              {/* Intervals */}
               <div className="flex space-x-0.5">
                 {INTERVALS.map((interval) => (
                   <Button
@@ -331,8 +334,11 @@ export default function StockChart() {
                 ))}
               </div>
 
-              {/* Search - Always visible */}
-              <div className="w-20 sm:w-48 relative ml-auto" ref={searchRef}>
+              {/* Divider */}
+              <div className="mx-4 h-6 w-px bg-border"></div>
+
+              {/* Search */}
+              <div className="w-20 sm:w-48 relative" ref={searchRef}>
                 <Input
                   type="text"
                   placeholder="Search..."
