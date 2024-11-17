@@ -325,7 +325,7 @@ export default function StockChart() {
               <div className="w-6" />
 
               {/* Search - Fixed width container */}
-              <div className="w-24 sm:w-64 relative" ref={searchRef}>
+              <div className="w-24 sm:w-96 relative" ref={searchRef}>
                 <Input
                   type="text"
                   placeholder="Search..."
@@ -334,7 +334,7 @@ export default function StockChart() {
                     setSearchTerm(e.target.value);
                     setShowDropdown(true);
                   }}
-                  className="pr-6 text-md h-8 w-full bg-background/80 backdrop-blur-sm"
+                  className="pr-6 text-md h-8 bg-background/80 backdrop-blur-sm"
                   aria-label="Search stocks"
                 />
                 {searchTerm ? (
