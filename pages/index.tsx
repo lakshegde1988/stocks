@@ -289,146 +289,115 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
-  return (
+ return (
     <div className="flex flex-col h-screen bg-background text-foreground">
-      <main className="flex-1 relative overflow-hidden">
-        {/* Stock Info, Intervals, and Search */}
-        <div className="z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 rounded-lg absolute left-4 top-2 w-full">
-          {currentStock && (
-            <>
-              {/* Stock Info - Fixed width container */}
-              <div className="flex items-center min-w-[120px] relative">
-                <div>
-                  <p className="text-md font-semibold whitespace-nowrap">{currentStock.symbol.toUpperCase()}</p>
-                  <div className="flex items-center">
-                    <span className={`text-[14px] font-medium ${
-                      currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {currentStock.price?.toFixed(2)}
-                    </span>
-                    <span className={`text-[14px] ml-1 ${
-                      currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-                    }`}>
-                      {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                {/* Loading spinner in absolute position */}
-                {loading && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {/* Spacer */}
-              <div className="w-6" />
-
-              {/* Search - Fixed width container */}
-              <div className="w-24 sm:w-96 relative" ref={searchRef}>
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowDropdown(true);
-                  }}
-                  className="pr-6 text-md h-8 bg-background/80 backdrop-blur-sm"
-                  aria-label="Search stocks"
-                />
-                {searchTerm ? (
-                  <X
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
-                    onClick={() => {
-                      setSearchTerm('');
-                      setShowDropdown(false);
-                    }}
-                  />
-                ) : (
-                  <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                )}
-                {showDropdown && searchTerm && (
-                  <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
-                    {filteredStocks.map((stock) => (
-                      <button
-                        key={stock.symbol}
-                        onClick={() => {
-                          const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                          setCurrentStockIndex(stockIndex);
-                          setSearchTerm('');
-                          setShowDropdown(false);
-                        }}
-                        className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="font-medium text-sm">{stock.symbol}</div>
-                        <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 border-b">
+        {/* Search Box */}
+        <div className="w-48 sm:w-64 relative" ref={searchRef}>
+          <Input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setShowDropdown(true);
+            }}
+            className="pr-6 text-sm h-8 bg-background/80 backdrop-blur-sm"
+            aria-label="Search stocks"
+          />
+          {searchTerm ? (
+            <X
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
+              onClick={() => {
+                setSearchTerm('');
+                setShowDropdown(false);
+              }}
+            />
+          ) : (
+            <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           )}
+          {/* Keep your existing dropdown logic here */}
         </div>
 
-        {/* Keep the rest of the component the same */}
-        <div className="h-full pt-12">
-          <div className="h-full" ref={chartContainerRef}></div>
-        </div>
+        {/* Separator */}
+        <div className="mx-2 h-6 w-px bg-border" />
+
+        {/* Intervals Select Box */}
+        <Select
+          value={selectedInterval}
+          onValueChange={(value) => setSelectedInterval(value)}
+        >
+          <SelectTrigger className="w-[70px] h-8 text-xs">
+            <SelectValue placeholder="Interval" />
+          </SelectTrigger>
+          <SelectContent>
+            {INTERVALS.map((interval) => (
+              <SelectItem key={interval.value} value={interval.value} className="text-xs">
+                {interval.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <main className="flex-1 relative overflow-hidden">
+        {/* Stock Info Overlay */}
+        {currentStock && (
+          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+            <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
+            <div className="grid grid-cols-2 gap-x-4 text-sm">
+              <div>Open: {chartData[0]?.open.toFixed(2)}</div>
+              <div>High: {Math.max(...chartData.map(d => d.high)).toFixed(2)}</div>
+              <div>Low: {Math.min(...chartData.map(d => d.low)).toFixed(2)}</div>
+              <div>Close: {chartData[chartData.length - 1]?.close.toFixed(2)}</div>
+              <div className="col-span-2">Volume: {chartData.reduce((sum, d) => sum + d.volume, 0).toLocaleString()}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Chart Container */}
+        <div className="h-full" ref={chartContainerRef}></div>
       </main>
 
-      {/* Footer */}
-    <footer className="sticky w-full bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
-        <div className=" mx-auto px-2 sm:px-4">
+      {/* Sticky Footer */}
+      <footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+        <div className="mx-auto px-2 sm:px-4">
           <div className="flex justify-between py-2 sm:py-4 min-w-0">
-            {/* Select Box - Left aligned */}
+            {/* Index Select Box */}
             <div className="flex-shrink-0 min-w-[120px] sm:min-w-[180px]">
               <Select
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-lg bg-background">
+                <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent>
                   {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-lg">
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
                       {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            {/* Intervals - Fixed width container */}
-              <div className="flex min-w-[100px]">
-                {INTERVALS.map((interval) => (
-                  <Button
-                    key={interval.value}
-                    variant={selectedInterval === interval.value ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleIntervalChange(interval.value)}
-                    className="text-[12px] px-1.5 h-6 min-w-[24px]"
-                  >
-                    {interval.label}
-                  </Button>
-                ))}
-              </div>
-            {/* Pagination - Right aligned */}
+
+            {/* Pagination */}
             <div className="flex items-center space-x-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="lg"
+                size="sm"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
               </Button>
 
               <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-md sm:text-md text-gray-600 whitespace-nowrap">
+                <span className="text-sm sm:text-sm text-gray-600 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-gray-400 mx-1">/</span>
                   <span className="text-gray-400">{stocks.length}</span>
@@ -440,7 +409,7 @@ export default function StockChart() {
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
                 className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="lg"
+                size="sm"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
                 <ChevronRight className="h-4 w-4" />
