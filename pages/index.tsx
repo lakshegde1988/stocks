@@ -332,7 +332,7 @@ export default function StockChart() {
           </Select>
 
           {/* Search Box */}
-          <div className="w-48 sm:w-64 relative" ref={searchRef}>
+          <div className="w-48 sm:w-48 relative" ref={searchRef}>
             <Input
               type="text"
               placeholder="Search..."
