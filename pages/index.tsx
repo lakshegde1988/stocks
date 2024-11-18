@@ -302,7 +302,7 @@ export default function StockChart() {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   };
 
   return (
@@ -310,7 +310,7 @@ export default function StockChart() {
       {/* Sticky Top Bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
-        <div className="text-lg font-bold">dotChart</div>
+        <div className="text-lg font-bold">DotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
