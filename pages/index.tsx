@@ -365,15 +365,11 @@ export default function StockChart() {
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
             <div className="text-sm">
-              <div>
-                O: {chartData[0]?.open.toFixed(2)} H: {Math.max(...chartData.map(d => d.high)).toFixed(2)} L: {Math.min(...chartData.map(d => d.low)).toFixed(2)}
-              </div>
-              <div className={`font-semibold ${chartData[chartData.length - 1]?.close >= chartData[0]?.open ? 'text-green-500' : 'text-red-500'}`}>
-                C: {chartData[chartData.length - 1]?.close.toFixed(2)} 
-                ({((chartData[chartData.length - 1]?.close - chartData[0]?.open) / chartData[0]?.open * 100).toFixed(2)}%)
-              </div>
-              <div>
-                Vol: {chartData.reduce((sum, d) => sum + d.volume, 0).toLocaleString()}
+              <div className={`font-semibold ${currentStock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {currentStock.price?.toFixed(2)} 
+                {currentStock.change !== undefined && currentStock.percentChange !== undefined && (
+                  <span> ({currentStock.change >= 0 ? '+' : ''}{currentStock.change.toFixed(2)} / {currentStock.percentChange.toFixed(2)}%)</span>
+                )}
               </div>
             </div>
           </div>
