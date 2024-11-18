@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,13 +81,13 @@ const getCssVariableColor = (variableName: string): string => {
   return fallbacks[variableName] || '#000000';
 };
 
-const chartColors = {
+const getChartColors = () => ({
   upColor: getCssVariableColor('--success'),
   downColor: getCssVariableColor('--destructive'),
   backgroundColor: getCssVariableColor('--background'),
   textColor: getCssVariableColor('--foreground'),
   borderColor: getCssVariableColor('--border'),
-};
+});
 
 export default function StockChart() {
   const [indexData] = useState<IndexData[]>([
@@ -114,6 +115,8 @@ export default function StockChart() {
   const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  const { theme, setTheme } = useTheme();
 
   const getChartHeight = useCallback(() => {
     return window.innerWidth < 640 ? 700 : window.innerWidth < 1024 ? 320 : 800;
@@ -180,6 +183,8 @@ export default function StockChart() {
         });
       }
     };
+
+    const chartColors = getChartColors();
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
@@ -252,7 +257,7 @@ export default function StockChart() {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight]);
+  }, [chartData, getChartHeight, theme]);
 
   const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
@@ -296,11 +301,36 @@ export default function StockChart() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Sticky Top Bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
-        <div className="flex items-center">
+        {/* Brand Name */}
+        <div className="text-lg font-bold">DotChart</div>
+
+        {/* Right-side elements */}
+        <div className="flex items-center space-x-2">
+          {/* Intervals Select Box */}
+          <Select
+            value={selectedInterval}
+            onValueChange={(value) => setSelectedInterval(value)}
+          >
+            <SelectTrigger className="w-[70px] h-8 text-xs">
+              <SelectValue placeholder="Interval" />
+            </SelectTrigger>
+            <SelectContent>
+              {INTERVALS.map((interval) => (
+                <SelectItem key={interval.value} value={interval.value} className="text-xs">
+                  {interval.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           {/* Search Box */}
           <div className="w-48 sm:w-64 relative" ref={searchRef}>
             <Input
@@ -326,7 +356,7 @@ export default function StockChart() {
               <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             )}
             {showDropdown && searchTerm && (
-              <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
+              <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
                 {filteredStocks.map((stock) => (
                   <button
                     key={stock.symbol}
@@ -346,42 +376,38 @@ export default function StockChart() {
             )}
           </div>
 
-          {/* Separator */}
-          <div className="mx-2 h-6 w-px bg-border" />
-
-          {/* Intervals Select Box */}
-          <Select
-            value={selectedInterval}
-            onValueChange={(value) => setSelectedInterval(value)}
+          {/* Theme Toggle Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-8 w-8 p-0"
           >
-            <SelectTrigger className="w-[70px] h-8 text-xs">
-              <SelectValue placeholder="Interval" />
-            </SelectTrigger>
-            <SelectContent>
-              {INTERVALS.map((interval) => (
-                <SelectItem key={interval.value} value={interval.value} className="text-xs">
-                  {interval.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
 
-        {/* Full Screen Button (visible only on mobile) */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 p-0 sm:hidden"
-          onClick={handleFullScreen}
-        >
-          <Maximize2 className="h-4 w-4" />
-          <span className="sr-only">Full Screen</span>
-        </Button>
+          {/* Full Screen Button (visible only on mobile) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 p-0 sm:hidden"
+            onClick={handleFullScreen}
+          >
+            <Maximize2 className="h-4 w-4" />
+            <span className="sr-only">Full Screen</span>
+          </Button>
+        </div>
       </div>
 
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
-        {currentStock && <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+        {currentStock && (
+          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
@@ -396,7 +422,7 @@ export default function StockChart() {
               </span>
             </div>
           </div>
-        }
+        )}
 
         {/* Chart Container */}
         <div className="h-full" ref={chartContainerRef}></div>
