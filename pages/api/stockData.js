@@ -86,28 +86,43 @@ export default async function handler(req, res) {
       };
     }).filter(item => item !== null);
 
-    // Remove incomplete candles for weekly and monthly intervals
+    // Handle incomplete candles for weekly and monthly intervals
     if (interval === '1wk' || interval === '1mo') {
       const now = new Date();
-      // Set time to midnight UTC
       now.setUTCHours(0, 0, 0, 0);
 
-      // For weekly interval, get the current week's Monday
+      let currentPeriodStart;
       if (interval === '1wk') {
         const dayOfWeek = now.getUTCDay();
         const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        now.setUTCDate(now.getUTCDate() - daysToSubtract);
-      }
-      // For monthly interval, get the first day of the current month
-      else if (interval === '1mo') {
-        now.setUTCDate(1);
+        currentPeriodStart = new Date(now);
+        currentPeriodStart.setUTCDate(now.getUTCDate() - daysToSubtract);
+      } else if (interval === '1mo') {
+        currentPeriodStart = new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
       }
 
-      // Remove any candles that start on or after the current period's start
-      processedData = processedData.filter(candle => {
-        const candleDate = new Date(candle.time);
-        return candleDate < now;
-      });
+      const lastCompleteCandle = processedData[processedData.length - 1];
+      const lastCandleDate = new Date(lastCompleteCandle.time);
+
+      if (lastCandleDate < currentPeriodStart) {
+        // Add a new candle for the current period
+        const currentCandle = {
+          time: currentPeriodStart.toISOString().split('T')[0],
+          open: lastCompleteCandle.close,
+          high: Math.max(...processedData.filter(d => new Date(d.time) >= currentPeriodStart).map(d => d.high)),
+          low: Math.min(...processedData.filter(d => new Date(d.time) >= currentPeriodStart).map(d => d.low)),
+          close: processedData[processedData.length - 1].close,
+          volume: processedData.filter(d => new Date(d.time) >= currentPeriodStart).reduce((sum, d) => sum + d.volume, 0),
+        };
+        processedData.push(currentCandle);
+      } else {
+        // Update the last candle with the current period's data
+        const currentPeriodData = processedData.filter(d => new Date(d.time) >= currentPeriodStart);
+        lastCompleteCandle.high = Math.max(lastCompleteCandle.high, ...currentPeriodData.map(d => d.high));
+        lastCompleteCandle.low = Math.min(lastCompleteCandle.low, ...currentPeriodData.map(d => d.low));
+        lastCompleteCandle.close = processedData[processedData.length - 1].close;
+        lastCompleteCandle.volume += currentPeriodData.reduce((sum, d) => sum + d.volume, 0);
+      }
     }
 
     // Store response in cache
