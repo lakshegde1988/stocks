@@ -343,15 +343,20 @@ export default function StockChart() {
 
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
-        {currentStock && (
+        {{currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
-            <div className="grid grid-cols-2 gap-x-4 text-sm">
-              <div>Open: {chartData[0]?.open.toFixed(2)}</div>
-              <div>High: {Math.max(...chartData.map(d => d.high)).toFixed(2)}</div>
-              <div>Low: {Math.min(...chartData.map(d => d.low)).toFixed(2)}</div>
-              <div>Close: {chartData[chartData.length - 1]?.close.toFixed(2)}</div>
-              <div className="col-span-2">Volume: {chartData.reduce((sum, d) => sum + d.volume, 0).toLocaleString()}</div>
+            <div className="text-sm">
+              <div>
+                O: {chartData[0]?.open.toFixed(2)} H: {Math.max(...chartData.map(d => d.high)).toFixed(2)} L: {Math.min(...chartData.map(d => d.low)).toFixed(2)}
+              </div>
+              <div className={`font-semibold ${chartData[chartData.length - 1]?.close >= chartData[0]?.open ? 'text-green-500' : 'text-red-500'}`}>
+                C: {chartData[chartData.length - 1]?.close.toFixed(2)} 
+                ({((chartData[chartData.length - 1]?.close - chartData[0]?.open) / chartData[0]?.open * 100).toFixed(2)}%)
+              </div>
+              <div>
+                Vol: {chartData.reduce((sum, d) => sum + d.volume, 0).toLocaleString()}
+              </div>
             </div>
           </div>
         )}
