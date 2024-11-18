@@ -306,11 +306,11 @@ export default function StockChart() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
+    <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
       {/* Sticky Top Bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
-        <div className="text-lg font-bold">dotChart</div>
+        <div className="text-lg font-bold">DotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
