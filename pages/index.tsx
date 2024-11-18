@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,7 +96,6 @@ export default function StockChart() {
     { label: 'Smallcap 250', data: smallcap250Data },
     { label: 'MicroCap 250', data: microCap250Data },
     { label: 'Others', data: othersData },
-
   ]);
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
@@ -289,95 +288,115 @@ export default function StockChart() {
     )
   ).slice(0, 10);
 
+  const handleFullScreen = () => {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if ((document.documentElement as any).webkitRequestFullscreen) { // Safari
+      (document.documentElement as any).webkitRequestFullscreen();
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center bg-background/80 backdrop-blur-sm p-2 border-b">
-        {/* Search Box */}
-        <div className="w-48 sm:w-64 relative" ref={searchRef}>
-          <Input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setShowDropdown(true);
-            }}
-            className="pr-6 text-sm h-8 bg-background/80 backdrop-blur-sm"
-            aria-label="Search stocks"
-          />
-          {searchTerm ? (
-            <X
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
-              onClick={() => {
-                setSearchTerm('');
-                setShowDropdown(false);
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
+        <div className="flex items-center">
+          {/* Search Box */}
+          <div className="w-48 sm:w-64 relative" ref={searchRef}>
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowDropdown(true);
               }}
+              className="pr-6 text-sm h-8 bg-background/80 backdrop-blur-sm"
+              aria-label="Search stocks"
             />
-          ) : (
-            <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          )}
-          {showDropdown && searchTerm && (
-            <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
-              {filteredStocks.map((stock) => (
-                <button
-                  key={stock.symbol}
-                  onClick={() => {
-                    const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                    setCurrentStockIndex(stockIndex);
-                    setSearchTerm('');
-                    setShowDropdown(false);
-                  }}
-                  className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                >
-                  <div className="font-medium text-sm">{stock.symbol}</div>
-                  <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
-                </button>
+            {searchTerm ? (
+              <X
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                onClick={() => {
+                  setSearchTerm('');
+                  setShowDropdown(false);
+                }}
+              />
+            ) : (
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+            )}
+            {showDropdown && searchTerm && (
+              <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
+                {filteredStocks.map((stock) => (
+                  <button
+                    key={stock.symbol}
+                    onClick={() => {
+                      const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                      setCurrentStockIndex(stockIndex);
+                      setSearchTerm('');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="font-medium text-sm">{stock.symbol}</div>
+                    <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Separator */}
+          <div className="mx-2 h-6 w-px bg-border" />
+
+          {/* Intervals Select Box */}
+          <Select
+            value={selectedInterval}
+            onValueChange={(value) => setSelectedInterval(value)}
+          >
+            <SelectTrigger className="w-[70px] h-8 text-xs">
+              <SelectValue placeholder="Interval" />
+            </SelectTrigger>
+            <SelectContent>
+              {INTERVALS.map((interval) => (
+                <SelectItem key={interval.value} value={interval.value} className="text-xs">
+                  {interval.label}
+                </SelectItem>
               ))}
-            </div>
-          )}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Separator */}
-        <div className="mx-2 h-6 w-px bg-border" />
-
-        {/* Intervals Select Box */}
-        <Select
-          value={selectedInterval}
-          onValueChange={(value) => setSelectedInterval(value)}
+        {/* Full Screen Button (visible only on mobile) */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 p-0 sm:hidden"
+          onClick={handleFullScreen}
         >
-          <SelectTrigger className="w-[70px] h-8 text-xs">
-            <SelectValue placeholder="Interval" />
-          </SelectTrigger>
-          <SelectContent>
-            {INTERVALS.map((interval) => (
-              <SelectItem key={interval.value} value={interval.value} className="text-xs">
-                {interval.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Maximize2 className="h-4 w-4" />
+          <span className="sr-only">Full Screen</span>
+        </Button>
       </div>
 
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
-        {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+        {currentStock && <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
             <div className="text-sm">
-            <span className={`text-[14px] font-medium ${
-              currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-            }`}>
-              {currentStock.price?.toFixed(2)}
-            </span>
-            <span className={`text-[14px] ml-1 ${
-              currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-            }`}>
-              {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
-            </span>
+              <span className={`text-[14px] font-medium ${
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {currentStock.price?.toFixed(2)}
+              </span>
+              <span className={`text-[14px] ml-1 ${
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
+              </span>
             </div>
           </div>
-        )}
+        }
 
         {/* Chart Container */}
         <div className="h-full" ref={chartContainerRef}></div>
