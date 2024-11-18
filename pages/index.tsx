@@ -317,7 +317,25 @@ export default function StockChart() {
           ) : (
             <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           )}
-          {/* Keep your existing dropdown logic here */}
+          {showDropdown && searchTerm && (
+            <div className="absolute w-48 mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
+              {filteredStocks.map((stock) => (
+                <button
+                  key={stock.symbol}
+                  onClick={() => {
+                    const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                    setCurrentStockIndex(stockIndex);
+                    setSearchTerm('');
+                    setShowDropdown(false);
+                  }}
+                  className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                >
+                  <div className="font-medium text-sm">{stock.symbol}</div>
+                  <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Separator */}
@@ -343,7 +361,7 @@ export default function StockChart() {
 
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
-        {{currentStock && (
+        {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
             <div className="text-sm">
