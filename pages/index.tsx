@@ -130,6 +130,11 @@ export default function StockChart() {
     setCurrentStockIndex(0);
   }, [selectedIndexId, indexData]);
 
+  const calculatePercentageChange = useCallback((currentClose: number, previousClose: number) => {
+    return ((currentClose - previousClose) / previousClose) * 100;
+  }, []);
+
+  // Update the fetchStockData function to calculate the correct percentage change
   const fetchStockData = useCallback(async () => {
     if (!stocks.length) return;
     
@@ -152,11 +157,13 @@ export default function StockChart() {
 
       if (response.data && Array.isArray(response.data)) {
         setChartData(response.data);
+        const latestDataPoint = response.data[response.data.length - 1];
+        const previousDataPoint = response.data[response.data.length - 2];
         setCurrentStock({
           ...currentStock,
-          price: response.data[response.data.length - 1]?.close,
-          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
-          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
+          price: latestDataPoint?.close,
+          change: latestDataPoint?.close - previousDataPoint?.close,
+          percentChange: calculatePercentageChange(latestDataPoint?.close, previousDataPoint?.close)
         });
       }
     } catch (err) {
@@ -164,7 +171,7 @@ export default function StockChart() {
     } finally {
       setLoading(false);
     }
-  }, [stocks, currentStockIndex, selectedInterval]);
+  }, [stocks, currentStockIndex, selectedInterval, calculatePercentageChange]);
 
   useEffect(() => {
     fetchStockData();
