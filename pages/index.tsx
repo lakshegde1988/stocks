@@ -116,6 +116,7 @@ export default function StockChart() {
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const getChartHeight = useCallback(() => {
@@ -204,7 +205,7 @@ export default function StockChart() {
         borderColor: chartColors.borderColor,
         timeVisible: false,
         rightOffset: 10,
-        minBarSpacing: 5,
+        minBarSpacing: 2,
       },
     });
 
@@ -301,16 +302,22 @@ export default function StockChart() {
     }
   };
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
-  };
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }
+
+  if (!mounted) return null
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
       {/* Sticky Top Bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
-        <div className="text-lg font-bold">dotChart</div>
+        <div className="text-lg font-bold">DotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
@@ -332,7 +339,7 @@ export default function StockChart() {
           </Select>
 
           {/* Search Box */}
-          <div className="w-48 sm:w-48 relative" ref={searchRef}>
+          <div className="w-48 sm:w-64 relative" ref={searchRef}>
             <Input
               type="text"
               placeholder="Search..."
@@ -383,10 +390,12 @@ export default function StockChart() {
             onClick={toggleTheme}
             className="h-8 w-8 p-0"
           >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
+            {mounted && (
+              theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
@@ -408,7 +417,7 @@ export default function StockChart() {
         {/* Stock Info Overlay */}
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-            <h2 className="text-md font-bold">{currentStock.symbol}</h2>
+            <h2 className="text-lg font-bold">{currentStock.symbol}</h2>
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
                 currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
