@@ -317,7 +317,7 @@ export default function StockChart() {
       {/* Sticky Top Bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
-        <div className="text-lg font-bold">DotChart</div>
+        <div className="text-lg font-bold">dotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
