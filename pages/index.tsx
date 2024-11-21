@@ -415,7 +415,7 @@ export default function StockChart() {
         {/* Stock Info Overlay */}
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-            <h4 className="text-md font-bold">{currentStock.name}</h4>
+            <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
                 currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
