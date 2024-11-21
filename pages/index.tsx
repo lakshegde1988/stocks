@@ -434,7 +434,7 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-[40px] h-8 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="w-[60px] h-8 text-xs sm:text-sm bg-background">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
                 <SelectContent>
