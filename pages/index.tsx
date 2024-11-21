@@ -399,7 +399,7 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute z-10 bg-background/80 backdrop-blur-sm rounded-lg">
+          <div className="absolute left-2 z-10 bg-background/80 backdrop-blur-sm rounded-lg">
             <div className="flex items-center gap-2">
               <h4 className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</h4>
               <Button
