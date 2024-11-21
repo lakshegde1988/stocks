@@ -383,22 +383,6 @@ export default function StockChart() {
               </div>
             )}
           </div>
-
-          {/* Theme Toggle Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-8 w-8 p-0"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-
           {/* Full Screen Button (visible only on mobile) */}
           <Button
             variant="ghost"
