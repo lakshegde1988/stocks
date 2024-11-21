@@ -415,8 +415,8 @@ export default function StockChart() {
         {/* Stock Info Overlay */}
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-            <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
-            <h5 className="text-sm font-light">NSE:{currentStock.symbol.toUpperCase()}</h5>
+            <h4 className="text-sm font-bold">NSE: {currentStock.symbol.toUpperCase()}</h4>
+            <h4 className="text-sm font-light">{currentStock.name.toUpperCase()}</h4>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
