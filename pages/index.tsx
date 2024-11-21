@@ -333,7 +333,7 @@ export default function StockChart() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
       {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
+      <div className="top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
         <div className="text-lg font-bold">dotChart</div>
 
@@ -399,7 +399,7 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+          <div className="absolute z-10 bg-background/80 backdrop-blur-sm rounded-lg">
             <div className="flex items-center gap-2">
               <h4 className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</h4>
               <Button
