@@ -338,9 +338,9 @@ export default function StockChart() {
         <div className="text-lg font-bold">dotChart</div>
 
         {/* Right-side elements */}
-        <div className="flex items-center right-4 space-x-2">
+        <div className="flex items-center space-x-2">
           {/* Search Box */}
-          <div className="w-48 sm:w-64 relative" ref={searchRef}>
+          <div className="w-48 sm:w-48 relative" ref={searchRef}>
             <Input
               type="text"
               placeholder="Search..."
