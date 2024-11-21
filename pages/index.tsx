@@ -321,23 +321,6 @@ export default function StockChart() {
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
-          {/* Intervals Select Box */}
-          <Select
-            value={selectedInterval}
-            onValueChange={(value) => setSelectedInterval(value)}
-          >
-            <SelectTrigger className="w-[70px] h-8 text-xs">
-              <SelectValue placeholder="Interval" />
-            </SelectTrigger>
-            <SelectContent>
-              {INTERVALS.map((interval) => (
-                <SelectItem key={interval.value} value={interval.value} className="text-xs">
-                  {interval.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           {/* Search Box */}
           <div className="w-48 sm:w-64 relative" ref={searchRef}>
             <Input
@@ -415,8 +398,9 @@ export default function StockChart() {
         {/* Stock Info Overlay */}
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-            <h4 className="text-sm font-bold">NSE: {currentStock.symbol.toUpperCase()}</h4>
-            <h4 className="text-sm font-light">{currentStock.name.toUpperCase()}</h4>
+            <h4 className="text-sm font-light">{currentStock.symbol.toUpperCase()}</h4>
+
+            <h5 className="text-md font-bold">{currentStock.name.toUpperCase()}</h5>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
@@ -440,9 +424,9 @@ export default function StockChart() {
       {/* Sticky Footer */}
       <footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
         <div className="mx-auto px-2 sm:px-4">
-          <div className="flex justify-between py-2 sm:py-4 min-w-0">
-            {/* Index Select Box */}
-            <div className="flex-shrink-0 min-w-[120px] sm:min-w-[180px]">
+          <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
+            {/* Index and Interval Select Boxes */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <Select
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
@@ -454,6 +438,22 @@ export default function StockChart() {
                   {indexData.map((item, index) => (
                     <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
                       {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedInterval}
+                onValueChange={(value) => setSelectedInterval(value)}
+              >
+                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
+                  <SelectValue placeholder="Interval" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INTERVALS.map((interval) => (
+                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
+                      {interval.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -498,3 +498,4 @@ export default function StockChart() {
     </div>
   );
 }
+
