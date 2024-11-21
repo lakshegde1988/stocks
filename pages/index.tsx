@@ -417,7 +417,7 @@ export default function StockChart() {
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-2">
-              <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
+              <h4 className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</h4>
               <Button
                 variant="ghost"
                 size="sm"
@@ -433,7 +433,7 @@ export default function StockChart() {
                 />
               </Button>
             </div>
-            <h5 className="text-sm font-light">NSE:{currentStock.symbol.toUpperCase()}</h5>
+            <h5 className="text-sm font-light">{currentStock.name.toUpperCase()}</h5>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
