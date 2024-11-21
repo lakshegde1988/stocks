@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun, Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { WatchlistModal } from '../components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
@@ -109,6 +110,8 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [watchlist, setWatchlist] = useState<{ symbol: string; name: string }[]>([]);
+  const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -310,12 +313,27 @@ export default function StockChart() {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
+  const toggleWatchlist = (stock: Stock) => {
+    setWatchlist(prev => {
+      const isInWatchlist = prev.some(item => item.symbol === stock.symbol);
+      if (isInWatchlist) {
+        return prev.filter(item => item.symbol !== stock.symbol);
+      } else {
+        return [...prev, { symbol: stock.symbol, name: stock.name }];
+      }
+    });
+  };
+
+  const removeFromWatchlist = (symbol: string) => {
+    setWatchlist(prev => prev.filter(item => item.symbol !== symbol));
+  };
+
   if (!mounted) return null
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
       {/* Sticky Top Bar */}
-      <div className="top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
         <div className="text-lg font-bold">dotChart</div>
 
@@ -366,7 +384,20 @@ export default function StockChart() {
             )}
           </div>
 
-         
+          {/* Theme Toggle Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-8 w-8 p-0"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
 
           {/* Full Screen Button (visible only on mobile) */}
           <Button
@@ -385,9 +416,24 @@ export default function StockChart() {
         {/* Stock Info Overlay */}
         {currentStock && (
           <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
-            
-
-            <h5 className="text-sm font-normal">{currentStock.name.toUpperCase()}</h5>
+            <div className="flex items-center gap-2">
+              <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0"
+                onClick={() => toggleWatchlist(currentStock)}
+              >
+                <Star
+                  className={`h-4 w-4 ${
+                    watchlist.some(item => item.symbol === currentStock.symbol)
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-gray-400'
+                  }`}
+                />
+              </Button>
+            </div>
+            <h5 className="text-sm font-light">NSE:{currentStock.symbol.toUpperCase()}</h5>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
@@ -434,7 +480,7 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-[60px] h-8 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
                 <SelectContent>
@@ -445,6 +491,14 @@ export default function StockChart() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsWatchlistOpen(true)}
+                className="h-8 text-xs sm:text-sm"
+              >
+                Watchlist
+              </Button>
             </div>
 
             {/* Pagination */}
@@ -482,6 +536,12 @@ export default function StockChart() {
           </div>
         </div>
       </footer>
+      <WatchlistModal
+        isOpen={isWatchlistOpen}
+        onClose={() => setIsWatchlistOpen(false)}
+        watchlist={watchlist}
+        onRemoveFromWatchlist={removeFromWatchlist}
+      />
     </div>
   );
 }
