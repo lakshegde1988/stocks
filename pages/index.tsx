@@ -2,16 +2,15 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
-import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Maximize2, Star, Menu, TrendingUp, Calendar, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Star, Menu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WatchlistModal } from '../components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
@@ -19,7 +18,7 @@ import niftyNext50Data from '../public/niftynext50.json';
 import midcap150Data from '../public/midcap150.json';
 import smallcap250Data from '../public/smallcap250.json';
 import microCap250Data from '../public/microcap250.json';
-import others350Data from '../public/others.json';
+import othersData from '../public/others.json';
 
 interface StockData {
   Symbol: string;
@@ -57,45 +56,12 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
-const getCssVariableColor = (variableName: string): string => {
-  if (typeof window === 'undefined') return '#000000';
-  const root = document.documentElement;
-  const computedStyle = getComputedStyle(root);
-  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
-  
-  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
-    return cssVariable;
-  }
-  
-  const cssValues = cssVariable.split(',').map(v => v.trim());
-  if (cssValues.length === 3 && cssValues.every(v => !isNaN(Number(v)))) {
-    return `hsl(${cssValues.join(',')})`;
-  }
-  
-  const fallbacks: Record<string, string> = {
-    '--background': '#ffffff',
-    '--foreground': '#000000',
-    '--border': '#e5e7eb',
-    '--success': '#089981',
-    '--destructive': '#ef4444',
-  };
-  
-  return fallbacks[variableName] || '#000000';
-};
-
 const getChartColors = () => ({
-  backgroundColor: '#020617', // slate-950
+  backgroundColor: '#0f172a', // slate-900
   textColor: '#e2e8f0', // slate-200
   upColor: '#10b981', // emerald-500
   downColor: '#ef4444', // red-500
-  borderColor: '#1e293b', // slate-800
-});
-
-const swipeHandlers = useSwipeable({
-  onSwipedLeft: () => handleNext(),
-  onSwipedRight: () => handlePrevious(),
-  preventDefaultTouchmoveEvent: true,
-  trackMouse: true
+  borderColor: '#334155', // slate-700
 });
 
 export default function StockChart() {
@@ -105,7 +71,7 @@ export default function StockChart() {
     { label: 'Midcap 150', data: midcap150Data },
     { label: 'Smallcap 250', data: smallcap250Data },
     { label: 'MicroCap 250', data: microCap250Data },
-    { label: 'Others 350', data: others350Data },
+    { label: 'Others', data: othersData },
   ]);
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
@@ -118,20 +84,17 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [watchlist, setWatchlist] = useState<{ symbol: string; name: string }[]>([]);
+  const [watchlist, setWatchlist] = useState<{ stock_name: string }[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 700 : window.innerWidth < 1024 ? 320 : 800;
+    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 600;
   }, []);
 
   useEffect(() => {
@@ -206,31 +169,34 @@ export default function StockChart() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
+        vertLines: { color: chartColors.borderColor },
+        horzLines: { color: chartColors.borderColor },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
+        mode: 1, // 0 is linear (default), 1 is logarithmic
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: false,
-        rightOffset: 10,
-        minBarSpacing: 2,
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
     chartInstanceRef.current = chart;
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const barSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
-      borderVisible: false,
-      wickUpColor: chartColors.upColor,
-      wickDownColor: chartColors.downColor,
+      priceScaleId: 'right',
+      priceFormat: {
+        type: 'price',
+        precision: 2,
+        minMove: 0.01,
+      },
     });
 
-    candlestickSeriesRef.current = candlestickSeries;
+    barSeriesRef.current = barSeries;
 
     const volumeSeries = chart.addHistogramSeries({
       color: chartColors.upColor,
@@ -242,26 +208,34 @@ export default function StockChart() {
 
     volumeSeriesRef.current = volumeSeries;
 
-    candlestickSeries.setData(chartData as CandlestickData[]);
+    barSeries.setData(chartData.map(d => ({
+      time: d.time,
+      open: d.open,
+      high: d.high,
+      low: d.low,
+      close: d.close,
+    } as BarData)));
+
     volumeSeries.setData(chartData.map(d => ({
       time: d.time,
       value: d.volume,
       color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
     } as HistogramData)));
 
-    candlestickSeries.priceScale().applyOptions({
+    barSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
       },
-      mode: 1,
     });
+
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.7,
+        top: 0.8,
         bottom: 0,
       },
     });
+
     chart.timeScale().fitContent();
 
     window.addEventListener('resize', handleResize);
@@ -270,7 +244,7 @@ export default function StockChart() {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight, theme]);
+  }, [chartData, getChartHeight]);
 
   const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
@@ -314,262 +288,309 @@ export default function StockChart() {
     }
   };
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }
-
-  const toggleWatchlist = (stock: Stock) => {
-    setWatchlist(prev => {
-      const isInWatchlist = prev.some(item => item.symbol === stock.symbol);
-      if (isInWatchlist) {
-        return prev.filter(item => item.symbol !== stock.symbol);
+  const toggleWatchlist = async (stock: Stock) => {
+    try {
+      if (watchlist.some(item => item.stock_name === stock.symbol)) {
+        await axios.delete('/api/watchlist', { data: { stock_name: stock.symbol } });
+        setWatchlist(prev => prev.filter(item => item.stock_name !== stock.symbol));
       } else {
-        return [...prev, { symbol: stock.symbol, name: stock.name }];
+        await axios.post('/api/watchlist', { stock_name: stock.symbol });
+        setWatchlist(prev => [...prev, { stock_name: stock.symbol }]);
       }
-    });
+    } catch (error) {
+      console.error('Failed to update watchlist:', error);
+    }
   };
 
-  const removeFromWatchlist = (symbol: string) => {
-    setWatchlist(prev => prev.filter(item => item.symbol !== symbol));
+  const removeFromWatchlist = async (symbol: string) => {
+    try {
+      await axios.delete('/api/watchlist', { data: { stock_name: symbol } });
+      setWatchlist(prev => prev.filter(item => item.stock_name !== symbol));
+    } catch (error) {
+      console.error('Failed to remove from watchlist:', error);
+    }
   };
 
-  if (!mounted) return null
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      try {
+        const response = await axios.get('/api/watchlist');
+        setWatchlist(response.data.watchlist);
+      } catch (error) {
+        console.error('Failed to fetch watchlist:', error);
+      }
+    };
+
+    fetchWatchlist();
+  }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-200" {...swipeHandlers}>
-      {/* Floating Action Button for Mobile Menu */}
-      <Sheet>
-        <SheetTrigger asChild>
+    <div className="flex flex-col h-screen bg-slate-900 text-slate-200">
+      {/* Sticky Top Bar */}
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800/80 backdrop-blur-sm p-2 sm:p-4 border-b border-slate-700">
+        <div className="text-lg font-bold text-emerald-500">dotChart</div>
+        <div className="flex items-center space-x-2">
+          <div className="relative hidden sm:block" ref={searchRef}>
+            <Input
+              type="text"
+              placeholder="Search stocks..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowDropdown(true);
+              }}
+              className="w-64 pr-8 text-sm h-9 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
+              aria-label="Search stocks"
+            />
+            {searchTerm ? (
+              <X
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-200 cursor-pointer"
+                onClick={() => {
+                  setSearchTerm('');
+                  setShowDropdown(false);
+                }}
+              />
+            ) : (
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            )}
+            {showDropdown && searchTerm && (
+              <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
+                {filteredStocks.map((stock) => (
+                  <button
+                    key={stock.symbol}
+                    onClick={() => {
+                      const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                      setCurrentStockIndex(stockIndex);
+                      setSearchTerm('');
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-1.5 text-left hover:bg-slate-700 transition-colors"
+                  >
+                    <div className="font-medium text-sm">{stock.symbol}</div>
+                    <div className="text-sm text-slate-400 truncate">{stock.name}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="fixed bottom-6 right-4 z-50 h-12 w-12 rounded-full bg-emerald-500 text-white border-0 shadow-lg hover:bg-emerald-600 sm:hidden"
+            className="h-9 w-9 text-slate-200 hover:text-emerald-500 hover:bg-slate-700"
+            onClick={handleFullScreen}
           >
-            <Menu className="h-6 w-6" />
+            <Maximize2 className="h-5 w-5" />
+            <span className="sr-only">Full Screen</span>
           </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-[80vh] bg-slate-900 border-t border-slate-800 rounded-t-3xl px-4">
-          <div className="pt-6 pb-4">
-            <Tabs defaultValue="search" className="w-full">
-              <TabsList className="w-full bg-slate-800 p-1 rounded-xl">
-                <TabsTrigger value="search" className="w-1/3">Search</TabsTrigger>
-                <TabsTrigger value="indexes" className="w-1/3">Indexes</TabsTrigger>
-                <TabsTrigger value="watchlist" className="w-1/3">Watchlist</TabsTrigger>
-              </TabsList>
-              <TabsContent value="search" className="mt-4">
-                <div className="space-y-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden text-slate-200 hover:text-emerald-500 hover:bg-slate-700">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-slate-800 border-l border-slate-700">
+              <SheetHeader>
+                <SheetTitle className="text-slate-200">Menu</SheetTitle>
+              </SheetHeader>
+              <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="mobile-search" className="text-sm font-medium text-slate-200">Search Stocks</label>
                   <Input
+                    id="mobile-search"
                     type="text"
                     placeholder="Search stocks..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-800 border-slate-700 text-slate-200 h-12 rounded-xl"
+                    className="w-full bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
                   />
-                  <motion.div layout className="space-y-2">
-                    <AnimatePresence>
-                      {filteredStocks.map((stock) => (
-                        <motion.button
-                          key={stock.symbol}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          onClick={() => {
-                            const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                            setCurrentStockIndex(stockIndex);
-                            setSearchTerm('');
-                          }}
-                          className="w-full p-4 text-left bg-slate-800 hover:bg-slate-700 transition-colors rounded-xl flex items-center justify-between"
-                        >
-                          <div>
-                            <div className="font-medium">{stock.symbol}</div>
-                            <div className="text-sm text-slate-400 truncate">{stock.name}</div>
-                          </div>
-                          <ArrowUpRight className="h-5 w-5 text-emerald-500" />
-                        </motion.button>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
                 </div>
-              </TabsContent>
-              <TabsContent value="indexes" className="mt-4">
-                <div className="grid gap-3">
-                  {indexData.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedIndexId(index)}
-                      className={`w-full p-4 text-left rounded-xl transition-all ${
-                        selectedIndexId === index
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{item.label}</span>
-                        <TrendingUp className={`h-5 w-5 ${
-                          selectedIndexId === index ? 'text-white' : 'text-emerald-500'
-                        }`} />
-                      </div>
-                      <div className="text-sm mt-1 opacity-80">
-                        {item.data.length} stocks
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="watchlist" className="mt-4">
-                <div className="space-y-3">
-                  {watchlist.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400">
-                      <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>Your watchlist is empty</p>
-                    </div>
-                  ) : (
-                    watchlist.map((stock) => (
-                      <div
-                        key={stock.stock_name}
-                        className="flex items-center justify-between p-4 bg-slate-800 rounded-xl"
+                {searchTerm && (
+                  <div className="space-y-2">
+                    {filteredStocks.map((stock) => (
+                      <button
+                        key={stock.symbol}
+                        onClick={() => {
+                          const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                          setCurrentStockIndex(stockIndex);
+                          setSearchTerm('');
+                        }}
+                        className="w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors rounded-md"
                       >
-                        <span className="font-medium">{stock.stock_name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFromWatchlist(stock.stock_name)}
-                          className="text-slate-400 hover:text-red-500"
-                        >
-                          <X className="h-5 w-5" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Main Content */}
-      <main className="flex-1 relative">
-        {/* Stock Info Header */}
-        {currentStock && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent p-4"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold text-emerald-500">
-                    {currentStock.symbol}
-                  </h1>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-0"
-                    onClick={() => toggleWatchlist(currentStock)}
-                  >
-                    <Star
-                      className={`h-5 w-5 ${
-                        watchlist.some(item => item.stock_name === currentStock.symbol)
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-slate-400'
-                      }`}
-                    />
-                  </Button>
-                </div>
-                <h2 className="text-sm text-slate-400 mt-0.5">{currentStock.name}</h2>
-              </div>
-              <div className="text-right">
-                <div className="text-lg font-bold">
-                  ₹{currentStock.price?.toFixed(2)}
-                </div>
-                <div className={`flex items-center justify-end gap-1 ${
-                  currentStock.todayChange && currentStock.todayChange >= 0
-                    ? 'text-emerald-500'
-                    : 'text-red-500'
-                }`}>
-                  {currentStock.todayChange && currentStock.todayChange >= 0 ? (
-                    <ArrowUpRight className="h-4 w-4" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4" />
-                  )}
-                  <span className="text-sm font-medium">
-                    {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Time Controls */}
-            <div className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-slate-400" />
-                <Select
-                  value={selectedInterval}
-                  onValueChange={setSelectedInterval}
-                >
-                  <SelectTrigger className="w-28 h-8 text-sm bg-slate-800 border-slate-700">
-                    <SelectValue placeholder="Interval" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INTERVALS.map((interval) => (
-                      <SelectItem key={interval.value} value={interval.value}>
-                        {interval.label}
-                      </SelectItem>
+                        <div className="font-medium text-sm">{stock.symbol}</div>
+                        <div className="text-sm text-slate-400 truncate">{stock.name}</div>
+                      </button>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <label htmlFor="mobile-index" className="text-sm font-medium text-slate-200">Select Index</label>
+                  <Select
+                    value={selectedIndexId.toString()}
+                    onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+                  >
+                    <SelectTrigger id="mobile-index" className="w-full bg-slate-700 border-slate-600 text-slate-200">
+                      <SelectValue placeholder="Select Index" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {indexData.map((item, index) => (
+                        <SelectItem key={index} value={index.toString()} className="text-slate-200 hover:bg-slate-700">
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="mobile-interval" className="text-sm font-medium text-slate-200">Select Interval</label>
+                  <Select
+                    value={selectedInterval}
+                    onValueChange={(value) => setSelectedInterval(value)}
+                  >
+                    <SelectTrigger id="mobile-interval" className="w-full bg-slate-700 border-slate-600 text-slate-200">
+                      <SelectValue placeholder="Select Interval" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTERVALS.map((interval) => (
+                        <SelectItem key={interval.value} value={interval.value} className="text-slate-200 hover:bg-slate-700">
+                          {interval.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsWatchlistOpen(true)}
+                  className="w-full bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                >
+                  Open Watchlist
+                </Button>
               </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      <main className="flex-1 relative overflow-hidden">
+        {/* Stock Info Overlay */}
+        {currentStock && (
+          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 backdrop-blur-sm p-2 rounded-lg">
+            <div className="flex items-center gap-2">
+              <h4 className="text-md font-bold text-emerald-500">{currentStock.name.toUpperCase()}</h4>
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-slate-400"
-                onClick={handleFullScreen}
+                size="sm"
+                className="p-0"
+                onClick={() => toggleWatchlist(currentStock)}
               >
-                <Maximize2 className="h-4 w-4" />
+                <Star
+                  className={`h-4 w-4 ${
+                    watchlist.some(item => item.stock_name === currentStock.symbol)
+                      ? 'text-yellow-400 fill-yellow-400'
+                      : 'text-slate-400'
+                  }`}
+                />
               </Button>
             </div>
-          </motion.div>
+            <h5 className="text-sm font-light text-slate-400">NSE:{currentStock.symbol.toUpperCase()}</h5>
+
+            <div className="text-sm">
+              <span className={`text-[14px] font-medium ${
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-emerald-500' : 'text-red-500'
+              }`}>
+                {currentStock.price?.toFixed(2)}
+              </span>
+              <span className={`text-[14px] ml-1 ${
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-emerald-500' : 'text-red-500'
+              }`}>
+                {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
+              </span>
+            </div>
+          </div>
         )}
 
         {/* Chart Container */}
-        <div className="h-full pt-32" ref={chartContainerRef} />
-
-        {/* Navigation Pills */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 px-4 py-2 bg-slate-800/90 backdrop-blur-sm rounded-full">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handlePrevious}
-            disabled={currentStockIndex === 0}
-            className="h-8 w-8 text-slate-400 hover:text-white disabled:opacity-50"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          
-          <div className="flex items-center justify-center min-w-[60px]">
-            <span className="text-sm font-medium">
-              {currentStockIndex + 1}/{stocks.length}
-            </span>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleNext}
-            disabled={currentStockIndex === stocks.length - 1}
-            className="h-8 w-8 text-slate-400 hover:text-white disabled:opacity-50"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
+        <div className="h-full" ref={chartContainerRef}></div>
       </main>
 
+      {/* Sticky Footer */}
+      <footer className="sticky bottom-0 w-full bg-slate-800/80 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
+        <div className="mx-auto px-2 sm:px-4">
+          <div className="flex justify-between items-center py-2 sm:py-4">
+            <div className="hidden sm:flex items-center space-x-2">
+              <Select
+                value={selectedIndexId.toString()}
+                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+              >
+                <SelectTrigger className="h-9 text-sm bg-slate-700 border-slate-600 text-slate-200 w-36">
+                  <SelectValue placeholder="Select Index" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                  {indexData.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()} className="text-sm hover:bg-slate-700">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedInterval}
+                onValueChange={(value) => setSelectedInterval(value)}
+              >
+                <SelectTrigger className="w-28 h-9 text-sm bg-slate-700 border-slate-600 text-slate-200">
+                  <SelectValue placeholder="Interval" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                  {INTERVALS.map((interval) => (
+                    <SelectItem key={interval.value} value={interval.value} className="text-sm hover:bg-slate-700">
+                      {interval.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => setIsWatchlistOpen(true)}
+                className="h-9 text-sm bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+              >
+                Watchlist
+              </Button>
+            </div>
+
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Button
+                variant="ghost"
+                onClick={handlePrevious}
+                disabled={currentStockIndex === 0}
+                className="h-9 px-2 sm:px-3 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
+              </Button>
+
+              <div className="flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
+                <span className="text-sm sm:text-base text-slate-400 whitespace-nowrap">
+                  <span className="font-medium">{currentStockIndex + 1}</span>
+                  <span className="text-slate-500 mx-1">/</span>
+                  <span className="text-slate-500">{stocks.length}</span>
+                </span>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={handleNext}
+                disabled={currentStockIndex === stocks.length - 1}
+                className="h-9 px-2 sm:px-3 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+              >
+                <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </footer>
       <WatchlistModal
         isOpen={isWatchlistOpen}
         onClose={() => setIsWatchlistOpen(false)}
@@ -579,3 +600,4 @@ export default function StockChart() {
     </div>
   );
 }
+
