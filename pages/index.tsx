@@ -176,7 +176,7 @@ export default function StockChart() {
         borderColor: chartColors.borderColor,
         timeVisible: false,
         rightOffset: 10,
-        minBarSpacing: 2,
+        minBarSpacing: 4,
       },
     });
 
@@ -385,7 +385,7 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 -sm p-2 rounded-lg">
+          <div className="absolute top-1 left-2 z-10 bg-slate-800/80 -sm p-1 rounded-lg">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-emerald-500">{currentStock.symbol.toUpperCase()}</h4>
               <Button
