@@ -424,21 +424,20 @@ export default function StockChart() {
       </main>
 
       {/* Sticky Footer */}
-      <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
+     <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
         <div className="mx-auto px-2 sm:px-4">
-          <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
-            {/* Index and Interval Select Boxes */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center py-2 sm:py-4 space-y-2 sm:space-y-0">
+            <div className="flex items-center space-x-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
               <Select
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
+                <SelectTrigger className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200 w-28 sm:w-36">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
                   {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm hover:bg-slate-700">
                       {item.label}
                     </SelectItem>
                   ))}
@@ -449,12 +448,12 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
+                <SelectTrigger className="w-20 h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
                   {INTERVALS.map((interval) => (
-                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
+                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm hover:bg-slate-700">
                       {interval.label}
                     </SelectItem>
                   ))}
@@ -470,8 +469,7 @@ export default function StockChart() {
               </Button>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center space-x-1 flex-shrink-0">
+            <div className="flex items-center space-x-1 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
@@ -483,8 +481,8 @@ export default function StockChart() {
                 <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
               </Button>
 
-              <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-sm sm:text-sm text-slate-400 whitespace-nowrap">
+              <div className="flex items-center justify-center">
+                <span className="text-xs sm:text-sm text-slate-400 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-slate-500 mx-1">/</span>
                   <span className="text-slate-500">{stocks.length}</span>
