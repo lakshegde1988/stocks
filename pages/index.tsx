@@ -245,7 +245,8 @@ export default function StockChart() {
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
-      }
+      },
+      mode: 1,
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
