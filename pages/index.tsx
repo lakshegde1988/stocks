@@ -51,7 +51,7 @@ interface ChartDataPoint {
 }
 
 const INTERVALS = [
-  { label: 'D', value: 'daily', interval: '1d', range: '2y' },
+  { label: 'D', value: 'daily', interval: '1d', range: '1y' },
   { label: 'W', value: 'weekly', interval: '1wk', range: '5y' },
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
@@ -423,7 +423,7 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+          <div className="absolute top-1 left-2 z-10 bg-background/80 backdrop-blur-sm p-1 rounded-lg">
             <div className="flex items-center gap-2">
               <h4 className="text-md font-semibold">{currentStock.symbol.toUpperCase()}</h4>
               <Button
