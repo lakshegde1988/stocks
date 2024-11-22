@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 interface WatchlistModalProps {
   isOpen: boolean;
   onClose: () => void;
-  watchlist: { symbol: string; name: string }[];
+  watchlist: { stock_name: string }[];
   onRemoveFromWatchlist: (symbol: string) => void;
 }
 
@@ -23,12 +23,12 @@ export function WatchlistModal({ isOpen, onClose, watchlist, onRemoveFromWatchli
           ) : (
             <ul className="space-y-2">
               {watchlist.map((stock) => (
-                <li key={stock.symbol} className="flex justify-between items-center">
-                  <span>{stock.symbol} - {stock.name}</span>
+                <li key={stock.stock_name} className="flex justify-between items-center">
+                  <span>{stock.stock_name}</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveFromWatchlist(stock.symbol)}
+                    onClick={() => onRemoveFromWatchlist(stock.stock_name)}
                   >
                     <X className="h-4 w-4" />
                   </Button>
