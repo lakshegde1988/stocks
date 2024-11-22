@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Star } from '
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { WatchlistModal } from '../components/WatchlistModal';
+import { WatchlistModal } from './components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
@@ -91,7 +91,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 700 : window.innerWidth < 1024 ? 320 : 800;
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 500 : 600;
   }, []);
 
   useEffect(() => {
@@ -166,17 +166,17 @@ export default function StockChart() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { visible:false },
-        horzLines: { visible:false },
+        vertLines: { color: chartColors.borderColor },
+        horzLines: { color: chartColors.borderColor },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
+        mode: 1, // 0 is linear (default), 1 is logarithmic
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: false,
-        rightOffset: 10,
-        minBarSpacing: 2,
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
@@ -185,6 +185,12 @@ export default function StockChart() {
     const barSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
+      priceScaleId: 'right',
+      priceFormat: {
+        type: 'price',
+        precision: 2,
+        minMove: 0.01,
+      },
     });
 
     barSeriesRef.current = barSeries;
@@ -318,14 +324,10 @@ export default function StockChart() {
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-slate-200">
       {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800 p-2 border-b border-slate-700">
-        {/* Brand Name */}
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800 p-2 sm:p-4 border-b border-slate-700">
         <div className="text-lg font-bold text-emerald-500">dotChart</div>
-
-        {/* Right-side elements */}
         <div className="flex items-center space-x-2">
-          {/* Search Box */}
-          <div className="w-48 sm:w-64 relative" ref={searchRef}>
+          <div className="w-36 sm:w-64 relative" ref={searchRef}>
             <Input
               type="text"
               placeholder="Search..."
@@ -334,7 +336,7 @@ export default function StockChart() {
                 setSearchTerm(e.target.value);
                 setShowDropdown(true);
               }}
-              className="pr-6 text-sm h-8 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
+              className="pr-6 text-xs sm:text-sm h-8 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
               aria-label="Search stocks"
             />
             {searchTerm ? (
@@ -368,12 +370,10 @@ export default function StockChart() {
               </div>
             )}
           </div>
-
-          {/* Full Screen Button (visible only on mobile) */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 p-0 sm:hidden text-slate-200 hover:text-emerald-500"
+            className="h-8 w-8 p-0 text-slate-200 hover:text-emerald-500"
             onClick={handleFullScreen}
           >
             <Maximize2 className="h-4 w-4" />
@@ -385,9 +385,9 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 -sm p-2 rounded-lg">
+          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-emerald-500">{currentStock.symbol.toUpperCase()}</h4>
+              <h4 className="text-md font-bold text-emerald-500">{currentStock.name.toUpperCase()}</h4>
               <Button
                 variant="ghost"
                 size="sm"
@@ -403,6 +403,7 @@ export default function StockChart() {
                 />
               </Button>
             </div>
+            <h5 className="text-sm font-light text-slate-400">NSE:{currentStock.symbol.toUpperCase()}</h5>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
@@ -424,15 +425,15 @@ export default function StockChart() {
       </main>
 
       {/* Sticky Footer */}
-     <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
-        <div className="mx-auto px-2 sm:px-4">
-          <div className="flex flex-col sm:flex-row justify-between items-center py-2 sm:py-4 space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-2 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-start">
+      <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
+        <div className="mx-auto px-2 sm:px-4 w-full">
+          <div className="flex flex-row justify-between items-center py-2 sm:py-4 space-x-2">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               <Select
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200 w-28 sm:w-36">
+                <SelectTrigger className="h-8 text-xs bg-slate-700 border-slate-600 text-slate-200 w-24 sm:w-28 md:w-36">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
@@ -448,7 +449,7 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-20 h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
+                <SelectTrigger className="w-16 h-8 text-xs bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
@@ -463,26 +464,26 @@ export default function StockChart() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsWatchlistOpen(true)}
-                className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                className="h-8 text-xs bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
-                Watchlist
+                Watch
               </Button>
             </div>
 
-            <div className="flex items-center space-x-1 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                className="h-8 px-1 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
                 size="sm"
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
+                <span className="sr-only">Prev</span>
               </Button>
 
-              <div className="flex items-center justify-center">
-                <span className="text-xs sm:text-sm text-slate-400 whitespace-nowrap">
+              <div className="flex items-center justify-center min-w-[60px]">
+                <span className="text-xs text-slate-400 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-slate-500 mx-1">/</span>
                   <span className="text-slate-500">{stocks.length}</span>
@@ -493,11 +494,11 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                className="h-8 px-1 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
                 size="sm"
               >
-                <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
                 <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next</span>
               </Button>
             </div>
           </div>
@@ -512,3 +513,4 @@ export default function StockChart() {
     </div>
   );
 }
+
