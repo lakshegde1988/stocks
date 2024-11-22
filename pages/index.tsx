@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { WatchlistModal } from './components/WatchlistModal';
+import { WatchlistModal } from '../components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
