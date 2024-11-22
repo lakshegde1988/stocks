@@ -3,12 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Star, Menu } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Star } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { WatchlistModal } from '../components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
@@ -55,11 +54,11 @@ const INTERVALS = [
 ];
 
 const getChartColors = () => ({
-  backgroundColor: '#0f172a', // slate-900
+  backgroundColor: '#1e293b', // slate-800
   textColor: '#e2e8f0', // slate-200
   upColor: '#10b981', // emerald-500
   downColor: '#ef4444', // red-500
-  borderColor: '#334155', // slate-700
+  borderColor: '#475569', // slate-600
 });
 
 export default function StockChart() {
@@ -92,7 +91,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 300 : window.innerWidth < 1024 ? 400 : 600;
+    return window.innerWidth < 640 ? 700 : window.innerWidth < 1024 ? 320 : 800;
   }, []);
 
   useEffect(() => {
@@ -172,7 +171,6 @@ export default function StockChart() {
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
-        mode: 1, // 0 is linear (default), 1 is logarithmic
       },
       timeScale: {
         borderColor: chartColors.borderColor,
@@ -186,12 +184,6 @@ export default function StockChart() {
     const barSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
-      priceScaleId: 'right',
-      priceFormat: {
-        type: 'price',
-        precision: 2,
-        minMove: 0.01,
-      },
     });
 
     barSeriesRef.current = barSeries;
@@ -325,31 +317,35 @@ export default function StockChart() {
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-slate-200">
       {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800/80 backdrop-blur-sm p-2 sm:p-4 border-b border-slate-700">
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800 p-2 border-b border-slate-700">
+        {/* Brand Name */}
         <div className="text-lg font-bold text-emerald-500">dotChart</div>
+
+        {/* Right-side elements */}
         <div className="flex items-center space-x-2">
-          <div className="relative hidden sm:block" ref={searchRef}>
+          {/* Search Box */}
+          <div className="w-48 sm:w-64 relative" ref={searchRef}>
             <Input
               type="text"
-              placeholder="Search stocks..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setShowDropdown(true);
               }}
-              className="w-64 pr-8 text-sm h-9 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
+              className="pr-6 text-sm h-8 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
               aria-label="Search stocks"
             />
             {searchTerm ? (
               <X
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 hover:text-slate-200 cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 hover:text-slate-200 cursor-pointer"
                 onClick={() => {
                   setSearchTerm('');
                   setShowDropdown(false);
                 }}
               />
             ) : (
-              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             )}
             {showDropdown && searchTerm && (
               <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
@@ -371,102 +367,17 @@ export default function StockChart() {
               </div>
             )}
           </div>
+
+          {/* Full Screen Button (visible only on mobile) */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 text-slate-200 hover:text-emerald-500 hover:bg-slate-700"
+            className="h-8 w-8 p-0 sm:hidden text-slate-200 hover:text-emerald-500"
             onClick={handleFullScreen}
           >
-            <Maximize2 className="h-5 w-5" />
+            <Maximize2 className="h-4 w-4" />
             <span className="sr-only">Full Screen</span>
           </Button>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden text-slate-200 hover:text-emerald-500 hover:bg-slate-700">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-slate-800 border-l border-slate-700">
-              <SheetHeader>
-                <SheetTitle className="text-slate-200">Menu</SheetTitle>
-              </SheetHeader>
-              <div className="py-4 space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="mobile-search" className="text-sm font-medium text-slate-200">Search Stocks</label>
-                  <Input
-                    id="mobile-search"
-                    type="text"
-                    placeholder="Search stocks..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
-                  />
-                </div>
-                {searchTerm && (
-                  <div className="space-y-2">
-                    {filteredStocks.map((stock) => (
-                      <button
-                        key={stock.symbol}
-                        onClick={() => {
-                          const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                          setCurrentStockIndex(stockIndex);
-                          setSearchTerm('');
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors rounded-md"
-                      >
-                        <div className="font-medium text-sm">{stock.symbol}</div>
-                        <div className="text-sm text-slate-400 truncate">{stock.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <label htmlFor="mobile-index" className="text-sm font-medium text-slate-200">Select Index</label>
-                  <Select
-                    value={selectedIndexId.toString()}
-                    onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-                  >
-                    <SelectTrigger id="mobile-index" className="w-full bg-slate-700 border-slate-600 text-slate-200">
-                      <SelectValue placeholder="Select Index" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {indexData.map((item, index) => (
-                        <SelectItem key={index} value={index.toString()} className="text-slate-200 hover:bg-slate-700">
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="mobile-interval" className="text-sm font-medium text-slate-200">Select Interval</label>
-                  <Select
-                    value={selectedInterval}
-                    onValueChange={(value) => setSelectedInterval(value)}
-                  >
-                    <SelectTrigger id="mobile-interval" className="w-full bg-slate-700 border-slate-600 text-slate-200">
-                      <SelectValue placeholder="Select Interval" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INTERVALS.map((interval) => (
-                        <SelectItem key={interval.value} value={interval.value} className="text-slate-200 hover:bg-slate-700">
-                          {interval.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsWatchlistOpen(true)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
-                >
-                  Open Watchlist
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
 
@@ -513,20 +424,21 @@ export default function StockChart() {
       </main>
 
       {/* Sticky Footer */}
-      <footer className="sticky bottom-0 w-full bg-slate-800/80 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
+      <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
         <div className="mx-auto px-2 sm:px-4">
-          <div className="flex justify-between items-center py-2 sm:py-4">
-            <div className="hidden sm:flex items-center space-x-2">
+          <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
+            {/* Index and Interval Select Boxes */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <Select
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-9 text-sm bg-slate-700 border-slate-600 text-slate-200 w-36">
+                <SelectTrigger className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                <SelectContent>
                   {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-sm hover:bg-slate-700">
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
                       {item.label}
                     </SelectItem>
                   ))}
@@ -537,12 +449,12 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-28 h-9 text-sm bg-slate-700 border-slate-600 text-slate-200">
+                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200">
+                <SelectContent>
                   {INTERVALS.map((interval) => (
-                    <SelectItem key={interval.value} value={interval.value} className="text-sm hover:bg-slate-700">
+                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
                       {interval.label}
                     </SelectItem>
                   ))}
@@ -550,26 +462,29 @@ export default function StockChart() {
               </Select>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsWatchlistOpen(true)}
-                className="h-9 text-sm bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 Watchlist
               </Button>
             </div>
 
-            <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Pagination */}
+            <div className="flex items-center space-x-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-9 px-2 sm:px-3 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                size="sm"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4" />
                 <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
               </Button>
 
-              <div className="flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
-                <span className="text-sm sm:text-base text-slate-400 whitespace-nowrap">
+              <div className="flex items-center min-w-[60px] justify-center">
+                <span className="text-sm sm:text-sm text-slate-400 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
                   <span className="text-slate-500 mx-1">/</span>
                   <span className="text-slate-500">{stocks.length}</span>
@@ -580,10 +495,11 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-9 px-2 sm:px-3 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
+                size="sm"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -598,4 +514,3 @@ export default function StockChart() {
     </div>
   );
 }
-
