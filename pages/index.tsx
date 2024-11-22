@@ -1,16 +1,17 @@
-'use client';
+use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun, Star } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { ChevronLeft, ChevronRight, Search, X, Maximize2, Star, Menu, TrendingUp, Calendar, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useSwipeable } from 'react-swipeable';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WatchlistModal } from '../components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
@@ -83,11 +84,18 @@ const getCssVariableColor = (variableName: string): string => {
 };
 
 const getChartColors = () => ({
-  upColor: getCssVariableColor('--success'),
-  downColor: getCssVariableColor('--destructive'),
-  backgroundColor: getCssVariableColor('--background'),
-  textColor: getCssVariableColor('--foreground'),
-  borderColor: getCssVariableColor('--border'),
+  backgroundColor: '#020617', // slate-950
+  textColor: '#e2e8f0', // slate-200
+  upColor: '#10b981', // emerald-500
+  downColor: '#ef4444', // red-500
+  borderColor: '#1e293b', // slate-800
+});
+
+const swipeHandlers = useSwipeable({
+  onSwipedLeft: () => handleNext(),
+  onSwipedRight: () => handlePrevious(),
+  preventDefaultTouchmoveEvent: true,
+  trackMouse: true
 });
 
 export default function StockChart() {
@@ -332,193 +340,236 @@ export default function StockChart() {
   if (!mounted) return null
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Sticky Top Bar */}
-      <div className="top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
-        {/* Brand Name */}
-        <div className="text-lg font-bold">dotChart</div>
-
-        {/* Right-side elements */}
-        <div className="flex items-center space-x-2">
-          {/* Search Box */}
-          <div className="w-48 sm:w-48 relative" ref={searchRef}>
-            <Input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setShowDropdown(true);
-              }}
-              className="pr-6 text-sm h-8 bg-background/80 backdrop-blur-sm"
-              aria-label="Search stocks"
-            />
-            {searchTerm ? (
-              <X
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
-                onClick={() => {
-                  setSearchTerm('');
-                  setShowDropdown(false);
-                }}
-              />
-            ) : (
-              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-            )}
-            {showDropdown && searchTerm && (
-              <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
-                {filteredStocks.map((stock) => (
-                  <button
-                    key={stock.symbol}
-                    onClick={() => {
-                      const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
-                      setCurrentStockIndex(stockIndex);
-                      setSearchTerm('');
-                      setShowDropdown(false);
-                    }}
-                    className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="font-medium text-sm">{stock.symbol}</div>
-                    <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Full Screen Button (visible only on mobile) */}
+    <div className="flex flex-col h-screen bg-slate-950 text-slate-200" {...swipeHandlers}>
+      {/* Floating Action Button for Mobile Menu */}
+      <Sheet>
+        <SheetTrigger asChild>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="h-8 w-8 p-0 sm:hidden"
-            onClick={handleFullScreen}
+            className="fixed bottom-6 right-4 z-50 h-12 w-12 rounded-full bg-emerald-500 text-white border-0 shadow-lg hover:bg-emerald-600 sm:hidden"
           >
-            <Maximize2 className="h-4 w-4" />
-            <span className="sr-only">Full Screen</span>
+            <Menu className="h-6 w-6" />
           </Button>
-        </div>
-      </div>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[80vh] bg-slate-900 border-t border-slate-800 rounded-t-3xl px-4">
+          <div className="pt-6 pb-4">
+            <Tabs defaultValue="search" className="w-full">
+              <TabsList className="w-full bg-slate-800 p-1 rounded-xl">
+                <TabsTrigger value="search" className="w-1/3">Search</TabsTrigger>
+                <TabsTrigger value="indexes" className="w-1/3">Indexes</TabsTrigger>
+                <TabsTrigger value="watchlist" className="w-1/3">Watchlist</TabsTrigger>
+              </TabsList>
+              <TabsContent value="search" className="mt-4">
+                <div className="space-y-4">
+                  <Input
+                    type="text"
+                    placeholder="Search stocks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-slate-800 border-slate-700 text-slate-200 h-12 rounded-xl"
+                  />
+                  <motion.div layout className="space-y-2">
+                    <AnimatePresence>
+                      {filteredStocks.map((stock) => (
+                        <motion.button
+                          key={stock.symbol}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          onClick={() => {
+                            const stockIndex = stocks.findIndex((s) => s.symbol === stock.symbol);
+                            setCurrentStockIndex(stockIndex);
+                            setSearchTerm('');
+                          }}
+                          className="w-full p-4 text-left bg-slate-800 hover:bg-slate-700 transition-colors rounded-xl flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-medium">{stock.symbol}</div>
+                            <div className="text-sm text-slate-400 truncate">{stock.name}</div>
+                          </div>
+                          <ArrowUpRight className="h-5 w-5 text-emerald-500" />
+                        </motion.button>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                </div>
+              </TabsContent>
+              <TabsContent value="indexes" className="mt-4">
+                <div className="grid gap-3">
+                  {indexData.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedIndexId(index)}
+                      className={`w-full p-4 text-left rounded-xl transition-all ${
+                        selectedIndexId === index
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-slate-800 hover:bg-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{item.label}</span>
+                        <TrendingUp className={`h-5 w-5 ${
+                          selectedIndexId === index ? 'text-white' : 'text-emerald-500'
+                        }`} />
+                      </div>
+                      <div className="text-sm mt-1 opacity-80">
+                        {item.data.length} stocks
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="watchlist" className="mt-4">
+                <div className="space-y-3">
+                  {watchlist.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400">
+                      <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>Your watchlist is empty</p>
+                    </div>
+                  ) : (
+                    watchlist.map((stock) => (
+                      <div
+                        key={stock.stock_name}
+                        className="flex items-center justify-between p-4 bg-slate-800 rounded-xl"
+                      >
+                        <span className="font-medium">{stock.stock_name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFromWatchlist(stock.stock_name)}
+                          className="text-slate-400 hover:text-red-500"
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
 
-      <main className="flex-1 relative overflow-hidden">
-        {/* Stock Info Overlay */}
+      {/* Main Content */}
+      <main className="flex-1 relative">
+        {/* Stock Info Header */}
         {currentStock && (
-          <div className="absolute left-2 z-10 bg-background/80 backdrop-blur-sm rounded-lg">
-            <div className="flex items-center gap-2">
-              <h4 className="text-md font-normal">{currentStock.symbol.toUpperCase()}</h4>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-950 via-slate-950/95 to-transparent p-4"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-emerald-500">
+                    {currentStock.symbol}
+                  </h1>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-0"
+                    onClick={() => toggleWatchlist(currentStock)}
+                  >
+                    <Star
+                      className={`h-5 w-5 ${
+                        watchlist.some(item => item.stock_name === currentStock.symbol)
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-slate-400'
+                      }`}
+                    />
+                  </Button>
+                </div>
+                <h2 className="text-sm text-slate-400 mt-0.5">{currentStock.name}</h2>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold">
+                  ₹{currentStock.price?.toFixed(2)}
+                </div>
+                <div className={`flex items-center justify-end gap-1 ${
+                  currentStock.todayChange && currentStock.todayChange >= 0
+                    ? 'text-emerald-500'
+                    : 'text-red-500'
+                }`}>
+                  {currentStock.todayChange && currentStock.todayChange >= 0 ? (
+                    <ArrowUpRight className="h-4 w-4" />
+                  ) : (
+                    <ArrowDownRight className="h-4 w-4" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Time Controls */}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-slate-400" />
+                <Select
+                  value={selectedInterval}
+                  onValueChange={setSelectedInterval}
+                >
+                  <SelectTrigger className="w-28 h-8 text-sm bg-slate-800 border-slate-700">
+                    <SelectValue placeholder="Interval" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTERVALS.map((interval) => (
+                      <SelectItem key={interval.value} value={interval.value}>
+                        {interval.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 variant="ghost"
-                size="sm"
-                className="p-0"
-                onClick={() => toggleWatchlist(currentStock)}
+                size="icon"
+                className="h-8 w-8 text-slate-400"
+                onClick={handleFullScreen}
               >
-                <Star
-                  className={`h-4 w-4 ${
-                    watchlist.some(item => item.symbol === currentStock.symbol)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-400'
-                  }`}
-                />
+                <Maximize2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="text-sm">
-              <span className={`text-[14px] font-medium ${
-                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}>
-                {currentStock.price?.toFixed(2)}
-              </span>
-              <span className={`text-[14px] ml-1 ${
-                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}>
-                {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
-              </span>
-            </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Chart Container */}
-        <div className="h-full" ref={chartContainerRef}></div>
+        <div className="h-full pt-32" ref={chartContainerRef} />
+
+        {/* Navigation Pills */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 px-4 py-2 bg-slate-800/90 backdrop-blur-sm rounded-full">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrevious}
+            disabled={currentStockIndex === 0}
+            className="h-8 w-8 text-slate-400 hover:text-white disabled:opacity-50"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          
+          <div className="flex items-center justify-center min-w-[60px]">
+            <span className="text-sm font-medium">
+              {currentStockIndex + 1}/{stocks.length}
+            </span>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNext}
+            disabled={currentStockIndex === stocks.length - 1}
+            className="h-8 w-8 text-slate-400 hover:text-white disabled:opacity-50"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
       </main>
 
-      {/* Sticky Footer */}
-      <footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
-        <div className="mx-auto px-2 sm:px-4">
-          <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
-            {/* Index and Interval Select Boxes */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              <Select
-                value={selectedIndexId.toString()}
-                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-              >
-                <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
-                  <SelectValue placeholder="Select Index" />
-                </SelectTrigger>
-                <SelectContent>
-                  {indexData.map((item, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={selectedInterval}
-                onValueChange={(value) => setSelectedInterval(value)}
-              >
-                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
-                  <SelectValue placeholder="Interval" />
-                </SelectTrigger>
-                <SelectContent>
-                  {INTERVALS.map((interval) => (
-                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
-                      {interval.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsWatchlistOpen(true)}
-                className="h-8 text-xs sm:text-sm"
-              >
-                Watchlist
-              </Button>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center space-x-1 flex-shrink-0">
-              <Button
-                variant="ghost"
-                onClick={handlePrevious}
-                disabled={currentStockIndex === 0}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="sm"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
-              </Button>
-
-              <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-sm sm:text-sm text-gray-600 whitespace-nowrap">
-                  <span className="font-medium">{currentStockIndex + 1}</span>
-                  <span className="text-gray-400 mx-1">/</span>
-                  <span className="text-gray-400">{stocks.length}</span>
-                </span>
-              </div>
-
-              <Button
-                variant="ghost"
-                onClick={handleNext}
-                disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                size="sm"
-              >
-                <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </footer>
       <WatchlistModal
         isOpen={isWatchlistOpen}
         onClose={() => setIsWatchlistOpen(false)}
