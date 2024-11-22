@@ -91,7 +91,7 @@ export default function StockChart() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 500 : 600;
+    return window.innerWidth < 640 ? 600 : window.innerWidth < 1024 ? 360 : 700;
   }, []);
 
   useEffect(() => {
@@ -166,8 +166,8 @@ export default function StockChart() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { color: chartColors.borderColor },
-        horzLines: { color: chartColors.borderColor },
+        vertLines: { visible:false },
+        horzLines: { visible:false },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
@@ -384,7 +384,7 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 backdrop-blur-sm p-2 rounded-lg">
+          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 -sm p-2 rounded-lg">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-emerald-500">{currentStock.symbol.toUpperCase()}</h4>
               <Button
