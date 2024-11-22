@@ -1,17 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, HistogramData } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, BarData, HistogramData } from 'lightweight-charts';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun, Star } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Star } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { WatchlistModal } from '../components/WatchlistModal';
+import { WatchlistModal } from './components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
@@ -56,38 +53,12 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
-const getCssVariableColor = (variableName: string): string => {
-  if (typeof window === 'undefined') return '#000000';
-  const root = document.documentElement;
-  const computedStyle = getComputedStyle(root);
-  const cssVariable = computedStyle.getPropertyValue(variableName).trim();
-  
-  if (cssVariable.startsWith('#') || cssVariable.startsWith('rgb')) {
-    return cssVariable;
-  }
-  
-  const cssValues = cssVariable.split(',').map(v => v.trim());
-  if (cssValues.length === 3 && cssValues.every(v => !isNaN(Number(v)))) {
-    return `hsl(${cssValues.join(',')})`;
-  }
-  
-  const fallbacks: Record<string, string> = {
-    '--background': '#ffffff',
-    '--foreground': '#000000',
-    '--border': '#e5e7eb',
-    '--success': '#089981',
-    '--destructive': '#ef4444',
-  };
-  
-  return fallbacks[variableName] || '#000000';
-};
-
 const getChartColors = () => ({
-  upColor: getCssVariableColor('--success'),
-  downColor: getCssVariableColor('--destructive'),
-  backgroundColor: getCssVariableColor('--background'),
-  textColor: getCssVariableColor('--foreground'),
-  borderColor: getCssVariableColor('--border'),
+  backgroundColor: '#1e293b', // slate-800
+  textColor: '#e2e8f0', // slate-200
+  upColor: '#10b981', // emerald-500
+  downColor: '#ef4444', // red-500
+  borderColor: '#475569', // slate-600
 });
 
 export default function StockChart() {
@@ -115,15 +86,12 @@ export default function StockChart() {
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
-  const candlestickSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const barSeriesRef = useRef<ISeriesApi<"Bar"> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-
   const getChartHeight = useCallback(() => {
-    return window.innerWidth < 640 ? 700 : window.innerWidth < 1024 ? 320 : 800;
+    return window.innerWidth < 640 ? 400 : window.innerWidth < 1024 ? 500 : 600;
   }, []);
 
   useEffect(() => {
@@ -198,31 +166,27 @@ export default function StockChart() {
         textColor: chartColors.textColor,
       },
       grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
+        vertLines: { color: chartColors.borderColor },
+        horzLines: { color: chartColors.borderColor },
       },
       rightPriceScale: {
         borderColor: chartColors.borderColor,
       },
       timeScale: {
         borderColor: chartColors.borderColor,
-        timeVisible: false,
-        rightOffset: 10,
-        minBarSpacing: 2,
+        timeVisible: true,
+        secondsVisible: false,
       },
     });
 
     chartInstanceRef.current = chart;
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const barSeries = chart.addBarSeries({
       upColor: chartColors.upColor,
       downColor: chartColors.downColor,
-      borderVisible: false,
-      wickUpColor: chartColors.upColor,
-      wickDownColor: chartColors.downColor,
     });
 
-    candlestickSeriesRef.current = candlestickSeries;
+    barSeriesRef.current = barSeries;
 
     const volumeSeries = chart.addHistogramSeries({
       color: chartColors.upColor,
@@ -234,25 +198,34 @@ export default function StockChart() {
 
     volumeSeriesRef.current = volumeSeries;
 
-    candlestickSeries.setData(chartData as CandlestickData[]);
+    barSeries.setData(chartData.map(d => ({
+      time: d.time,
+      open: d.open,
+      high: d.high,
+      low: d.low,
+      close: d.close,
+    } as BarData)));
+
     volumeSeries.setData(chartData.map(d => ({
       time: d.time,
       value: d.volume,
       color: d.close >= d.open ? chartColors.upColor : chartColors.downColor,
     } as HistogramData)));
 
-    candlestickSeries.priceScale().applyOptions({
+    barSeries.priceScale().applyOptions({
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
-      }
+      },
     });
+
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
-        top: 0.7,
+        top: 0.8,
         bottom: 0,
       },
     });
+
     chart.timeScale().fitContent();
 
     window.addEventListener('resize', handleResize);
@@ -261,7 +234,7 @@ export default function StockChart() {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, [chartData, getChartHeight, theme]);
+  }, [chartData, getChartHeight]);
 
   const handleIntervalChange = (newInterval: string) => {
     setSelectedInterval(newInterval);
@@ -305,14 +278,6 @@ export default function StockChart() {
     }
   };
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light')
-  }
-
   const toggleWatchlist = async (stock: Stock) => {
     try {
       if (watchlist.some(item => item.stock_name === stock.symbol)) {
@@ -349,14 +314,12 @@ export default function StockChart() {
     fetchWatchlist();
   }, []);
 
-  if (!mounted) return null
-
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="flex flex-col h-screen bg-slate-900 text-slate-200">
       {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-slate-800 p-2 border-b border-slate-700">
         {/* Brand Name */}
-        <div className="text-lg font-bold">dotChart</div>
+        <div className="text-lg font-bold text-emerald-500">dotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
@@ -370,22 +333,22 @@ export default function StockChart() {
                 setSearchTerm(e.target.value);
                 setShowDropdown(true);
               }}
-              className="pr-6 text-sm h-8 bg-background/80 backdrop-blur-sm"
+              className="pr-6 text-sm h-8 bg-slate-700 text-slate-200 border-slate-600 focus:border-emerald-500"
               aria-label="Search stocks"
             />
             {searchTerm ? (
               <X
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 hover:text-slate-200 cursor-pointer"
                 onClick={() => {
                   setSearchTerm('');
                   setShowDropdown(false);
                 }}
               />
             ) : (
-              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             )}
             {showDropdown && searchTerm && (
-              <div className="absolute w-full mt-1 py-1 bg-background border border-slate-200/5 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
+              <div className="absolute w-full mt-1 py-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 left-0">
                 {filteredStocks.map((stock) => (
                   <button
                     key={stock.symbol}
@@ -395,36 +358,21 @@ export default function StockChart() {
                       setSearchTerm('');
                       setShowDropdown(false);
                     }}
-                    className="w-full px-3 py-1.5 text-left hover:bg-muted/50 transition-colors"
+                    className="w-full px-3 py-1.5 text-left hover:bg-slate-700 transition-colors"
                   >
                     <div className="font-medium text-sm">{stock.symbol}</div>
-                    <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
+                    <div className="text-sm text-slate-400 truncate">{stock.name}</div>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Theme Toggle Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-8 w-8 p-0"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-
           {/* Full Screen Button (visible only on mobile) */}
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 p-0 sm:hidden"
+            className="h-8 w-8 p-0 sm:hidden text-slate-200 hover:text-emerald-500"
             onClick={handleFullScreen}
           >
             <Maximize2 className="h-4 w-4" />
@@ -436,9 +384,9 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
+          <div className="absolute top-2 left-2 z-10 bg-slate-800/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-2">
-              <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
+              <h4 className="text-md font-bold text-emerald-500">{currentStock.name.toUpperCase()}</h4>
               <Button
                 variant="ghost"
                 size="sm"
@@ -449,21 +397,21 @@ export default function StockChart() {
                   className={`h-4 w-4 ${
                     watchlist.some(item => item.stock_name === currentStock.symbol)
                       ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-400'
+                      : 'text-slate-400'
                   }`}
                 />
               </Button>
             </div>
-            <h5 className="text-sm font-light">NSE:{currentStock.symbol.toUpperCase()}</h5>
+            <h5 className="text-sm font-light text-slate-400">NSE:{currentStock.symbol.toUpperCase()}</h5>
 
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
-                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-emerald-500' : 'text-red-500'
               }`}>
                 {currentStock.price?.toFixed(2)}
               </span>
               <span className={`text-[14px] ml-1 ${
-                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
+                currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-emerald-500' : 'text-red-500'
               }`}>
                 {currentStock.todayChange && currentStock.todayChange >= 0 ? '↑' : '↓'} {Math.abs(currentStock.todayChange || 0).toFixed(1)}%
               </span>
@@ -476,7 +424,7 @@ export default function StockChart() {
       </main>
 
       {/* Sticky Footer */}
-      <footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+      <footer className="sticky bottom-0 w-full bg-slate-800/95 backdrop-blur supports-[backdrop-filter]:bg-slate-800/60 border-t border-slate-700">
         <div className="mx-auto px-2 sm:px-4">
           <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
             {/* Index and Interval Select Boxes */}
@@ -485,7 +433,7 @@ export default function StockChart() {
                 value={selectedIndexId.toString()}
                 onValueChange={(value) => setSelectedIndexId(parseInt(value))}
               >
-                <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Select Index" />
                 </SelectTrigger>
                 <SelectContent>
@@ -501,7 +449,7 @@ export default function StockChart() {
                 value={selectedInterval}
                 onValueChange={(value) => setSelectedInterval(value)}
               >
-                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
+                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200">
                   <SelectValue placeholder="Interval" />
                 </SelectTrigger>
                 <SelectContent>
@@ -516,7 +464,7 @@ export default function StockChart() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsWatchlistOpen(true)}
-                className="h-8 text-xs sm:text-sm"
+                className="h-8 text-xs sm:text-sm bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
               >
                 Watchlist
               </Button>
@@ -528,7 +476,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStockIndex === 0}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
                 size="sm"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -536,10 +484,10 @@ export default function StockChart() {
               </Button>
 
               <div className="flex items-center min-w-[60px] justify-center">
-                <span className="text-sm sm:text-sm text-gray-600 whitespace-nowrap">
+                <span className="text-sm sm:text-sm text-slate-400 whitespace-nowrap">
                   <span className="font-medium">{currentStockIndex + 1}</span>
-                  <span className="text-gray-400 mx-1">/</span>
-                  <span className="text-gray-400">{stocks.length}</span>
+                  <span className="text-slate-500 mx-1">/</span>
+                  <span className="text-slate-500">{stocks.length}</span>
                 </span>
               </div>
 
@@ -547,7 +495,7 @@ export default function StockChart() {
                 variant="ghost"
                 onClick={handleNext}
                 disabled={currentStockIndex === stocks.length - 1}
-                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-8 px-1.5 sm:px-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700"
                 size="sm"
               >
                 <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
