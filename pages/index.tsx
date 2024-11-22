@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { WatchlistModal } from '../components/WatchlistModal';
+import { WatchlistModal } from './components/WatchlistModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
 import midcap150Data from '../public/midcap150.json';
 import smallcap250Data from '../public/smallcap250.json';
 import microCap250Data from '../public/microcap250.json';
-import others350Data from '../public/others.json';
+import othersData from '../public/others.json';
 
 interface StockData {
   Symbol: string;
@@ -97,7 +97,7 @@ export default function StockChart() {
     { label: 'Midcap 150', data: midcap150Data },
     { label: 'Smallcap 250', data: smallcap250Data },
     { label: 'MicroCap 250', data: microCap250Data },
-    { label: 'Others 350', data: others350Data },
+    { label: 'Others', data: othersData },
   ]);
   
   const [selectedIndexId, setSelectedIndexId] = useState(0);
@@ -110,7 +110,7 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [watchlist, setWatchlist] = useState<{ symbol: string; name: string }[]>([]);
+  const [watchlist, setWatchlist] = useState<{ stock_name: string }[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -245,8 +245,7 @@ export default function StockChart() {
       scaleMargins: {
         top: 0.1,
         bottom: 0.2,
-      },
-      mode: 1,
+      }
     });
     volumeSeries.priceScale().applyOptions({
       scaleMargins: {
@@ -314,34 +313,55 @@ export default function StockChart() {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
-  const toggleWatchlist = (stock: Stock) => {
-    setWatchlist(prev => {
-      const isInWatchlist = prev.some(item => item.symbol === stock.symbol);
-      if (isInWatchlist) {
-        return prev.filter(item => item.symbol !== stock.symbol);
+  const toggleWatchlist = async (stock: Stock) => {
+    try {
+      if (watchlist.some(item => item.stock_name === stock.symbol)) {
+        await axios.delete('/api/watchlist', { data: { stock_name: stock.symbol } });
+        setWatchlist(prev => prev.filter(item => item.stock_name !== stock.symbol));
       } else {
-        return [...prev, { symbol: stock.symbol, name: stock.name }];
+        await axios.post('/api/watchlist', { stock_name: stock.symbol });
+        setWatchlist(prev => [...prev, { stock_name: stock.symbol }]);
       }
-    });
+    } catch (error) {
+      console.error('Failed to update watchlist:', error);
+    }
   };
 
-  const removeFromWatchlist = (symbol: string) => {
-    setWatchlist(prev => prev.filter(item => item.symbol !== symbol));
+  const removeFromWatchlist = async (symbol: string) => {
+    try {
+      await axios.delete('/api/watchlist', { data: { stock_name: symbol } });
+      setWatchlist(prev => prev.filter(item => item.stock_name !== symbol));
+    } catch (error) {
+      console.error('Failed to remove from watchlist:', error);
+    }
   };
+
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      try {
+        const response = await axios.get('/api/watchlist');
+        setWatchlist(response.data.watchlist);
+      } catch (error) {
+        console.error('Failed to fetch watchlist:', error);
+      }
+    };
+
+    fetchWatchlist();
+  }, []);
 
   if (!mounted) return null
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
       {/* Sticky Top Bar */}
-      <div className="top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         {/* Brand Name */}
         <div className="text-lg font-bold">dotChart</div>
 
         {/* Right-side elements */}
         <div className="flex items-center space-x-2">
           {/* Search Box */}
-          <div className="w-48 sm:w-48 relative" ref={searchRef}>
+          <div className="w-48 sm:w-64 relative" ref={searchRef}>
             <Input
               type="text"
               placeholder="Search..."
@@ -384,6 +404,22 @@ export default function StockChart() {
               </div>
             )}
           </div>
+
+          {/* Theme Toggle Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-8 w-8 p-0"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+
           {/* Full Screen Button (visible only on mobile) */}
           <Button
             variant="ghost"
@@ -400,9 +436,9 @@ export default function StockChart() {
       <main className="flex-1 relative overflow-hidden">
         {/* Stock Info Overlay */}
         {currentStock && (
-          <div className="absolute left-2 z-10 bg-background/80 backdrop-blur-sm rounded-lg">
+          <div className="absolute top-2 left-2 z-10 bg-background/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-2">
-              <h4 className="text-md font-normal">{currentStock.symbol.toUpperCase()}</h4>
+              <h4 className="text-md font-bold">{currentStock.name.toUpperCase()}</h4>
               <Button
                 variant="ghost"
                 size="sm"
@@ -411,13 +447,15 @@ export default function StockChart() {
               >
                 <Star
                   className={`h-4 w-4 ${
-                    watchlist.some(item => item.symbol === currentStock.symbol)
+                    watchlist.some(item => item.stock_name === currentStock.symbol)
                       ? 'text-yellow-400 fill-yellow-400'
                       : 'text-gray-400'
                   }`}
                 />
               </Button>
             </div>
+            <h5 className="text-sm font-light">NSE:{currentStock.symbol.toUpperCase()}</h5>
+
             <div className="text-sm">
               <span className={`text-[14px] font-medium ${
                 currentStock.todayChange && currentStock.todayChange >= 0 ? 'text-green-500' : 'text-red-500'
