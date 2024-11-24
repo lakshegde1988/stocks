@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     const timestamps = quotes.timestamp;
     const ohlcv = quotes.indicators.quote[0];
 
-    // Process data into daily candles
+    // Process data into candles
     let processedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
@@ -67,9 +67,9 @@ export default async function handler(req, res) {
       };
     }).filter((item) => item !== null);
 
-    // Aggregate data for weekly or monthly intervals
+    // Handle weekly and monthly data
     if (interval === '1wk' || interval === '1mo') {
-      processedData = aggregateData(processedData, interval);
+      processedData = removeIncompleteLastCandle(processedData, interval);
     }
 
     // Cache response
@@ -94,54 +94,38 @@ export default async function handler(req, res) {
   }
 }
 
-// Aggregate data into weekly or monthly intervals
-function aggregateData(data, interval) {
-  const aggregatedData = [];
-  let currentCandle = null;
+function removeIncompleteLastCandle(data, interval) {
+  if (data.length < 2) return data;
 
-  data.forEach((point, index) => {
-    const date = new Date(point.time);
-    
-    if (index === 0) {
-      currentCandle = { ...point };
-    } else {
-      currentCandle.high = Math.max(currentCandle.high, point.high);
-      currentCandle.low = Math.min(currentCandle.low, point.low);
-      currentCandle.close = point.close;
-      currentCandle.volume += point.volume;
+  const lastCandle = data[data.length - 1];
+  const secondLastCandle = data[data.length - 2];
+  const lastCandleDate = new Date(lastCandle.time);
+  const secondLastCandleDate = new Date(secondLastCandle.time);
+
+  if (interval === '1wk') {
+    // Check if the last candle is in the same week as the second last candle
+    if (isSameWeek(lastCandleDate, secondLastCandleDate)) {
+      return data.slice(0, -1);
     }
-
-    const isLastPoint = index === data.length - 1;
-    const isNewPeriod = interval === '1wk' 
-      ? isNewWeek(date, new Date(data[index + 1]?.time))
-      : isNewMonth(date, new Date(data[index + 1]?.time));
-
-    if (isLastPoint || isNewPeriod) {
-      aggregatedData.push(currentCandle);
-      if (!isLastPoint) {
-        currentCandle = { ...data[index + 1], volume: 0 };
-      }
+  } else if (interval === '1mo') {
+    // Check if the last candle is in the same month as the second last candle
+    if (isSameMonth(lastCandleDate, secondLastCandleDate)) {
+      return data.slice(0, -1);
     }
-  });
+  }
 
-  return aggregatedData;
+  return data;
 }
 
-function isNewWeek(date1, date2) {
-  return date1.getUTCFullYear() !== date2.getUTCFullYear() ||
-         getWeekNumber(date1) !== getWeekNumber(date2);
+function isSameWeek(date1, date2) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  return Math.abs(d1 - d2) <= 6 * 24 * 60 * 60 * 1000 && d1.getDay() <= d2.getDay();
 }
 
-function isNewMonth(date1, date2) {
-  return date1.getUTCFullYear() !== date2.getUTCFullYear() ||
-         date1.getUTCMonth() !== date2.getUTCMonth();
-}
-
-function getWeekNumber(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+function isSameMonth(date1, date2) {
+  return date1.getUTCFullYear() === date2.getUTCFullYear() && date1.getUTCMonth() === date2.getUTCMonth();
 }
 
