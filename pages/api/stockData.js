@@ -116,26 +116,34 @@ export default async function handler(req, res) {
   }
 }
 
-// Aggregate data into weekly or monthly intervals
-function aggregateData(data, interval) {
+/function aggregateData(data, interval) {
+  if (interval !== '1wk' && interval !== '1mo') return data;
+
   const aggregatedData = [];
-  let currentKey = null;
   let currentCandle = null;
 
   data.forEach((point) => {
     const date = new Date(point.time);
-    const key =
-      interval === '1wk'
-        ? `${date.getUTCFullYear()}-${Math.floor((date.getUTCDate() - 1) / 7)}`
-        : `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+    let weekStart = new Date(date);
+    
+    // Set to Monday (if not a holiday, use the next trading day)
+    const dayOfWeek = weekStart.getUTCDay();
+    const daysToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // Adjust to the previous Monday
+    weekStart.setUTCDate(weekStart.getUTCDate() + daysToMonday);
 
-    if (key !== currentKey) {
-      if (currentCandle) {
-        aggregatedData.push(currentCandle);
-      }
-      currentKey = key;
+    // Adjust to the actual first trading day of the week
+    const weekStartStr = weekStart.toISOString().split('T')[0];
+    if (!data.some((d) => d.time === weekStartStr)) {
+      // Find the next available trading day
+      weekStart = new Date(point.time);
+    }
+
+    const key = weekStart.toISOString().split('T')[0];
+
+    if (!currentCandle || currentCandle.time !== key) {
+      if (currentCandle) aggregatedData.push(currentCandle);
       currentCandle = {
-        time: point.time,
+        time: key,
         open: point.open,
         high: point.high,
         low: point.low,
@@ -150,9 +158,7 @@ function aggregateData(data, interval) {
     }
   });
 
-  if (currentCandle) {
-    aggregatedData.push(currentCandle);
-  }
+  if (currentCandle) aggregatedData.push(currentCandle);
 
   return aggregatedData;
 }
