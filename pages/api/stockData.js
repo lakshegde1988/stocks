@@ -70,28 +70,6 @@ export default async function handler(req, res) {
     // Aggregate data for weekly or monthly intervals
     if (interval === '1wk' || interval === '1mo') {
       processedData = aggregateData(processedData, interval);
-
-      // Fetch today's data and merge with weekly/monthly candles
-      const todayData = await fetchTodayData(formattedSymbol);
-      if (todayData) {
-        const lastCandle = processedData[processedData.length - 1];
-        const lastCandleDate = new Date(lastCandle.time);
-        const todayDate = new Date(todayData.time);
-
-        // Always update the last candle with today's data
-        lastCandle.high = Math.max(lastCandle.high, todayData.high);
-        lastCandle.low = Math.min(lastCandle.low, todayData.low);
-        lastCandle.close = todayData.close;
-        lastCandle.volume += todayData.volume;
-
-        // Update the time of the last candle to today's date if it's in the same week/month
-        if (
-          (interval === '1wk' && isSameWeek(lastCandleDate, todayDate)) ||
-          (interval === '1mo' && isSameMonth(lastCandleDate, todayDate))
-        ) {
-          lastCandle.time = todayData.time;
-        }
-      }
     }
 
     // Cache response
@@ -119,85 +97,51 @@ export default async function handler(req, res) {
 // Aggregate data into weekly or monthly intervals
 function aggregateData(data, interval) {
   const aggregatedData = [];
-  let currentKey = null;
   let currentCandle = null;
 
-  data.forEach((point) => {
+  data.forEach((point, index) => {
     const date = new Date(point.time);
-    const key =
-      interval === '1wk'
-        ? `${date.getUTCFullYear()}-${Math.floor((date.getUTCDate() - 1) / 7)}`
-        : `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
-
-    if (key !== currentKey) {
-      if (currentCandle) {
-        aggregatedData.push(currentCandle);
-      }
-      currentKey = key;
-      currentCandle = {
-        time: point.time,
-        open: point.open,
-        high: point.high,
-        low: point.low,
-        close: point.close,
-        volume: point.volume,
-      };
+    
+    if (index === 0) {
+      currentCandle = { ...point };
     } else {
       currentCandle.high = Math.max(currentCandle.high, point.high);
       currentCandle.low = Math.min(currentCandle.low, point.low);
       currentCandle.close = point.close;
       currentCandle.volume += point.volume;
     }
-  });
 
-  if (currentCandle) {
-    aggregatedData.push(currentCandle);
-  }
+    const isLastPoint = index === data.length - 1;
+    const isNewPeriod = interval === '1wk' 
+      ? isNewWeek(date, new Date(data[index + 1]?.time))
+      : isNewMonth(date, new Date(data[index + 1]?.time));
+
+    if (isLastPoint || isNewPeriod) {
+      aggregatedData.push(currentCandle);
+      if (!isLastPoint) {
+        currentCandle = { ...data[index + 1], volume: 0 };
+      }
+    }
+  });
 
   return aggregatedData;
 }
 
-// Fetch today's data dynamically
-async function fetchTodayData(symbol) {
-  try {
-    const response = await axios.get(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
-      {
-        params: { range: '1d', interval: '1d', events: 'history', includeAdjustedClose: true },
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        },
-      }
-    );
-
-    const result = response.data.chart.result[0];
-    const ohlcv = result.indicators.quote[0];
-    const timestamp = result.timestamp[0];
-
-    return {
-      time: new Date(timestamp * 1000).toISOString().split('T')[0],
-      open: parseFloat(ohlcv.open[0].toFixed(2)),
-      high: parseFloat(ohlcv.high[0].toFixed(2)),
-      low: parseFloat(ohlcv.low[0].toFixed(2)),
-      close: parseFloat(ohlcv.close[0].toFixed(2)),
-      volume: parseInt(ohlcv.volume[0]),
-    };
-  } catch (error) {
-    console.error('Error fetching today\'s data:', error.message);
-    return null; // Return null if today's data is unavailable
-  }
+function isNewWeek(date1, date2) {
+  return date1.getUTCFullYear() !== date2.getUTCFullYear() ||
+         getWeekNumber(date1) !== getWeekNumber(date2);
 }
 
-function isSameWeek(date1, date2) {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
-  return Math.abs(d1 - d2) <= 6 * 24 * 60 * 60 * 1000 && d1.getDay() <= d2.getDay();
+function isNewMonth(date1, date2) {
+  return date1.getUTCFullYear() !== date2.getUTCFullYear() ||
+         date1.getUTCMonth() !== date2.getUTCMonth();
 }
 
-function isSameMonth(date1, date2) {
-  return date1.getUTCFullYear() === date2.getUTCFullYear() && date1.getUTCMonth() === date2.getUTCMonth();
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
