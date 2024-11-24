@@ -29,8 +29,7 @@ export default async function handler(req, res) {
       {
         params: { range, interval, events: 'div,split', includeAdjustedClose: true },
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0',
         },
       }
     );
@@ -52,7 +51,7 @@ export default async function handler(req, res) {
       splitAdjustments[split.date] = split.numerator / split.denominator;
     });
 
-    // Calculate cumulative adjustment ratio
+    // Calculate cumulative adjustment factor
     let cumulativeAdjustment = 1;
     const adjustedData = timestamps.map((timestamp, index) => {
       if (
@@ -65,6 +64,7 @@ export default async function handler(req, res) {
         return null;
       }
 
+      // Apply split adjustments to historical data
       if (splitAdjustments[timestamp]) {
         cumulativeAdjustment *= splitAdjustments[timestamp];
       }
@@ -79,20 +79,14 @@ export default async function handler(req, res) {
       };
     }).filter((item) => item !== null);
 
-    // Aggregate for weekly/monthly intervals
-    let processedData = adjustedData;
-    if (interval === '1wk' || interval === '1mo') {
-      processedData = aggregateData(processedData, interval);
-    }
-
     // Cache the processed data
-    cache.set(cacheKey, processedData);
+    cache.set(cacheKey, adjustedData);
     if (cache.size > 100) {
       const oldestKey = cache.keys().next().value;
       cache.delete(oldestKey);
     }
 
-    return res.status(200).json(processedData);
+    return res.status(200).json(adjustedData);
   } catch (error) {
     console.error('API Error:', error.response?.data || error.message);
 
@@ -106,47 +100,6 @@ export default async function handler(req, res) {
 
     return res.status(500).json({ details: 'Error fetching stock data', error: error.message });
   }
-}
-
-// Aggregate data for weekly/monthly intervals
-function aggregateData(data, interval) {
-  const aggregatedData = [];
-  let currentCandle = null;
-
-  data.forEach((point) => {
-    const date = new Date(point.time);
-    let startPeriod = new Date(date);
-
-    if (interval === '1wk') {
-      const dayOfWeek = startPeriod.getUTCDay();
-      const daysToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
-      startPeriod.setUTCDate(startPeriod.getUTCDate() + daysToMonday);
-    } else if (interval === '1mo') {
-      startPeriod.setUTCDate(1);
-    }
-
-    const key = startPeriod.toISOString().split('T')[0];
-
-    if (!currentCandle || currentCandle.time !== key) {
-      if (currentCandle) aggregatedData.push(currentCandle);
-      currentCandle = {
-        time: key,
-        open: point.open,
-        high: point.high,
-        low: point.low,
-        close: point.close,
-        volume: point.volume,
-      };
-    } else {
-      currentCandle.high = Math.max(currentCandle.high, point.high);
-      currentCandle.low = Math.min(currentCandle.low, point.low);
-      currentCandle.close = point.close;
-      currentCandle.volume += point.volume;
-    }
-  });
-
-  if (currentCandle) aggregatedData.push(currentCandle);
-  return aggregatedData;
 }
 
 // Config for API
