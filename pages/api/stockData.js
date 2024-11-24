@@ -9,19 +9,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { symbol, range = '2y', interval = '1d' } = req.query;
+    const { symbol, range = '1y', interval = '1d' } = req.query;
 
     if (!symbol) {
       return res.status(400).json({ details: 'Symbol is required' });
     }
 
-    // Add `.NS` suffix for NSE-listed stocks
     const formattedSymbol = `${symbol}.NS`;
-
-    // Create cache key
     const cacheKey = `${formattedSymbol}-${range}-${interval}`;
 
-    // Check cache first
+    // Check cache
     if (cache.has(cacheKey)) {
       return res.status(200).json(cache.get(cacheKey));
     }
@@ -40,7 +37,6 @@ export default async function handler(req, res) {
 
     const result = response.data;
 
-    // Validate response
     if (!result.chart || !result.chart.result || !result.chart.result[0]) {
       return res.status(404).json({ details: 'No data available for this symbol' });
     }
@@ -49,7 +45,7 @@ export default async function handler(req, res) {
     const timestamps = quotes.timestamp;
     const ohlcv = quotes.indicators.quote[0];
 
-    // Process the data into the desired format
+    // Process data into daily candles
     let processedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
@@ -61,92 +57,147 @@ export default async function handler(req, res) {
         return null;
       }
 
-      const date = new Date(timestamp * 1000);
-
-      // Adjust timestamp for weekly or monthly data
-      if (interval === '1wk') {
-        const dayOfWeek = date.getUTCDay();
-        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        date.setUTCDate(date.getUTCDate() - daysToSubtract);
-      } else if (interval === '1mo') {
-        date.setUTCDate(1);
-      }
-
       return {
-        time: date.toISOString().split('T')[0],
+        time: new Date(timestamp * 1000).toISOString().split('T')[0],
         open: parseFloat(ohlcv.open[index].toFixed(2)),
         high: parseFloat(ohlcv.high[index].toFixed(2)),
         low: parseFloat(ohlcv.low[index].toFixed(2)),
         close: parseFloat(ohlcv.close[index].toFixed(2)),
         volume: parseInt(ohlcv.volume[index]),
       };
-    }).filter(item => item !== null);
+    }).filter((item) => item !== null);
 
-    // Add or update incomplete candles for weekly and monthly data
+    // Aggregate data for weekly or monthly intervals
     if (interval === '1wk' || interval === '1mo') {
-      const now = new Date();
-      now.setUTCHours(0, 0, 0, 0);
+      processedData = aggregateData(processedData, interval);
 
-      let currentPeriodStart;
-      if (interval === '1wk') {
-        const dayOfWeek = now.getUTCDay();
-        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        currentPeriodStart = new Date(now);
-        currentPeriodStart.setUTCDate(now.getUTCDate() - daysToSubtract);
-      } else if (interval === '1mo') {
-        currentPeriodStart = new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
-      }
+      // Fetch today's data and merge with weekly/monthly candles
+      const todayData = await fetchTodayData(formattedSymbol);
+      if (todayData) {
+        const lastCandle = processedData[processedData.length - 1];
+        const lastCandleDate = new Date(lastCandle.time);
+        const todayDate = new Date(todayData.time);
 
-      const currentPeriodData = processedData.filter(
-        d => new Date(d.time) >= currentPeriodStart
-      );
+        // Always update the last candle with today's data
+        lastCandle.high = Math.max(lastCandle.high, todayData.high);
+        lastCandle.low = Math.min(lastCandle.low, todayData.low);
+        lastCandle.close = todayData.close;
+        lastCandle.volume += todayData.volume;
 
-      if (currentPeriodData.length > 0) {
-        const currentCandle = {
-          time: currentPeriodStart.toISOString().split('T')[0],
-          open: currentPeriodData[0].open,
-          high: Math.max(...currentPeriodData.map(d => d.high)),
-          low: Math.min(...currentPeriodData.map(d => d.low)),
-          close: currentPeriodData[currentPeriodData.length - 1].close,
-          volume: currentPeriodData.reduce((sum, d) => sum + d.volume, 0),
-        };
-
-        processedData = processedData.filter(
-          d => new Date(d.time) < currentPeriodStart
-        );
-        processedData.push(currentCandle);
+        // Update the time of the last candle to today's date if it's in the same week/month
+        if (
+          (interval === '1wk' && isSameWeek(lastCandleDate, todayDate)) ||
+          (interval === '1mo' && isSameMonth(lastCandleDate, todayDate))
+        ) {
+          lastCandle.time = todayData.time;
+        }
       }
     }
 
-    // Store response in cache
+    // Cache response
     cache.set(cacheKey, processedData);
 
-    // Limit cache size to 100 entries
+    // Limit cache size
     if (cache.size > 100) {
       const oldestKey = cache.keys().next().value;
       cache.delete(oldestKey);
     }
 
-    // Send the processed data
     res.status(200).json(processedData);
   } catch (error) {
     console.error('API Error:', error.response?.data || error.message);
-
-    // Error handling
     if (error.response?.status === 404) {
       return res.status(404).json({ details: 'Stock symbol not found' });
     }
     if (error.response?.status === 429) {
       return res.status(429).json({ details: 'Too many requests. Please try again later.' });
     }
-
     res.status(500).json({ details: 'Error fetching stock data', error: error.message });
   }
 }
 
-// Configure API route
-export const config = {
-  api: {
-    externalResolver: true,
-  },
-};
+// Aggregate data into weekly or monthly intervals
+function aggregateData(data, interval) {
+  const aggregatedData = [];
+  let currentKey = null;
+  let currentCandle = null;
+
+  data.forEach((point) => {
+    const date = new Date(point.time);
+    const key =
+      interval === '1wk'
+        ? `${date.getUTCFullYear()}-${Math.floor((date.getUTCDate() - 1) / 7)}`
+        : `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+
+    if (key !== currentKey) {
+      if (currentCandle) {
+        aggregatedData.push(currentCandle);
+      }
+      currentKey = key;
+      currentCandle = {
+        time: point.time,
+        open: point.open,
+        high: point.high,
+        low: point.low,
+        close: point.close,
+        volume: point.volume,
+      };
+    } else {
+      currentCandle.high = Math.max(currentCandle.high, point.high);
+      currentCandle.low = Math.min(currentCandle.low, point.low);
+      currentCandle.close = point.close;
+      currentCandle.volume += point.volume;
+    }
+  });
+
+  if (currentCandle) {
+    aggregatedData.push(currentCandle);
+  }
+
+  return aggregatedData;
+}
+
+// Fetch today's data dynamically
+async function fetchTodayData(symbol) {
+  try {
+    const response = await axios.get(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+      {
+        params: { range: '1d', interval: '1d', events: 'history', includeAdjustedClose: true },
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      }
+    );
+
+    const result = response.data.chart.result[0];
+    const ohlcv = result.indicators.quote[0];
+    const timestamp = result.timestamp[0];
+
+    return {
+      time: new Date(timestamp * 1000).toISOString().split('T')[0],
+      open: parseFloat(ohlcv.open[0].toFixed(2)),
+      high: parseFloat(ohlcv.high[0].toFixed(2)),
+      low: parseFloat(ohlcv.low[0].toFixed(2)),
+      close: parseFloat(ohlcv.close[0].toFixed(2)),
+      volume: parseInt(ohlcv.volume[0]),
+    };
+  } catch (error) {
+    console.error('Error fetching today\'s data:', error.message);
+    return null; // Return null if today's data is unavailable
+  }
+}
+
+function isSameWeek(date1, date2) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  return Math.abs(d1 - d2) <= 6 * 24 * 60 * 60 * 1000 && d1.getDay() <= d2.getDay();
+}
+
+function isSameMonth(date1, date2) {
+  return date1.getUTCFullYear() === date2.getUTCFullYear() && date1.getUTCMonth() === date2.getUTCMonth();
+}
+
