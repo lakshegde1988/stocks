@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Cache for API responses
+const cache = new Map();
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ details: 'Method not allowed' });
@@ -13,8 +16,14 @@ export default async function handler(req, res) {
     }
 
     const formattedSymbol = `${symbol}.NS`;
+    const cacheKey = `${formattedSymbol}-${range}-${interval}`;
 
-    // Fetch stock data from Yahoo Finance
+    // Check cache
+    if (cache.has(cacheKey)) {
+      return res.status(200).json(cache.get(cacheKey));
+    }
+
+    // Fetch stock data
     const response = await axios.get(
       `https://query1.finance.yahoo.com/v8/finance/chart/${formattedSymbol}`,
       {
@@ -27,7 +36,6 @@ export default async function handler(req, res) {
     );
 
     const result = response.data;
-
     if (!result.chart || !result.chart.result || !result.chart.result[0]) {
       return res.status(404).json({ details: 'No data available for this symbol' });
     }
@@ -37,15 +45,12 @@ export default async function handler(req, res) {
     const ohlcv = chart.indicators.quote[0];
     const adjClose = chart.indicators.adjclose[0]?.adjclose;
     const splits = chart.events?.splits || {};
-    const dividends = chart.events?.dividends || {};
-
-    // Map split dates to ratios
     const splitAdjustments = Object.values(splits).map((split) => ({
       date: new Date(split.date * 1000),
       ratio: split.numerator / split.denominator,
     }));
 
-    // Adjust OHLC values for splits
+    // Process data
     let processedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
@@ -84,12 +89,78 @@ export default async function handler(req, res) {
       };
     }).filter((item) => item !== null);
 
-    res.status(200).json(processedData);
+    // Aggregate for weekly/monthly intervals
+    if (interval === '1wk' || interval === '1mo') {
+      processedData = aggregateData(processedData, interval);
+    }
+
+    // Cache the processed data
+    cache.set(cacheKey, processedData);
+    if (cache.size > 100) {
+      const oldestKey = cache.keys().next().value;
+      cache.delete(oldestKey);
+    }
+
+    return res.status(200).json(processedData);
   } catch (error) {
     console.error('API Error:', error.response?.data || error.message);
+
     if (error.response?.status === 404) {
       return res.status(404).json({ details: 'Stock symbol not found' });
     }
-    res.status(500).json({ details: 'Error fetching stock data', error: error.message });
+
+    if (error.response?.status === 429) {
+      return res.status(429).json({ details: 'Too many requests. Please try again later.' });
+    }
+
+    return res.status(500).json({ details: 'Error fetching stock data', error: error.message });
   }
 }
+
+// Aggregate data for weekly/monthly intervals
+function aggregateData(data, interval) {
+  const aggregatedData = [];
+  let currentCandle = null;
+
+  data.forEach((point) => {
+    const date = new Date(point.time);
+    let startPeriod = new Date(date);
+
+    if (interval === '1wk') {
+      const dayOfWeek = startPeriod.getUTCDay();
+      const daysToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+      startPeriod.setUTCDate(startPeriod.getUTCDate() + daysToMonday);
+    } else if (interval === '1mo') {
+      startPeriod.setUTCDate(1);
+    }
+
+    const key = startPeriod.toISOString().split('T')[0];
+
+    if (!currentCandle || currentCandle.time !== key) {
+      if (currentCandle) aggregatedData.push(currentCandle);
+      currentCandle = {
+        time: key,
+        open: point.open,
+        high: point.high,
+        low: point.low,
+        close: point.close,
+        volume: point.volume,
+      };
+    } else {
+      currentCandle.high = Math.max(currentCandle.high, point.high);
+      currentCandle.low = Math.min(currentCandle.low, point.low);
+      currentCandle.close = point.close;
+      currentCandle.volume += point.volume;
+    }
+  });
+
+  if (currentCandle) aggregatedData.push(currentCandle);
+  return aggregatedData;
+}
+
+// Config for API
+export const config = {
+  api: {
+    externalResolver: true,
+  },
+};
