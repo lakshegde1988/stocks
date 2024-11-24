@@ -116,7 +116,7 @@ export default async function handler(req, res) {
   }
 }
 
-/function aggregateData(data, interval) {
+function aggregateData(data, interval) {
   if (interval !== '1wk' && interval !== '1mo') return data;
 
   const aggregatedData = [];
