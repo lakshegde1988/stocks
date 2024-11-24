@@ -184,7 +184,8 @@ async function fetchTodayData(symbol) {
       volume: parseInt(ohlcv.volume[0]),
     };
   } catch (error) {
-    console.error('Error fetching today’s data:', error.message);
+    console.error('Error fetching today's data:', error.message);
     return null; // Return null if today's data is unavailable
   }
 }
+
