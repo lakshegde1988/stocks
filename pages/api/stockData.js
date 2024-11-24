@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     const timestamps = quotes.timestamp;
     const ohlcv = quotes.indicators.quote[0];
 
-    // Process data into candles
+    // Process data into daily candles
     let processedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
@@ -67,9 +67,31 @@ export default async function handler(req, res) {
       };
     }).filter((item) => item !== null);
 
-    // Handle weekly and monthly data
+    // Aggregate data for weekly or monthly intervals
     if (interval === '1wk' || interval === '1mo') {
-      processedData = removeIncompleteLastCandle(processedData, interval);
+      processedData = aggregateData(processedData, interval);
+
+      // Fetch today's data and merge with weekly/monthly candles
+      const todayData = await fetchTodayData(formattedSymbol);
+      if (todayData) {
+        const lastCandle = processedData[processedData.length - 1];
+        const lastCandleDate = new Date(lastCandle.time);
+        const todayDate = new Date(todayData.time);
+
+        if (
+          (interval === '1wk' && todayDate.getUTCDay() >= lastCandleDate.getUTCDay()) ||
+          (interval === '1mo' && todayDate.getUTCMonth() === lastCandleDate.getUTCMonth())
+        ) {
+          // Update last candle
+          lastCandle.high = Math.max(lastCandle.high, todayData.high);
+          lastCandle.low = Math.min(lastCandle.low, todayData.low);
+          lastCandle.close = todayData.close;
+          lastCandle.volume += todayData.volume;
+        } else {
+          // Add a new candle for today
+          processedData.push(todayData);
+        }
+      }
     }
 
     // Cache response
@@ -94,38 +116,75 @@ export default async function handler(req, res) {
   }
 }
 
-function removeIncompleteLastCandle(data, interval) {
-  if (data.length < 2) return data;
+// Aggregate data into weekly or monthly intervals
+function aggregateData(data, interval) {
+  const aggregatedData = [];
+  let currentKey = null;
+  let currentCandle = null;
 
-  const lastCandle = data[data.length - 1];
-  const secondLastCandle = data[data.length - 2];
-  const lastCandleDate = new Date(lastCandle.time);
-  const secondLastCandleDate = new Date(secondLastCandle.time);
+  data.forEach((point) => {
+    const date = new Date(point.time);
+    const key =
+      interval === '1wk'
+        ? `${date.getUTCFullYear()}-${Math.floor((date.getUTCDate() - 1) / 7)}`
+        : `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
 
-  if (interval === '1wk') {
-    // Check if the last candle is in the same week as the second last candle
-    if (isSameWeek(lastCandleDate, secondLastCandleDate)) {
-      return data.slice(0, -1);
+    if (key !== currentKey) {
+      if (currentCandle) {
+        aggregatedData.push(currentCandle);
+      }
+      currentKey = key;
+      currentCandle = {
+        time: point.time,
+        open: point.open,
+        high: point.high,
+        low: point.low,
+        close: point.close,
+        volume: point.volume,
+      };
+    } else {
+      currentCandle.high = Math.max(currentCandle.high, point.high);
+      currentCandle.low = Math.min(currentCandle.low, point.low);
+      currentCandle.close = point.close;
+      currentCandle.volume += point.volume;
     }
-  } else if (interval === '1mo') {
-    // Check if the last candle is in the same month as the second last candle
-    if (isSameMonth(lastCandleDate, secondLastCandleDate)) {
-      return data.slice(0, -1);
-    }
+  });
+
+  if (currentCandle) {
+    aggregatedData.push(currentCandle);
   }
 
-  return data;
+  return aggregatedData;
 }
 
-function isSameWeek(date1, date2) {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
-  return Math.abs(d1 - d2) <= 6 * 24 * 60 * 60 * 1000 && d1.getDay() <= d2.getDay();
-}
+// Fetch today's data dynamically
+async function fetchTodayData(symbol) {
+  try {
+    const response = await axios.get(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+      {
+        params: { range: '1d', interval: '1d', events: 'history', includeAdjustedClose: true },
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      }
+    );
 
-function isSameMonth(date1, date2) {
-  return date1.getUTCFullYear() === date2.getUTCFullYear() && date1.getUTCMonth() === date2.getUTCMonth();
-}
+    const result = response.data.chart.result[0];
+    const ohlcv = result.indicators.quote[0];
+    const timestamp = result.timestamp[0];
 
+    return {
+      time: new Date(timestamp * 1000).toISOString().split('T')[0],
+      open: parseFloat(ohlcv.open[0].toFixed(2)),
+      high: parseFloat(ohlcv.high[0].toFixed(2)),
+      low: parseFloat(ohlcv.low[0].toFixed(2)),
+      close: parseFloat(ohlcv.close[0].toFixed(2)),
+      volume: parseInt(ohlcv.volume[0]),
+    };
+  } catch (error) {
+    console.error('Error fetching today’s data:', error.message);
+    return null; // Return null if today's data is unavailable
+  }
+}
