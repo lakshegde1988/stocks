@@ -45,13 +45,16 @@ export default async function handler(req, res) {
     const ohlcv = chart.indicators.quote[0];
     const adjClose = chart.indicators.adjclose[0]?.adjclose;
     const splits = chart.events?.splits || {};
-    const splitAdjustments = Object.values(splits).map((split) => ({
-      date: new Date(split.date * 1000),
-      ratio: split.numerator / split.denominator,
-    }));
 
-    // Process data
-    let processedData = timestamps.map((timestamp, index) => {
+    // Build split adjustment map
+    const splitAdjustments = {};
+    Object.values(splits).forEach((split) => {
+      splitAdjustments[split.date] = split.numerator / split.denominator;
+    });
+
+    // Calculate cumulative adjustment ratio
+    let cumulativeAdjustment = 1;
+    const adjustedData = timestamps.map((timestamp, index) => {
       if (
         !ohlcv.open[index] ||
         !ohlcv.high[index] ||
@@ -62,34 +65,22 @@ export default async function handler(req, res) {
         return null;
       }
 
-      let adjustedOpen = ohlcv.open[index];
-      let adjustedHigh = ohlcv.high[index];
-      let adjustedLow = ohlcv.low[index];
-      let adjustedClose = adjClose ? adjClose[index] : ohlcv.close[index];
-      let adjustedVolume = ohlcv.volume[index];
-
-      // Apply split adjustments
-      splitAdjustments.forEach((split) => {
-        if (timestamp * 1000 < split.date.getTime()) {
-          adjustedOpen /= split.ratio;
-          adjustedHigh /= split.ratio;
-          adjustedLow /= split.ratio;
-          adjustedClose /= split.ratio;
-          adjustedVolume *= split.ratio;
-        }
-      });
+      if (splitAdjustments[timestamp]) {
+        cumulativeAdjustment *= splitAdjustments[timestamp];
+      }
 
       return {
         time: new Date(timestamp * 1000).toISOString().split('T')[0],
-        open: parseFloat(adjustedOpen.toFixed(2)),
-        high: parseFloat(adjustedHigh.toFixed(2)),
-        low: parseFloat(adjustedLow.toFixed(2)),
-        close: parseFloat(adjustedClose.toFixed(2)),
-        volume: parseInt(adjustedVolume),
+        open: parseFloat((ohlcv.open[index] * cumulativeAdjustment).toFixed(2)),
+        high: parseFloat((ohlcv.high[index] * cumulativeAdjustment).toFixed(2)),
+        low: parseFloat((ohlcv.low[index] * cumulativeAdjustment).toFixed(2)),
+        close: parseFloat((adjClose[index] * cumulativeAdjustment).toFixed(2)),
+        volume: Math.round(ohlcv.volume[index] / cumulativeAdjustment),
       };
     }).filter((item) => item !== null);
 
     // Aggregate for weekly/monthly intervals
+    let processedData = adjustedData;
     if (interval === '1wk' || interval === '1mo') {
       processedData = aggregateData(processedData, interval);
     }
