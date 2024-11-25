@@ -56,6 +56,14 @@ const INTERVALS = [
   { label: 'M', value: 'monthly', interval: '1mo', range: 'max' },
 ];
 
+const RANGES = [
+  { label: '6M', value: '6mo' },
+  { label: '1Y', value: '1y' },
+  { label: '2Y', value: '2y' },
+  { label: '5Y', value: '5y' },
+  { label: 'Max', value: 'max' },
+];
+
 const getCssVariableColor = (variableName: string): string => {
   if (typeof window === 'undefined') return '#000000';
   const root = document.documentElement;
@@ -107,6 +115,7 @@ export default function StockChart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedInterval, setSelectedInterval] = useState('daily');
+  const [selectedRange, setSelectedRange] = useState('1y');
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -151,7 +160,7 @@ export default function StockChart() {
       const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
         params: {
           symbol: currentStock.symbol,
-          range: interval.range,
+          range: selectedRange,
           interval: interval.interval
         }
       });
@@ -170,7 +179,7 @@ export default function StockChart() {
     } finally {
       setLoading(false);
     }
-  }, [stocks, currentStockIndex, selectedInterval]);
+  }, [stocks, currentStockIndex, selectedInterval, selectedRange]);
 
   useEffect(() => {
     fetchStockData();
@@ -378,7 +387,7 @@ export default function StockChart() {
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground hover:text-foreground cursor-pointer"
                 onClick={() => {
                   setSearchTerm('');
-                  setShowDropdown(false);
+setShowDropdown(false);
                 }}
               />
             ) : (
@@ -404,8 +413,6 @@ export default function StockChart() {
               </div>
             )}
           </div>
-
-         
 
           {/* Full Screen Button (visible only on mobile) */}
           <Button
@@ -462,106 +469,103 @@ export default function StockChart() {
       </main>
 
       {/* Sticky Footer */}
-      {/* Sticky Footer */}
-<footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
-  <div className="mx-auto px-2 sm:px-4">
-    <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
-      {/* Index and Interval Select Boxes */}
-      <div className="flex items-center space-x-2 flex-shrink-0">
-        <Select
-          value={selectedIndexId.toString()}
-          onValueChange={(value) => setSelectedIndexId(parseInt(value))}
-        >
-          <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
-            <SelectValue placeholder="Select Index" />
-          </SelectTrigger>
-          <SelectContent>
-            {indexData.map((item, index) => (
-              <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <footer className="sticky bottom-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-slate-200/5">
+        <div className="mx-auto px-2 sm:px-4">
+          <div className="flex justify-between items-center py-2 sm:py-4 min-w-0">
+            {/* Index and Interval Select Boxes */}
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <Select
+                value={selectedIndexId.toString()}
+                onValueChange={(value) => setSelectedIndexId(parseInt(value))}
+              >
+                <SelectTrigger className="h-8 text-xs sm:text-sm bg-background">
+                  <SelectValue placeholder="Select Index" />
+                </SelectTrigger>
+                <SelectContent>
+                  {indexData.map((item, index) => (
+                    <SelectItem key={index} value={index.toString()} className="text-xs sm:text-sm">
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-        <Select
-          value={selectedInterval}
-          onValueChange={(value) => setSelectedInterval(value)}
-        >
-          <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
-            <SelectValue placeholder="Interval" />
-          </SelectTrigger>
-          <SelectContent>
-            {INTERVALS.map((interval) => (
-              <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
-                {interval.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              <Select
+                value={selectedInterval}
+                onValueChange={(value) => setSelectedInterval(value)}
+              >
+                <SelectTrigger className="w-[70px] h-8 text-xs sm:text-sm bg-background">
+                  <SelectValue placeholder="Interval" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INTERVALS.map((interval) => (
+                    <SelectItem key={interval.value} value={interval.value} className="text-xs sm:text-sm">
+                      {interval.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-        {/* New Range Selector */}
-        <div className="flex space-x-1">
-          {RANGES.map((range) => (
-            <Button
-              key={range.value}
-              variant={selectedRange === range.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedRange(range.value)}
-              className="h-8 text-xs sm:text-sm px-2"
-            >
-              {range.label}
-            </Button>
-          ))}
+              {/* New Range Selector */}
+              <div className="flex space-x-1">
+                {RANGES.map((range) => (
+                  <Button
+                    key={range.value}
+                    variant={selectedRange === range.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedRange(range.value)}
+                    className="h-8 text-xs sm:text-sm px-2"
+                  >
+                    {range.label}
+                  </Button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsWatchlistOpen(true)}
+                className="h-8 text-xs sm:text-sm"
+              >
+                Watchlist
+              </Button>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center space-x-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                onClick={handlePrevious}
+                disabled={currentStockIndex === 0}
+                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                size="sm"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
+              </Button>
+
+              <div className="flex items-center min-w-[60px] justify-center">
+                <span className="text-sm sm:text-sm text-gray-600 whitespace-nowrap">
+                  <span className="font-medium">{currentStockIndex + 1}</span>
+                  <span className="text-gray-400 mx-1">/</span>
+                  <span className="text-gray-400">{stocks.length}</span>
+                </span>
+              </div>
+
+              <Button
+                variant="ghost"
+                onClick={handleNext}
+                disabled={currentStockIndex === stocks.length - 1}
+                className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                size="sm"
+              >
+                <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsWatchlistOpen(true)}
-          className="h-8 text-xs sm:text-sm"
-        >
-          Watchlist
-        </Button>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center space-x-1 flex-shrink-0">
-        <Button
-          variant="ghost"
-          onClick={handlePrevious}
-          disabled={currentStockIndex === 0}
-          className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          size="sm"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:ml-1">Prev</span>
-        </Button>
-
-        <div className="flex items-center min-w-[60px] justify-center">
-          <span className="text-sm sm:text-sm text-gray-600 whitespace-nowrap">
-            <span className="font-medium">{currentStockIndex + 1}</span>
-            <span className="text-gray-400 mx-1">/</span>
-            <span className="text-gray-400">{stocks.length}</span>
-          </span>
-        </div>
-
-        <Button
-          variant="ghost"
-          onClick={handleNext}
-          disabled={currentStockIndex === stocks.length - 1}
-          className="h-8 px-1.5 sm:px-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-          size="sm"
-        >
-          <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  </div>
-</footer>
-
-
+      </footer>
       <WatchlistModal
         isOpen={isWatchlistOpen}
         onClose={() => setIsWatchlistOpen(false)}
