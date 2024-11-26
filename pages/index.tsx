@@ -546,7 +546,7 @@ border-b">
                 onClick={handleWatchlistClick}
                 className="h-8 text-xs sm:text-sm"
               >
-                {isLoggedIn ? 'Watchlist' : 'Login'}
+                {isLoggedIn ? 'Watchlist' : 'Watchlist'}
               </Button>
             </div>
 
