@@ -46,26 +46,28 @@ export default async function handler(req, res) {
     const ohlcv = quotes.indicators.quote[0];
 
     // Process data into daily candles
-    let processedData = timestamps.map((timestamp, index) => {
-      if (
-        !ohlcv.open[index] ||
-        !ohlcv.high[index] ||
-        !ohlcv.low[index] ||
-        !ohlcv.close[index] ||
-        !ohlcv.volume[index]
-      ) {
-        return null;
-      }
+    let processedData = timestamps
+      .map((timestamp, index) => {
+        if (
+          !ohlcv.open[index] ||
+          !ohlcv.high[index] ||
+          !ohlcv.low[index] ||
+          !ohlcv.close[index] ||
+          !ohlcv.volume[index]
+        ) {
+          return null;
+        }
 
-      return {
-        time: new Date(timestamp * 1000).toISOString().split('T')[0],
-        open: parseFloat(ohlcv.open[index].toFixed(2)),
-        high: parseFloat(ohlcv.high[index].toFixed(2)),
-        low: parseFloat(ohlcv.low[index].toFixed(2)),
-        close: parseFloat(ohlcv.close[index].toFixed(2)),
-        volume: parseInt(ohlcv.volume[index]),
-      };
-    }).filter((item) => item !== null);
+        return {
+          time: new Date(timestamp * 1000).toISOString().split('T')[0],
+          open: parseFloat(ohlcv.open[index].toFixed(2)),
+          high: parseFloat(ohlcv.high[index].toFixed(2)),
+          low: parseFloat(ohlcv.low[index].toFixed(2)),
+          close: parseFloat(ohlcv.close[index].toFixed(2)),
+          volume: parseInt(ohlcv.volume[index]),
+        };
+      })
+      .filter((item) => item !== null);
 
     // Aggregate data for weekly or monthly intervals
     if (interval === '1wk' || interval === '1mo') {
@@ -79,7 +81,7 @@ export default async function handler(req, res) {
         const todayDate = new Date(todayData.time);
 
         if (
-          (interval === '1wk' && todayDate.getUTCDay() >= lastCandleDate.getUTCDay()) ||
+          (interval === '1wk' && todayDate >= startOfWeek(lastCandleDate)) ||
           (interval === '1mo' && todayDate.getUTCMonth() === lastCandleDate.getUTCMonth())
         ) {
           // Update last candle
@@ -124,21 +126,7 @@ function aggregateData(data, interval) {
 
   data.forEach((point) => {
     const date = new Date(point.time);
-    let weekStart = new Date(date);
-    
-    // Set to Monday (if not a holiday, use the next trading day)
-    const dayOfWeek = weekStart.getUTCDay();
-    const daysToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // Adjust to the previous Monday
-    weekStart.setUTCDate(weekStart.getUTCDate() + daysToMonday);
-
-    // Adjust to the actual first trading day of the week
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-    if (!data.some((d) => d.time === weekStartStr)) {
-      // Find the next available trading day
-      weekStart = new Date(point.time);
-    }
-
-    const key = weekStart.toISOString().split('T')[0];
+    const key = interval === '1wk' ? startOfWeek(date).toISOString().split('T')[0] : startOfMonth(date).toISOString().split('T')[0];
 
     if (!currentCandle || currentCandle.time !== key) {
       if (currentCandle) aggregatedData.push(currentCandle);
@@ -163,7 +151,6 @@ function aggregateData(data, interval) {
   return aggregatedData;
 }
 
-// Fetch today's data dynamically
 async function fetchTodayData(symbol) {
   try {
     const response = await axios.get(
@@ -191,6 +178,16 @@ async function fetchTodayData(symbol) {
     };
   } catch (error) {
     console.error('Error fetching today’s data:', error.message);
-    return null; // Return null if today's data is unavailable
+    return null;
   }
+}
+
+function startOfWeek(date) {
+  const day = date.getUTCDay();
+  const diff = date.getUTCDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+  return new Date(date.setUTCDate(diff));
+}
+
+function startOfMonth(date) {
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), 1);
 }
