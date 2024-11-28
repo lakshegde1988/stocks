@@ -141,40 +141,58 @@ export default function StockChart() {
   }, [selectedIndexId, indexData]);
 
   const fetchStockData = useCallback(async () => {
-    if (!stocks.length) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const currentStock = stocks[currentStockIndex];
-      const interval = INTERVALS.find(i => i.value === selectedInterval);
+  if (!stocks.length) return;
 
-      if (!interval) throw new Error('Invalid interval');
+  setLoading(true);
+  setError(null);
 
-      const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
-        params: {
-          symbol: currentStock.symbol,
-          range: interval.range,
-          interval: interval.interval
-        }
+  try {
+    const currentStock = stocks[currentStockIndex];
+    const interval = INTERVALS.find((i) => i.value === selectedInterval);
+
+    if (!interval) throw new Error('Invalid interval');
+
+    // Fetch stock data from API
+    const response = await axios.get<ChartDataPoint[]>('/api/stockData', {
+      params: {
+        symbol: currentStock.symbol,
+        range: interval.range,
+        interval: interval.interval,
+      },
+    });
+
+    const data = response.data;
+
+    // Verify the response and update state
+    if (data && Array.isArray(data)) {
+      const latest = data[data.length - 1];
+      const previous = data[data.length - 2];
+      const first = data[0];
+
+      setChartData(data);
+
+      setCurrentStock({
+        ...currentStock,
+        price: latest?.close || 0,
+        change: first
+          ? ((latest?.close - first.open) / first.open) * 100
+          : 0,
+        todayChange: previous
+          ? ((latest?.close - previous.close) / previous.close) * 100
+          : 0,
       });
-
-      if (response.data && Array.isArray(response.data)) {
-        setChartData(response.data);
-        setCurrentStock({
-          ...currentStock,
-          price: response.data[response.data.length - 1]?.close,
-          change: ((response.data[response.data.length - 1]?.close - response.data[0]?.open) / response.data[0]?.open) * 100,
-          todayChange: ((response.data[response.data.length - 1]?.close - response.data[response.data.length - 2]?.close) / response.data[response.data.length - 2]?.close) * 100
-        });
-      }
-    } catch (err) {
-      setError((err as Error).message || 'Failed to fetch stock data');
-    } finally {
-      setLoading(false);
     }
-  }, [stocks, currentStockIndex, selectedInterval]);
+  } catch (err) {
+    console.error('Failed to fetch stock data:', err);
+    setError(
+      (axios.isAxiosError(err) && err.response?.data?.details) ||
+        err.message ||
+        'Failed to fetch stock data'
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [stocks, currentStockIndex, selectedInterval]);
 
   useEffect(() => {
     fetchStockData();
