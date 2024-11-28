@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     const response = await axios.get(
       `https://query1.finance.yahoo.com/v8/finance/chart/${formattedSymbol}`,
       {
-        params: { range, interval, events: 'history', includeAdjustedClose: true },
+        params: { range, interval: '1d', events: 'history', includeAdjustedClose: true }, // Always fetch daily data
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -45,14 +45,18 @@ export default async function handler(req, res) {
     const timestamps = quotes.timestamp;
     const ohlcv = quotes.indicators.quote[0];
 
+    if (!timestamps || !ohlcv || !ohlcv.open || !ohlcv.high || !ohlcv.low || !ohlcv.close || !ohlcv.volume) {
+      return res.status(400).json({ details: 'Incomplete data for this stock symbol' });
+    }
+
     // Process data into daily candles
     let processedData = timestamps.map((timestamp, index) => {
       if (
-        !ohlcv.open[index] ||
-        !ohlcv.high[index] ||
-        !ohlcv.low[index] ||
-        !ohlcv.close[index] ||
-        !ohlcv.volume[index]
+        ohlcv.open[index] == null ||
+        ohlcv.high[index] == null ||
+        ohlcv.low[index] == null ||
+        ohlcv.close[index] == null ||
+        ohlcv.volume[index] == null
       ) {
         return null;
       }
@@ -79,7 +83,7 @@ export default async function handler(req, res) {
         const todayDate = new Date(todayData.time);
 
         if (
-          (interval === '1wk' && todayDate.getUTCDay() >= lastCandleDate.getUTCDay()) ||
+          (interval === '1wk' && todayDate >= lastCandleDate) ||
           (interval === '1mo' && todayDate.getUTCMonth() === lastCandleDate.getUTCMonth())
         ) {
           // Update last candle
@@ -124,26 +128,22 @@ function aggregateData(data, interval) {
 
   data.forEach((point) => {
     const date = new Date(point.time);
-    let weekStart = new Date(date);
-    
-    // Set to Monday (if not a holiday, use the next trading day)
-    const dayOfWeek = weekStart.getUTCDay();
-    const daysToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // Adjust to the previous Monday
-    weekStart.setUTCDate(weekStart.getUTCDate() + daysToMonday);
 
-    // Adjust to the actual first trading day of the week
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-    if (!data.some((d) => d.time === weekStartStr)) {
-      // Find the next available trading day
-      weekStart = new Date(point.time);
+    let periodStart;
+    if (interval === '1wk') {
+      const monday = new Date(date);
+      const dayOfWeek = monday.getUTCDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Adjust to Monday
+      monday.setUTCDate(monday.getUTCDate() - daysToSubtract);
+      periodStart = monday.toISOString().split('T')[0];
+    } else if (interval === '1mo') {
+      periodStart = new Date(date.getUTCFullYear(), date.getUTCMonth(), 1).toISOString().split('T')[0];
     }
 
-    const key = weekStart.toISOString().split('T')[0];
-
-    if (!currentCandle || currentCandle.time !== key) {
+    if (!currentCandle || currentCandle.time !== periodStart) {
       if (currentCandle) aggregatedData.push(currentCandle);
       currentCandle = {
-        time: key,
+        time: periodStart,
         open: point.open,
         high: point.high,
         low: point.low,
@@ -163,7 +163,6 @@ function aggregateData(data, interval) {
   return aggregatedData;
 }
 
-// Fetch today's data dynamically
 async function fetchTodayData(symbol) {
   try {
     const response = await axios.get(
