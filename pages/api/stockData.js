@@ -29,8 +29,7 @@ export default async function handler(req, res) {
       {
         params: { range, interval, events: 'history', includeAdjustedClose: true },
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0',
         },
       }
     );
@@ -73,26 +72,10 @@ export default async function handler(req, res) {
     if (interval === '1wk' || interval === '1mo') {
       processedData = aggregateData(processedData, interval);
 
-      // Fetch today's data and merge with weekly/monthly candles
+      // Fetch today's data
       const todayData = await fetchTodayData(formattedSymbol);
       if (todayData) {
-        const lastCandle = processedData[processedData.length - 1];
-        const lastCandleDate = new Date(lastCandle.time);
-        const todayDate = new Date(todayData.time);
-
-        if (
-          (interval === '1wk' && todayDate >= startOfWeek(lastCandleDate)) ||
-          (interval === '1mo' && todayDate.getUTCMonth() === lastCandleDate.getUTCMonth())
-        ) {
-          // Update last candle
-          lastCandle.high = Math.max(lastCandle.high, todayData.high);
-          lastCandle.low = Math.min(lastCandle.low, todayData.low);
-          lastCandle.close = todayData.close;
-          lastCandle.volume += todayData.volume;
-        } else {
-          // Add a new candle for today
-          processedData.push(todayData);
-        }
+        mergeTodayData(processedData, todayData, interval);
       }
     }
 
@@ -126,7 +109,10 @@ function aggregateData(data, interval) {
 
   data.forEach((point) => {
     const date = new Date(point.time);
-    const key = interval === '1wk' ? startOfWeek(date).toISOString().split('T')[0] : startOfMonth(date).toISOString().split('T')[0];
+    const key =
+      interval === '1wk'
+        ? startOfWeek(date).toISOString().split('T')[0]
+        : startOfMonth(date).toISOString().split('T')[0];
 
     if (!currentCandle || currentCandle.time !== key) {
       if (currentCandle) aggregatedData.push(currentCandle);
@@ -158,8 +144,7 @@ async function fetchTodayData(symbol) {
       {
         params: { range: '1d', interval: '1d', events: 'history', includeAdjustedClose: true },
         headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0',
         },
       }
     );
@@ -179,6 +164,26 @@ async function fetchTodayData(symbol) {
   } catch (error) {
     console.error('Error fetching today’s data:', error.message);
     return null;
+  }
+}
+
+function mergeTodayData(aggregatedData, todayData, interval) {
+  const lastCandle = aggregatedData[aggregatedData.length - 1];
+  const lastCandleDate = new Date(lastCandle.time);
+  const todayDate = new Date(todayData.time);
+
+  if (
+    (interval === '1wk' && todayDate >= startOfWeek(lastCandleDate)) ||
+    (interval === '1mo' && todayDate.getUTCMonth() === lastCandleDate.getUTCMonth())
+  ) {
+    // Merge today into the last candle
+    lastCandle.high = Math.max(lastCandle.high, todayData.high);
+    lastCandle.low = Math.min(lastCandle.low, todayData.low);
+    lastCandle.close = todayData.close;
+    lastCandle.volume += todayData.volume;
+  } else {
+    // Add today as a new candle
+    aggregatedData.push(todayData);
   }
 }
 
