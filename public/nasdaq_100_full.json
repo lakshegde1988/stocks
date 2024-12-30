@@ -1,410 +1,308 @@
 [
-    {
-        "Symbol": "AAPL",
-        "name": "Apple Inc."
-    },
-    {
-        "Symbol": "MSFT",
-        "name": "Microsoft Corporation"
-    },
-    {
-        "Symbol": "AMZN",
-        "name": "Amazon.com, Inc."
-    },
-    {
-        "Symbol": "GOOGL",
-        "name": "Alphabet Inc. Class A"
-    },
-    {
-        "Symbol": "GOOG",
-        "name": "Alphabet Inc. Class C"
-    },
-    {
-        "Symbol": "META",
-        "name": "Meta Platforms, Inc."
-    },
-    {
-        "Symbol": "NVDA",
-        "name": "NVIDIA Corporation"
-    },
-    {
-        "Symbol": "TSLA",
-        "name": "Tesla, Inc."
-    },
-    {
-        "Symbol": "PEP",
-        "name": "PepsiCo, Inc."
-    },
-    {
-        "Symbol": "COST",
-        "name": "Costco Wholesale Corporation"
-    },
-    {
-        "Symbol": "ADBE",
-        "name": "Adobe Inc."
-    },
-    {
-        "Symbol": "NFLX",
-        "name": "Netflix, Inc."
-    },
-    {
-        "Symbol": "PYPL",
-        "name": "PayPal Holdings, Inc."
-    },
-    {
-        "Symbol": "INTC",
-        "name": "Intel Corporation"
-    },
-    {
-        "Symbol": "CSCO",
-        "name": "Cisco Systems, Inc."
-    },
-    {
-        "Symbol": "CMCSA",
-        "name": "Comcast Corporation"
-    },
-    {
-        "Symbol": "PDD",
-        "name": "PDD Holdings Inc."
-    },
-    {
-        "Symbol": "AVGO",
-        "name": "Broadcom Inc."
-    },
-    {
-        "Symbol": "TXN",
-        "name": "Texas Instruments Incorporated"
-    },
-    {
-        "Symbol": "QCOM",
-        "name": "QUALCOMM Incorporated"
-    },
-    {
-        "Symbol": "AMD",
-        "name": "Advanced Micro Devices, Inc."
-    },
-    {
-        "Symbol": "HON",
-        "name": "Honeywell International Inc."
-    },
-    {
-        "Symbol": "AMGN",
-        "name": "Amgen Inc."
-    },
-    {
-        "Symbol": "SBUX",
-        "name": "Starbucks Corporation"
-    },
-    {
-        "Symbol": "ISRG",
-        "name": "Intuitive Surgical, Inc."
-    },
-    {
-        "Symbol": "MDLZ",
-        "name": "Mondelez International, Inc."
-    },
-    {
-        "Symbol": "BKNG",
-        "name": "Booking Holdings Inc."
-    },
-    {
-        "Symbol": "ADP",
-        "name": "Automatic Data Processing, Inc."
-    },
-    {
-        "Symbol": "MU",
-        "name": "Micron Technology, Inc."
-    },
-    {
-        "Symbol": "LRCX",
-        "name": "Lam Research Corporation"
-    },
-    {
-        "Symbol": "GILD",
-        "name": "Gilead Sciences, Inc."
-    },
-    {
-        "Symbol": "FISV",
-        "name": "Fiserv, Inc."
-    },
-    {
-        "Symbol": "ATVI",
-        "name": "Activision Blizzard, Inc."
-    },
-    {
-        "Symbol": "INTU",
-        "name": "Intuit Inc."
-    },
-    {
-        "Symbol": "ADI",
-        "name": "Analog Devices, Inc."
-    },
-    {
-        "Symbol": "REGN",
-        "name": "Regeneron Pharmaceuticals, Inc."
-    },
-    {
-        "Symbol": "ASML",
-        "name": "ASML Holding N.V."
-    },
-    {
-        "Symbol": "KLAC",
-        "name": "KLA Corporation"
-    },
-    {
-        "Symbol": "MRVL",
-        "name": "Marvell Technology, Inc."
-    },
-    {
-        "Symbol": "SNPS",
-        "name": "Synopsys, Inc."
-    },
-    {
-        "Symbol": "MCHP",
-        "name": "Microchip Technology Incorporated"
-    },
-    {
-        "Symbol": "LULU",
-        "name": "Lululemon Athletica Inc."
-    },
-    {
-        "Symbol": "NXPI",
-        "name": "NXP Semiconductors N.V."
-    },
-    {
-        "Symbol": "ORLY",
-        "name": "O'Reilly Automotive, Inc."
-    },
-    {
-        "Symbol": "PANW",
-        "name": "Palo Alto Networks, Inc."
-    },
-    {
-        "Symbol": "VRTX",
-        "name": "Vertex Pharmaceuticals Incorporated"
-    },
-    {
-        "Symbol": "IDXX",
-        "name": "IDEXX Laboratories, Inc."
-    },
-    {
-        "Symbol": "WDAY",
-        "name": "Workday, Inc."
-    },
-    {
-        "Symbol": "CDNS",
-        "name": "Cadence Design Systems, Inc."
-    },
-    {
-        "Symbol": "CSGP",
-        "name": "CoStar Group, Inc."
-    },
-    {
-        "Symbol": "DXCM",
-        "name": "DexCom, Inc."
-    },
-    {
-        "Symbol": "EBAY",
-        "name": "eBay Inc."
-    },
-    {
-        "Symbol": "EXC",
-        "name": "Exelon Corporation"
-    },
-    {
-        "Symbol": "FAST",
-        "name": "Fastenal Company"
-    },
-    {
-        "Symbol": "MAR",
-        "name": "Marriott International, Inc."
-    },
-    {
-        "Symbol": "MNST",
-        "name": "Monster Beverage Corporation"
-    },
-    {
-        "Symbol": "ROST",
-        "name": "Ross Stores, Inc."
-    },
-    {
-        "Symbol": "SIRI",
-        "name": "Sirius XM Holdings Inc."
-    },
-    {
-        "Symbol": "SWKS",
-        "name": "Skyworks Solutions, Inc."
-    },
-    {
-        "Symbol": "VRSK",
-        "name": "Verisk Analytics, Inc."
-    },
-    {
-        "Symbol": "XEL",
-        "name": "Xcel Energy Inc."
-    },
-    {
-        "Symbol": "ZM",
-        "name": "Zoom Video Communications, Inc."
-    },
-    {
-        "Symbol": "ABNB",
-        "name": "Airbnb, Inc."
-    },
-    {
-        "Symbol": "DDOG",
-        "name": "Datadog, Inc."
-    },
-    {
-        "Symbol": "DOCU",
-        "name": "DocuSign, Inc."
-    },
-    {
-        "Symbol": "OKTA",
-        "name": "Okta, Inc."
-    },
-    {
-        "Symbol": "PTON",
-        "name": "Peloton Interactive, Inc."
-    },
-    {
-        "Symbol": "TEAM",
-        "name": "Atlassian Corporation Plc"
-    },
-    {
-        "Symbol": "ZS",
-        "name": "Zscaler, Inc."
-    },
-    {
-        "Symbol": "CRWD",
-        "name": "CrowdStrike Holdings, Inc."
-    },
-    {
-        "Symbol": "NET",
-        "name": "Cloudflare, Inc."
-    },
-    {
-        "Symbol": "UBER",
-        "name": "Uber Technologies, Inc."
-    },
-    {
-        "Symbol": "LYFT",
-        "name": "Lyft, Inc."
-    },
-    {
-        "Symbol": "DASH",
-        "name": "DoorDash, Inc."
-    },
-    {
-        "Symbol": "RBLX",
-        "name": "Roblox Corporation"
-    },
-    {
-        "Symbol": "SNOW",
-        "name": "Snowflake Inc."
-    },
-    {
-        "Symbol": "SQ",
-        "name": "Block, Inc."
-    },
-    {
-        "Symbol": "COIN",
-        "name": "Coinbase Global, Inc."
-    },
-    {
-        "Symbol": "PLTR",
-        "name": "Palantir Technologies Inc."
-    },
-    {
-        "Symbol": "MSTR",
-        "name": "MicroStrategy Incorporated"
-    },
-    {
-        "Symbol": "AXON",
-        "name": "Axon Enterprise, Inc."
-    },
-    {
-        "Symbol": "GEHC",
-        "name": "GE HealthCare Technologies Inc."
-    },
-    {
-        "Symbol": "ARM",
-        "name": "Arm Holdings plc"
-    },
-    {
-        "Symbol": "APP",
-        "name": "AppLovin Corporation"
-    },
-    {
-        "Symbol": "GFS",
-        "name": "GLOBALFOUNDRIES Inc."
-    },
-    {
-        "Symbol": "MDB",
-        "name": "MongoDB, Inc."
-    },
-    {
-        "Symbol": "ON",
-        "name": "ON Semiconductor Corporation"
-    },
-    {
-        "Symbol": "CPRT",
-        "name": "Copart, Inc."
-    },
-    {
-        "Symbol": "ODFL",
-        "name": "Old Dominion Freight Line, Inc."
-    },
-    {
-        "Symbol": "PCAR",
-        "name": "PACCAR Inc."
-    },
-    {
-        "Symbol": "PAYX",
-        "name": "Paychex, Inc."
-    },
-    {
-        "Symbol": "CHTR",
-        "name": "Charter Communications, Inc."
-    },
-    {
-        "Symbol": "TMUS",
-        "name": "T-Mobile US, Inc."
-    },
-    {
-        "Symbol": "WBD",
-        "name": "Warner Bros. Discovery, Inc."
-    },
-    {
-        "Symbol": "BIIB",
-        "name": "Biogen Inc."
-    },
-    {
-        "Symbol": "AZN",
-        "name": "AstraZeneca PLC"
-    },
-    {
-        "Symbol": "AEP",
-        "name": "American Electric Power Company, Inc."
-    },
-    {
-        "Symbol": "LIN",
-        "name": "Linde plc"
-    },
-    {
-        "Symbol": "KDP",
-        "name": "Keurig Dr Pepper Inc."
-    },
-    {
-        "Symbol": "KHC",
-        "name": "The Kraft Heinz Company"
-    },
-    {
-        "Symbol": "CCEP",
-        "name": "Coca-Cola Europacific Partners plc"
-    },
-    {
-        "Symbol": "MELI",
-        "name": "MercadoLibre, Inc."
-    }
+  {
+    "Symbol": "AAPL"
+  },
+  {
+    "Symbol": "MSFT"
+  },
+  {
+    "Symbol": "AMZN"
+  },
+  {
+    "Symbol": "GOOGL"
+  },
+  {
+    "Symbol": "GOOG"
+  },
+  {
+    "Symbol": "META"
+  },
+  {
+    "Symbol": "NVDA"
+  },
+  {
+    "Symbol": "TSLA"
+  },
+  {
+    "Symbol": "PEP"
+  },
+  {
+    "Symbol": "COST"
+  },
+  {
+    "Symbol": "ADBE"
+  },
+  {
+    "Symbol": "NFLX"
+  },
+  {
+    "Symbol": "PYPL"
+  },
+  {
+    "Symbol": "INTC"
+  },
+  {
+    "Symbol": "CSCO"
+  },
+  {
+    "Symbol": "CMCSA"
+  },
+  {
+    "Symbol": "PDD"
+  },
+  {
+    "Symbol": "AVGO"
+  },
+  {
+    "Symbol": "TXN"
+  },
+  {
+    "Symbol": "QCOM"
+  },
+  {
+    "Symbol": "AMD"
+  },
+  {
+    "Symbol": "HON"
+  },
+  {
+    "Symbol": "AMGN"
+  },
+  {
+    "Symbol": "SBUX"
+  },
+  {
+    "Symbol": "ISRG"
+  },
+  {
+    "Symbol": "MDLZ"
+  },
+  {
+    "Symbol": "BKNG"
+  },
+  {
+    "Symbol": "ADP"
+  },
+  {
+    "Symbol": "MU"
+  },
+  {
+    "Symbol": "LRCX"
+  },
+  {
+    "Symbol": "GILD"
+  },
+  {
+    "Symbol": "FISV"
+  },
+  {
+    "Symbol": "ATVI"
+  },
+  {
+    "Symbol": "INTU"
+  },
+  {
+    "Symbol": "ADI"
+  },
+  {
+    "Symbol": "REGN"
+  },
+  {
+    "Symbol": "ASML"
+  },
+  {
+    "Symbol": "KLAC"
+  },
+  {
+    "Symbol": "MRVL"
+  },
+  {
+    "Symbol": "SNPS"
+  },
+  {
+    "Symbol": "MCHP"
+  },
+  {
+    "Symbol": "LULU"
+  },
+  {
+    "Symbol": "NXPI"
+  },
+  {
+    "Symbol": "ORLY"
+  },
+  {
+    "Symbol": "PANW"
+  },
+  {
+    "Symbol": "VRTX"
+  },
+  {
+    "Symbol": "IDXX"
+  },
+  {
+    "Symbol": "WDAY"
+  },
+  {
+    "Symbol": "CDNS"
+  },
+  {
+    "Symbol": "CSGP"
+  },
+  {
+    "Symbol": "DXCM"
+  },
+  {
+    "Symbol": "EBAY"
+  },
+  {
+    "Symbol": "EXC"
+  },
+  {
+    "Symbol": "FAST"
+  },
+  {
+    "Symbol": "MAR"
+  },
+  {
+    "Symbol": "MNST"
+  },
+  {
+    "Symbol": "ROST"
+  },
+  {
+    "Symbol": "SIRI"
+  },
+  {
+    "Symbol": "SWKS"
+  },
+  {
+    "Symbol": "VRSK"
+  },
+  {
+    "Symbol": "XEL"
+  },
+  {
+    "Symbol": "ZM"
+  },
+  {
+    "Symbol": "ABNB"
+  },
+  {
+    "Symbol": "DDOG"
+  },
+  {
+    "Symbol": "DOCU"
+  },
+  {
+    "Symbol": "OKTA"
+  },
+  {
+    "Symbol": "PTON"
+  },
+  {
+    "Symbol": "TEAM"
+  },
+  {
+    "Symbol": "ZS"
+  },
+  {
+    "Symbol": "CRWD"
+  },
+  {
+    "Symbol": "NET"
+  },
+  {
+    "Symbol": "UBER"
+  },
+  {
+    "Symbol": "LYFT"
+  },
+  {
+    "Symbol": "DASH"
+  },
+  {
+    "Symbol": "RBLX"
+  },
+  {
+    "Symbol": "SNOW"
+  },
+  {
+    "Symbol": "SQ"
+  },
+  {
+    "Symbol": "COIN"
+  },
+  {
+    "Symbol": "PLTR"
+  },
+  {
+    "Symbol": "MSTR"
+  },
+  {
+    "Symbol": "AXON"
+  },
+  {
+    "Symbol": "GEHC"
+  },
+  {
+    "Symbol": "ARM"
+  },
+  {
+    "Symbol": "APP"
+  },
+  {
+    "Symbol": "GFS"
+  },
+  {
+    "Symbol": "MDB"
+  },
+  {
+    "Symbol": "ON"
+  },
+  {
+    "Symbol": "CPRT"
+  },
+  {
+    "Symbol": "ODFL"
+  },
+  {
+    "Symbol": "PCAR"
+  },
+  {
+    "Symbol": "PAYX"
+  },
+  {
+    "Symbol": "CHTR"
+  },
+  {
+    "Symbol": "TMUS"
+  },
+  {
+    "Symbol": "WBD"
+  },
+  {
+    "Symbol": "BIIB"
+  },
+  {
+    "Symbol": "AZN"
+  },
+  {
+    "Symbol": "AEP"
+  },
+  {
+    "Symbol": "LIN"
+  },
+  {
+    "Symbol": "KDP"
+  },
+  {
+    "Symbol": "KHC"
+  },
+  {
+    "Symbol": "CCEP"
+  },
+  {
+    "Symbol": "MELI"
+  }
 ]
