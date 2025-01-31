@@ -5,14 +5,11 @@ import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickData, Histogr
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Search, X, Loader2, Maximize2, Moon, Sun, Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { WatchlistModal } from '../components/WatchlistModal';
-import { LoginModal } from '../components/LoginModal';
 
 import nifty50Data from '../public/nifty50.json';
 import niftyNext50Data from '../public/niftynext50.json';
@@ -111,11 +108,6 @@ export default function StockChart() {
   const [currentStock, setCurrentStock] = useState<CurrentStock | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
-  const [watchlist, setWatchlist] = useState<{ stock_name: string }[]>([]);
-  const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
@@ -335,89 +327,9 @@ export default function StockChart() {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
-  const handleWatchlistClick = () => {
-    if (isLoggedIn) {
-      setIsWatchlistOpen(true);
-    } else {
-      setIsLoginModalOpen(true);
-    }
-  };
-
-  const handleLogin = async (enteredUsername: string) => {
-    try {
-      const response = await axios.post('/api/login', { username: enteredUsername });
-      if (response.data.success) {
-        setIsLoggedIn(true);
-        setUsername(enteredUsername);
-        setIsLoginModalOpen(false);
-        fetchWatchlist(enteredUsername);
-      } else {
-        alert('Login failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login. Please try again.');
-    }
-  };
-
-  const fetchWatchlist = async (user: string) => {
-    try {
-      const response = await axios.get(`/api/watchlist?username=${user}`);
-      setWatchlist(response.data.watchlist);
-    } catch (error) {
-      console.error('Failed to fetch watchlist:', error);
-    }
-  };
-
-  const toggleWatchlist = async (stock: Stock) => {
-    if (!isLoggedIn) {
-      setIsLoginModalOpen(true);
-      return;
-    }
-
-    try {
-      if (watchlist.some(item => item.stock_name === stock.symbol)) {
-        await axios.delete('/api/watchlist', { data: { stock_name: stock.symbol, username } });
-        setWatchlist(prev => prev.filter(item => item.stock_name !== stock.symbol));
-      } else {
-        await axios.post('/api/watchlist', { stock_name: stock.symbol, username });
-        setWatchlist(prev => [...prev, { stock_name: stock.symbol }]);
-      }
-    } catch (error) {
-      console.error('Failed to update watchlist:', error);
-    }
-  };
-
-  const removeFromWatchlist = async (symbol: string) => {
-    try {
-      await axios.delete('/api/watchlist', { data: { stock_name: symbol, username } });
-      setWatchlist(prev => prev.filter(item => item.stock_name !== symbol));
-    } catch (error) {
-      console.error('Failed to remove from watchlist:', error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchWatchlist = async () => {
-      try {
-        const response = await axios.get('/api/watchlist');
-        setWatchlist(response.data.watchlist);
-      } catch (error) {
-        console.error('Failed to fetch watchlist:', error);
-      }
-    };
-
-    fetchWatchlist();
-  }, []);
-
-  if (!mounted) return null
-
   return (
     <div className="flex flex-col h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Sticky Top Bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 
-border-b">
-        {/* Brand Name */}
+      <div className="sticky top-0 z-20 flex items-center justify-between bg-background/80 backdrop-blur-sm p-2 border-b">
         <div className="text-lg font-bold">dotChart</div>
 
         {/* Right-side elements */}
